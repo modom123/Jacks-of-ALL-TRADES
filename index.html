@@ -1,1 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jacks of All Trades | Apprenticeship & Mentoring Program</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --gold: #0076B6;
+      --gold-light: #3399CC;
+      --dark: #0D1117;
+      --darker: #080C10;
+      --mid: #111820;
+      --accent: #B0B7BC;
+      --accent2: #4DAFDE;
+      --white: #FFFFFF;
+      --offwhite: #F0F4F8;
+      --gray: #888;
+      --card-bg: rgba(255,255,255,0.05);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: var(--darker);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 60px;
+      background: rgba(15,15,26,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,118,182,0.2);
+      transition: padding 0.3s;
+    }
+    nav.scrolled { padding: 12px 60px; }
+    .nav-logo {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900; font-size: 1.3rem;
+      color: var(--gold);
+      letter-spacing: 1px;
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--white); }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      color: rgba(255,255,255,0.8); text-decoration: none;
+      font-weight: 600; font-size: 0.88rem; letter-spacing: 0.5px;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta {
+      background: var(--gold); color: var(--white) !important;
+      padding: 10px 22px; border-radius: 4px;
+    }
+    .nav-cta:hover { background: var(--gold-light) !important; color: var(--white) !important; }
+
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { width: 26px; height: 2px; background: var(--white); transition: 0.3s; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--darker) 0%, var(--mid) 50%, #0D2137 100%);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden; padding-top: 80px;
+    }
+    .hero-particles {
+      position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: var(--gold); opacity: 0.08;
+      animation: float linear infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.08; }
+      90% { opacity: 0.08; }
+      100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+    }
+    .hero-content {
+      text-align: center; z-index: 2; max-width: 900px; padding: 0 24px;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(0,118,182,0.15);
+      border: 1px solid rgba(0,118,182,0.4);
+      color: var(--gold); font-size: 0.78rem; letter-spacing: 3px;
+      padding: 8px 20px; border-radius: 40px; margin-bottom: 28px;
+      text-transform: uppercase; font-weight: 600;
+    }
+    .hero-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900; font-size: clamp(2.8rem, 7vw, 5.5rem);
+      line-height: 1.05; margin-bottom: 24px;
+    }
+    .hero-title .highlight {
+      background: linear-gradient(90deg, var(--gold), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: rgba(255,255,255,0.7); max-width: 620px;
+      margin: 0 auto 40px; line-height: 1.7;
+    }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--accent2));
+      color: var(--white); font-weight: 700; font-size: 1rem;
+      padding: 16px 36px; border-radius: 6px; text-decoration: none;
+      border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      display: inline-block; letter-spacing: 0.5px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,118,182,0.4); }
+    .btn-outline {
+      background: transparent; color: var(--white); font-weight: 700;
+      padding: 15px 36px; border-radius: 6px; text-decoration: none;
+      border: 2px solid rgba(255,255,255,0.3); cursor: pointer;
+      transition: border-color 0.3s, color 0.3s; font-size: 1rem;
+      display: inline-block;
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+    .hero-scroll {
+      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.4); font-size: 0.75rem; letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .scroll-line {
+      width: 1px; height: 40px;
+      background: linear-gradient(180deg, var(--gold), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    /* ── SECTION COMMON ── */
+    section { padding: 100px 60px; }
+    .section-label {
+      font-size: 0.75rem; letter-spacing: 4px; color: var(--gold);
+      text-transform: uppercase; font-weight: 700; margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Montserrat', sans-serif; font-weight: 900;
+      font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; margin-bottom: 16px;
+    }
+    .section-sub {
+      color: rgba(255,255,255,0.6); max-width: 600px; line-height: 1.7; font-size: 1.05rem;
+    }
+    .text-center { text-align: center; }
+    .text-center .section-sub { margin: 0 auto; }
+
+    /* ── VISION ── */
+    #vision { background: var(--dark); }
+    .vision-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center; max-width: 1200px; margin: 60px auto 0;
+    }
+    .vision-text .section-sub { max-width: 100%; margin-bottom: 40px; }
+    .vision-values {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    }
+    .value-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(0,118,182,0.15);
+      border-radius: 10px; padding: 24px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .value-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+    .value-icon { font-size: 2rem; margin-bottom: 12px; }
+    .value-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: var(--gold); }
+    .value-desc { font-size: 0.88rem; color: rgba(255,255,255,0.6); line-height: 1.6; }
+    .vision-visual {
+      position: relative;
+    }
+    .vision-img-placeholder {
+      background: linear-gradient(135deg, rgba(0,118,182,0.1), rgba(176,183,188,0.1));
+      border: 1px solid rgba(0,118,182,0.2);
+      border-radius: 16px; height: 420px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .vision-img-placeholder::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 70%, rgba(0,118,182,0.15) 0%, transparent 60%),
+                  radial-gradient(circle at 70% 30%, rgba(176,183,188,0.1) 0%, transparent 60%);
+    }
+    .detroit-skyline { font-size: 6rem; z-index: 1; }
+    .vision-stat-pills {
+      position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 12px; white-space: nowrap;
+    }
+    .stat-pill {
+      background: var(--gold); color: var(--white);
+      padding: 10px 20px; border-radius: 40px;
+      font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.85rem;
+    }
+
+    /* ── STATS BANNER ── */
+    #stats-banner {
+      padding: 60px;
+      background: linear-gradient(135deg, #0076B6 0%, #005A8C 100%);
+    }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 40px; max-width: 900px; margin: 0 auto; text-align: center;
+    }
+    .stat-number {
+      font-family: 'Montserrat', sans-serif; font-weight: 900;
+      font-size: clamp(2.5rem, 5vw, 4rem); color: var(--white); line-height: 1;
+    }
+    .stat-label { color: rgba(255,255,255,0.85); font-weight: 600; font-size: 0.95rem; margin-top: 8px; }
+
+    /* ── PROGRAMS ── */
+    #programs { background: var(--darker); }
+    .programs-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 24px; max-width: 1200px; margin: 60px auto 0;
+    }
+    .program-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 36px 28px;
+      transition: all 0.3s; position: relative; overflow: hidden;
+      cursor: pointer;
+    }
+    .program-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,118,182,0.08), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .program-card:hover { border-color: var(--gold); transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .program-card:hover::before { opacity: 1; }
+    .program-icon { font-size: 2.8rem; margin-bottom: 20px; display: block; }
+    .program-name {
+      font-family: 'Montserrat', sans-serif; font-weight: 700;
+      font-size: 1.2rem; margin-bottom: 12px; color: var(--gold);
+    }
+    .program-desc { color: rgba(255,255,255,0.6); line-height: 1.6; font-size: 0.93rem; }
+    .program-tag {
+      display: inline-block; margin-top: 16px;
+      background: rgba(0,118,182,0.15); color: var(--gold);
+      padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+    }
+
+    /* ── HOW IT WORKS ── */
+    #how {
+      background: var(--dark);
+    }
+    .steps-container {
+      display: flex; gap: 0; max-width: 1100px; margin: 60px auto 0;
+      position: relative;
+    }
+    .steps-container::before {
+      content: ''; position: absolute; top: 40px; left: calc(10% + 20px); right: calc(10% + 20px);
+      height: 2px; background: linear-gradient(90deg, var(--gold), var(--accent));
+      z-index: 0;
+    }
+    .step {
+      flex: 1; text-align: center; padding: 0 16px; position: relative; z-index: 1;
+    }
+    .step-num {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--accent2));
+      color: var(--darker); font-family: 'Montserrat', sans-serif;
+      font-weight: 900; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .step-title {
+      font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.95rem;
+      margin-bottom: 10px; color: var(--gold);
+    }
+    .step-desc { color: rgba(255,255,255,0.55); font-size: 0.85rem; line-height: 1.6; }
+
+    /* ── REVITALIZATION ── */
+    #revitalization { background: var(--darker); }
+    .revit-timeline {
+      max-width: 800px; margin: 60px auto 0; position: relative;
+    }
+    .revit-timeline::before {
+      content: ''; position: absolute; left: 28px; top: 0; bottom: 0;
+      width: 2px; background: linear-gradient(180deg, var(--gold), var(--accent));
+    }
+    .revit-item {
+      display: flex; gap: 32px; align-items: flex-start;
+      margin-bottom: 48px; padding-left: 8px;
+    }
+    .revit-dot {
+      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+      background: var(--gold); display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; position: relative; z-index: 1;
+    }
+    .revit-content { padding-top: 6px; }
+    .revit-title {
+      font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1.1rem;
+      color: var(--gold); margin-bottom: 8px;
+    }
+    .revit-desc { color: rgba(255,255,255,0.6); line-height: 1.6; }
+
+    /* ── IMPACT ── */
+    #impact {
+      background: linear-gradient(135deg, #111820 0%, #0D1117 100%);
+    }
+    .impact-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+      max-width: 1100px; margin: 60px auto 0; align-items: center;
+    }
+    .impact-points { list-style: none; }
+    .impact-points li {
+      display: flex; gap: 14px; align-items: flex-start;
+      margin-bottom: 20px; color: rgba(255,255,255,0.8); line-height: 1.6;
+    }
+    .impact-points li::before {
+      content: '✓'; color: var(--gold); font-weight: 700;
+      background: rgba(0,118,182,0.15); width: 26px; height: 26px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 0.85rem; margin-top: 2px;
+    }
+    .impact-counters {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    }
+    .counter-card {
+      background: var(--card-bg); border: 1px solid rgba(0,118,182,0.2);
+      border-radius: 12px; padding: 28px; text-align: center;
+      transition: transform 0.3s;
+    }
+    .counter-card:hover { transform: scale(1.03); }
+    .counter-num {
+      font-family: 'Montserrat', sans-serif; font-weight: 900;
+      font-size: 2.5rem; color: var(--gold); line-height: 1;
+    }
+    .counter-text { color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 8px; line-height: 1.4; }
+
+    /* ── PARTNERS ── */
+    #partners { background: var(--dark); }
+    .partners-grid {
+      display: grid; grid-template-columns: repeat(2,1fr);
+      gap: 24px; max-width: 900px; margin: 60px auto 0;
+    }
+    .partner-card {
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 28px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .partner-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+    .partner-name {
+      font-family: 'Montserrat', sans-serif; font-weight: 700;
+      color: var(--gold); margin-bottom: 8px; font-size: 1.05rem;
+    }
+    .partner-desc { color: rgba(255,255,255,0.55); font-size: 0.88rem; line-height: 1.6; }
+
+    /* ── TESTIMONIAL ── */
+    #testimonial {
+      background: linear-gradient(135deg, rgba(0,118,182,0.08) 0%, rgba(176,183,188,0.05) 100%);
+      border-top: 1px solid rgba(0,118,182,0.15);
+      border-bottom: 1px solid rgba(0,118,182,0.15);
+      text-align: center;
+    }
+    .quote-icon { font-size: 4rem; color: var(--gold); opacity: 0.4; line-height: 1; margin-bottom: 24px; }
+    .quote-text {
+      font-family: 'Montserrat', sans-serif; font-weight: 600;
+      font-size: clamp(1.2rem, 2.5vw, 1.6rem); line-height: 1.6;
+      max-width: 800px; margin: 0 auto 32px; color: rgba(255,255,255,0.9);
+      font-style: italic;
+    }
+    .quote-outcomes {
+      display: flex; gap: 40px; justify-content: center; margin-top: 48px; flex-wrap: wrap;
+    }
+    .outcome {
+      text-align: center;
+    }
+    .outcome-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+    .outcome-title { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--gold); font-size: 0.95rem; margin-bottom: 6px; }
+    .outcome-desc { color: rgba(255,255,255,0.55); font-size: 0.82rem; max-width: 160px; line-height: 1.5; }
+
+    /* ── ENROLL ── */
+    #enroll { background: var(--darker); }
+    .enroll-intro {
+      max-width: 700px; margin: 0 auto 60px; text-align: center;
+      color: rgba(255,255,255,0.65); line-height: 1.7;
+    }
+    .enroll-info {
+      background: rgba(0,118,182,0.1); border: 1px solid rgba(0,118,182,0.3);
+      border-radius: 10px; padding: 20px 28px; max-width: 500px;
+      margin: 0 auto 48px; text-align: center;
+    }
+    .enroll-info p { color: rgba(255,255,255,0.8); font-size: 0.95rem; }
+    .enroll-info strong { color: var(--gold); }
+    .trades-enroll {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 20px; max-width: 1000px; margin: 0 auto 48px;
+    }
+    .trade-enroll-card {
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 24px; text-align: center;
+      transition: all 0.3s;
+    }
+    .trade-enroll-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+    .trade-enroll-icon { font-size: 2.2rem; margin-bottom: 12px; display: block; }
+    .trade-enroll-name {
+      font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--gold);
+      font-size: 1rem; margin-bottom: 8px;
+    }
+    .trade-enroll-desc { color: rgba(255,255,255,0.55); font-size: 0.82rem; line-height: 1.5; }
+    .enroll-center { text-align: center; }
+
+    /* ── DONATE ── */
+    #donate { background: var(--dark); }
+    .donate-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 24px; max-width: 1100px; margin: 60px auto 0;
+    }
+    .donate-card {
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 32px 24px; text-align: center;
+      transition: all 0.3s;
+    }
+    .donate-card:hover { border-color: var(--gold); transform: translateY(-5px); }
+    .donate-card.featured {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(0,118,182,0.12), rgba(176,183,188,0.06));
+    }
+    .donate-icon { font-size: 2.5rem; margin-bottom: 16px; display: block; }
+    .donate-title {
+      font-family: 'Montserrat', sans-serif; font-weight: 700;
+      color: var(--gold); font-size: 1.05rem; margin-bottom: 12px;
+    }
+    .donate-desc { color: rgba(255,255,255,0.55); font-size: 0.88rem; line-height: 1.6; }
+    .donate-cta { margin-top: 50px; text-align: center; }
+
+    /* ── SHOP ── */
+    #shop { background: var(--darker); }
+    .shop-grid {
+      display: grid; grid-template-columns: repeat(2,1fr);
+      gap: 24px; max-width: 900px; margin: 60px auto 48px;
+    }
+    .shop-card {
+      background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 32px; display: flex; gap: 20px;
+      align-items: flex-start; transition: all 0.3s;
+    }
+    .shop-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+    .shop-icon { font-size: 2.4rem; flex-shrink: 0; }
+    .shop-title {
+      font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--gold);
+      font-size: 1rem; margin-bottom: 8px;
+    }
+    .shop-desc { color: rgba(255,255,255,0.55); font-size: 0.88rem; line-height: 1.6; }
+
+    /* ── JOIN CTA ── */
+    #join {
+      background: linear-gradient(135deg, #005A8C 0%, #0076B6 60%, #0099E6 100%);
+      text-align: center; padding: 100px 60px;
+    }
+    #join .section-title { color: var(--white); }
+    #join .section-sub { color: rgba(255,255,255,0.75); }
+    .join-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
+    .btn-dark {
+      background: var(--white); color: #0076B6; font-weight: 700;
+      padding: 16px 36px; border-radius: 6px; text-decoration: none;
+      border: 2px solid var(--white); cursor: pointer;
+      transition: all 0.3s; font-size: 1rem; display: inline-block;
+    }
+    .btn-dark:hover { background: transparent; color: var(--darker); border-color: var(--darker); }
+    .btn-white {
+      background: white; color: var(--darker); font-weight: 700;
+      padding: 16px 36px; border-radius: 6px; text-decoration: none;
+      cursor: pointer; transition: all 0.3s; font-size: 1rem; display: inline-block;
+      border: 2px solid white;
+    }
+    .btn-white:hover { background: transparent; color: white; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--darker); padding: 60px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr;
+      gap: 60px; max-width: 1100px; margin: 0 auto 48px;
+    }
+    .footer-brand .nav-logo { font-size: 1.5rem; display: block; margin-bottom: 16px; }
+    .footer-tagline { color: rgba(255,255,255,0.5); font-size: 0.9rem; line-height: 1.7; margin-bottom: 24px; }
+    .footer-nonprofit {
+      display: inline-block; background: rgba(0,118,182,0.15);
+      border: 1px solid rgba(0,118,182,0.3); color: var(--gold);
+      font-size: 0.75rem; padding: 5px 14px; border-radius: 20px; font-weight: 600;
+    }
+    .footer-col h4 {
+      font-family: 'Montserrat', sans-serif; font-weight: 700;
+      color: var(--white); font-size: 0.95rem; margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 10px; }
+    .footer-col ul li a {
+      color: rgba(255,255,255,0.5); text-decoration: none;
+      font-size: 0.88rem; transition: color 0.3s;
+    }
+    .footer-col ul li a:hover { color: var(--gold); }
+    .footer-bottom {
+      max-width: 1100px; margin: 0 auto;
+      padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex; justify-content: space-between; align-items: center;
+      color: rgba(255,255,255,0.35); font-size: 0.82rem; flex-wrap: wrap; gap: 12px;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--dark); border: 1px solid rgba(0,118,182,0.3);
+      border-radius: 16px; padding: 48px; max-width: 520px; width: 90%;
+      position: relative; animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-close {
+      position: absolute; top: 16px; right: 20px;
+      background: none; border: none; color: rgba(255,255,255,0.5);
+      font-size: 1.5rem; cursor: pointer; transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--white); }
+    .modal-title {
+      font-family: 'Montserrat', sans-serif; font-weight: 900;
+      font-size: 1.6rem; margin-bottom: 8px; color: var(--gold);
+    }
+    .modal-sub { color: rgba(255,255,255,0.6); margin-bottom: 28px; font-size: 0.95rem; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: rgba(255,255,255,0.7); }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+      padding: 12px 16px; color: var(--white); font-size: 0.95rem;
+      font-family: 'Open Sans', sans-serif; transition: border-color 0.3s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--gold);
+    }
+    .form-group select option { background: var(--dark); }
+    .form-success {
+      display: none; text-align: center; padding: 20px;
+    }
+    .form-success .check { font-size: 3rem; margin-bottom: 16px; }
+    .form-success h3 { color: var(--gold); font-family: 'Montserrat', sans-serif; font-weight: 700; margin-bottom: 8px; }
+    .form-success p { color: rgba(255,255,255,0.6); }
+
+    /* ── MOBILE NAV ── */
+    .mobile-menu {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: var(--darker); flex-direction: column;
+      align-items: center; justify-content: center; gap: 32px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      color: var(--white); text-decoration: none; font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: 1.6rem;
+    }
+    .mobile-menu a:hover { color: var(--gold); }
+    .mobile-close {
+      position: absolute; top: 24px; right: 28px;
+      background: none; border: none; color: var(--white);
+      font-size: 2rem; cursor: pointer;
+    }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .vision-grid { grid-template-columns: 1fr; gap: 48px; }
+      .vision-visual { display: none; }
+      .programs-grid { grid-template-columns: repeat(2,1fr); }
+      .donate-grid { grid-template-columns: repeat(2,1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      nav.scrolled { padding: 12px 24px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      section { padding: 70px 24px; }
+      #stats-banner { padding: 50px 24px; }
+      .stats-grid { grid-template-columns: 1fr; gap: 28px; }
+      .programs-grid { grid-template-columns: 1fr; }
+      .steps-container { flex-direction: column; gap: 32px; }
+      .steps-container::before { display: none; }
+      .impact-grid { grid-template-columns: 1fr; }
+      .partners-grid { grid-template-columns: 1fr; }
+      .trades-enroll { grid-template-columns: repeat(2,1fr); }
+      .donate-grid { grid-template-columns: 1fr; }
+      .shop-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 36px; }
+      #join { padding: 70px 24px; }
+      footer { padding: 50px 24px; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .value-card { grid-column: span 1; }
+      .vision-values { grid-template-columns: 1fr; }
+      .trades-enroll { grid-template-columns: 1fr; }
+      .impact-counters { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#hero" class="nav-logo">Jacks <span>of All Trades</span></a>
+  <ul class="nav-links">
+    <li><a href="#vision">Our Vision</a></li>
+    <li><a href="#programs">Programs</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#impact">Impact</a></li>
+    <li><a href="#donate">Support</a></li>
+    <li><a href="#enroll" class="nav-cta">Apply Now</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="#vision" onclick="closeMobile()">Our Vision</a>
+  <a href="#programs" onclick="closeMobile()">Programs</a>
+  <a href="#how" onclick="closeMobile()">How It Works</a>
+  <a href="#impact" onclick="closeMobile()">Impact</a>
+  <a href="#partners" onclick="closeMobile()">Partners</a>
+  <a href="#donate" onclick="closeMobile()">Support Us</a>
+  <a href="#enroll" onclick="closeMobile()">Apply Now</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-particles" id="particles"></div>
+  <div class="hero-content">
+    <div class="hero-badge">A Non-Profit Corporation · Detroit, Michigan</div>
+    <h1 class="hero-title">
+      Building Futures,<br/>
+      <span class="highlight">Rebuilding Detroit</span>
+    </h1>
+    <p class="hero-sub">
+      Jacks of All Trades is an apprenticeship and mentoring program empowering Detroit's youth with skilled trade training while revitalizing neighborhoods one home at a time.
+    </p>
+    <div class="hero-btns">
+      <a href="#enroll" class="btn-primary">Apply Now</a>
+      <a href="#vision" class="btn-outline">Learn More</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<!-- VISION -->
+<section id="vision">
+  <div class="vision-grid">
+    <div class="vision-text fade-up">
+      <p class="section-label">Our Vision</p>
+      <h2 class="section-title">A City Where Every Young Person Has a Future</h2>
+      <p class="section-sub">
+        A Detroit where every young person has access to a meaningful trade and every neglected home is transformed into a symbol of hope and renewal. Through hands-on training and community partnership, we create pathways to prosperity while revitalizing neighborhoods across Detroit.
+      </p>
+      <div class="vision-values">
+        <div class="value-card">
+          <div class="value-icon">💪</div>
+          <div class="value-title">Empowerment</div>
+          <div class="value-desc">Giving students the tools to build a future for themselves</div>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">🏘️</div>
+          <div class="value-title">Community Renewal</div>
+          <div class="value-desc">Revitalizing neighborhoods through skill and service</div>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">🤝</div>
+          <div class="value-title">Integrity</div>
+          <div class="value-desc">Upholding professionalism, safety, and responsibility</div>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">⭐</div>
+          <div class="value-title">Excellence</div>
+          <div class="value-desc">Producing high-quality craftsmanship and character</div>
+        </div>
+      </div>
+    </div>
+    <div class="vision-visual fade-up">
+      <div class="vision-img-placeholder">
+        <span class="detroit-skyline">🏙️</span>
+        <div class="vision-stat-pills">
+          <span class="stat-pill">6 Trades</span>
+          <span class="stat-pill">1:1 Mentorship</span>
+          <span class="stat-pill">100% Job Focus</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BANNER -->
+<div id="stats-banner">
+  <div class="stats-grid">
+    <div class="fade-up">
+      <div class="stat-number" data-target="6">0</div>
+      <div class="stat-label">Trade Programs Available</div>
+    </div>
+    <div class="fade-up">
+      <div class="stat-number" data-target="100">0<span>%</span></div>
+      <div class="stat-label">Job Placement Focus</div>
+    </div>
+    <div class="fade-up">
+      <div class="stat-number">1:1</div>
+      <div class="stat-label">Mentorship Ratio</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRAMS -->
+<section id="programs">
+  <div class="text-center fade-up">
+    <p class="section-label">Trade Training</p>
+    <h2 class="section-title">Six High-Demand Trade Programs</h2>
+    <p class="section-sub">Hands-on instruction across six high-demand trades, preparing students for successful careers in construction and skilled labor.</p>
+  </div>
+  <div class="programs-grid">
+    <div class="program-card fade-up">
+      <span class="program-icon">🪚</span>
+      <div class="program-name">Carpentry</div>
+      <p class="program-desc">Master framing, finishing, and custom woodwork through real-world projects that build practical skills and professional confidence.</p>
+      <span class="program-tag">High Demand</span>
+    </div>
+    <div class="program-card fade-up">
+      <span class="program-icon">⚡</span>
+      <div class="program-name">Electrical</div>
+      <p class="program-desc">Learn wiring, circuits, and safety standards for residential systems — one of the most in-demand skilled trades nationwide.</p>
+      <span class="program-tag">High Demand</span>
+    </div>
+    <div class="program-card fade-up">
+      <span class="program-icon">🔧</span>
+      <div class="program-name">Plumbing</div>
+      <p class="program-desc">Gain expertise in pipe fitting, fixtures, and water system installation with hands-on training on real properties.</p>
+      <span class="program-tag">High Demand</span>
+    </div>
+    <div class="program-card fade-up">
+      <span class="program-icon">🌿</span>
+      <div class="program-name">Landscaping</div>
+      <p class="program-desc">Transform outdoor spaces with design, planting, and maintenance skills while beautifying Detroit communities.</p>
+      <span class="program-tag">Growing Field</span>
+    </div>
+    <div class="program-card fade-up">
+      <span class="program-icon">🏗️</span>
+      <div class="program-name">Drywalling</div>
+      <p class="program-desc">Perfect installation, taping, and finishing techniques for interior walls with instruction from experienced trade professionals.</p>
+      <span class="program-tag">High Demand</span>
+    </div>
+    <div class="program-card fade-up">
+      <span class="program-icon">🏠</span>
+      <div class="program-name">Roofing</div>
+      <p class="program-desc">Build expertise in installation, repair, and weatherproofing systems — critical skills for Detroit's housing revitalization.</p>
+      <span class="program-tag">High Demand</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="text-center fade-up">
+    <p class="section-label">The Process</p>
+    <h2 class="section-title">How Our Program Works</h2>
+    <p class="section-sub">A structured five-phase journey from classroom to career, with mentorship and community impact at every step.</p>
+  </div>
+  <div class="steps-container">
+    <div class="step fade-up">
+      <div class="step-num">01</div>
+      <div class="step-title">Trade Training & Certification</div>
+      <div class="step-desc">Comprehensive instruction across six high-demand trades with industry-recognized certification</div>
+    </div>
+    <div class="step fade-up">
+      <div class="step-num">02</div>
+      <div class="step-title">Professional Mentorship</div>
+      <div class="step-desc">Each student matched with an experienced professional for guidance and ongoing support</div>
+    </div>
+    <div class="step fade-up">
+      <div class="step-num">03</div>
+      <div class="step-title">Hands-On Renovation</div>
+      <div class="step-desc">Students restore real properties under supervision, gaining authentic practical experience</div>
+    </div>
+    <div class="step fade-up">
+      <div class="step-num">04</div>
+      <div class="step-title">Community Engagement</div>
+      <div class="step-desc">Projects improve housing, beautify lots, and rebuild neighborhood pride across Detroit</div>
+    </div>
+    <div class="step fade-up">
+      <div class="step-num">05</div>
+      <div class="step-title">Job Placement</div>
+      <div class="step-desc">Graduates move into apprenticeships and full-time positions with partner companies</div>
+    </div>
+  </div>
+</section>
+
+<!-- REVITALIZATION -->
+<section id="revitalization">
+  <div class="fade-up">
+    <p class="section-label">Community Revitalization</p>
+    <h2 class="section-title">Training Through Real Construction</h2>
+    <p class="section-sub">We directly address urban blight across Detroit by training students through actual renovation projects that transform the city.</p>
+  </div>
+  <div class="revit-timeline">
+    <div class="revit-item fade-up">
+      <div class="revit-dot">🤝</div>
+      <div class="revit-content">
+        <div class="revit-title">Partner & Identify</div>
+        <div class="revit-desc">Work with city government, land banks, and housing authorities to identify vacant and dilapidated homes across Detroit neighborhoods.</div>
+      </div>
+    </div>
+    <div class="revit-item fade-up">
+      <div class="revit-dot">🏚️</div>
+      <div class="revit-content">
+        <div class="revit-title">Acquire Properties</div>
+        <div class="revit-desc">Acquire or lease selected properties as dedicated training sites where students develop real-world skills under professional supervision.</div>
+      </div>
+    </div>
+    <div class="revit-item fade-up">
+      <div class="revit-dot">🔨</div>
+      <div class="revit-content">
+        <div class="revit-title">Restore & Train</div>
+        <div class="revit-desc">Engage students in all phases of renovation: demolition, repair, drywall, roofing, plumbing, landscaping, and electrical work.</div>
+      </div>
+    </div>
+    <div class="revit-item fade-up">
+      <div class="revit-dot">🏡</div>
+      <div class="revit-content">
+        <div class="revit-title">Distribute Homes</div>
+        <div class="revit-desc">Sell, rent, or donate completed homes to low-income families, or use them as mentoring housing for program participants.</div>
+      </div>
+    </div>
+    <div class="revit-item fade-up">
+      <div class="revit-dot">📈</div>
+      <div class="revit-content">
+        <div class="revit-title">Reinvest & Expand</div>
+        <div class="revit-desc">Reinvest all proceeds into additional property restoration projects, expanding our reach and impact across the city.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<section id="impact">
+  <div class="impact-grid">
+    <div class="fade-up">
+      <p class="section-label">Our Impact</p>
+      <h2 class="section-title">Transforming Lives & Neighborhoods</h2>
+      <p class="section-sub" style="margin-bottom:32px;">Our innovative model merges workforce development with neighborhood revitalization, creating lasting change for students and communities alike.</p>
+      <ul class="impact-points">
+        <li>Hands-on experience on real renovation projects</li>
+        <li>Visible community improvement across Detroit</li>
+        <li>Public-private partnership opportunities</li>
+        <li>Enhanced grant eligibility for ongoing growth</li>
+        <li>Industry-recognized trade certifications</li>
+        <li>1:1 mentorship with experienced professionals</li>
+      </ul>
+    </div>
+    <div class="impact-counters fade-up">
+      <div class="counter-card">
+        <div class="counter-num">6</div>
+        <div class="counter-text">Trade Programs with comprehensive curriculum</div>
+      </div>
+      <div class="counter-card">
+        <div class="counter-num">100%</div>
+        <div class="counter-text">Job Placement Focus for all graduates</div>
+      </div>
+      <div class="counter-card">
+        <div class="counter-num">1:1</div>
+        <div class="counter-text">Mentorship ratio, every student matched</div>
+      </div>
+      <div class="counter-card">
+        <div class="counter-num">∞</div>
+        <div class="counter-text">Community impact through reinvestment model</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTNERS -->
+<section id="partners">
+  <div class="text-center fade-up">
+    <p class="section-label">Strategic Partnerships</p>
+    <h2 class="section-title">Collaborating for Greater Impact</h2>
+    <p class="section-sub">Partnering with city and national organizations to maximize impact and create sustainable change across Detroit.</p>
+  </div>
+  <div class="partners-grid">
+    <div class="partner-card fade-up">
+      <div class="partner-name">🏛️ Detroit Land Bank</div>
+      <div class="partner-desc">Accessing vacant properties for student training and community revitalization projects across Detroit neighborhoods.</div>
+    </div>
+    <div class="partner-card fade-up">
+      <div class="partner-name">🏠 Section 8 & HUD</div>
+      <div class="partner-desc">Providing affordable housing solutions through our restored and renovated properties for low-income families.</div>
+    </div>
+    <div class="partner-card fade-up">
+      <div class="partner-name">🏙️ City of Detroit</div>
+      <div class="partner-desc">Working with city government and Detroit City Council on urban renewal initiatives and neighborhood transformation programs.</div>
+    </div>
+    <div class="partner-card fade-up">
+      <div class="partner-name">🌐 National Organizations</div>
+      <div class="partner-desc">Partnering with trade associations and workforce development programs nationwide to expand opportunities for our graduates.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL -->
+<section id="testimonial">
+  <div class="text-center fade-up">
+    <div class="quote-icon">"</div>
+    <p class="quote-text">
+      This program gave me more than skills — it gave me a future. I went from having no direction to becoming a certified electrician with a full-time job. Now I'm helping rebuild the neighborhood I grew up in.
+    </p>
+    <p style="color: var(--gold); font-weight: 600; font-size: 0.9rem;">— Program Graduate</p>
+    <p style="color: rgba(255,255,255,0.4); font-size: 0.82rem; margin-top: 4px;">Certified Electrician · Detroit, MI</p>
+    <div class="quote-outcomes">
+      <div class="outcome">
+        <span class="outcome-icon">🎓</span>
+        <div class="outcome-title">Career Pathways</div>
+        <div class="outcome-desc">From training to certification to full-time employment in high-demand trades</div>
+      </div>
+      <div class="outcome">
+        <span class="outcome-icon">🏘️</span>
+        <div class="outcome-title">Community Pride</div>
+        <div class="outcome-desc">Students see the direct impact of their work in transformed neighborhoods</div>
+      </div>
+      <div class="outcome">
+        <span class="outcome-icon">💰</span>
+        <div class="outcome-title">Lifelong Skills</div>
+        <div class="outcome-desc">Building expertise that creates economic stability and generational wealth</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENROLL -->
+<section id="enroll">
+  <div class="text-center fade-up">
+    <p class="section-label">Get Started</p>
+    <h2 class="section-title">Enroll in Our Trade Training Programs</h2>
+  </div>
+  <p class="enroll-intro fade-up">
+    Ready to build a new future? Our hands-on training programs provide foundational skills in high-demand trades, preparing you for immediate employment. Take the first step towards a skilled trade career and contribute to Detroit's revitalization.
+  </p>
+  <div class="enroll-info fade-up">
+    <p>📅 <strong>Classes run 3 days a week, 5 hours a day</strong></p>
+    <p style="margin-top:8px;">⏰ <strong>10:00 AM – 3:00 PM</strong> · Flexible scheduling while you gain expertise</p>
+  </div>
+  <div class="trades-enroll">
+    <div class="trade-enroll-card fade-up">
+      <span class="trade-enroll-icon">⚡</span>
+      <div class="trade-enroll-name">Electrical</div>
+      <div class="trade-enroll-desc">Master circuits, wiring, and safety standards</div>
+    </div>
+    <div class="trade-enroll-card fade-up">
+      <span class="trade-enroll-icon">🔧</span>
+      <div class="trade-enroll-name">Plumbing</div>
+      <div class="trade-enroll-desc">Learn pipefitting, drainage, and system installation</div>
+    </div>
+    <div class="trade-enroll-card fade-up">
+      <span class="trade-enroll-icon">🪚</span>
+      <div class="trade-enroll-name">Carpentry</div>
+      <div class="trade-enroll-desc">Develop skills in framing, finishing, and construction</div>
+    </div>
+    <div class="trade-enroll-card fade-up">
+      <span class="trade-enroll-icon">❄️</span>
+      <div class="trade-enroll-name">HVAC</div>
+      <div class="trade-enroll-desc">Train in heating, ventilation, and air conditioning systems</div>
+    </div>
+    <div class="trade-enroll-card fade-up">
+      <span class="trade-enroll-icon">🧱</span>
+      <div class="trade-enroll-name">Masonry</div>
+      <div class="trade-enroll-desc">Work with bricks, blocks, and stone for durable structures</div>
+    </div>
+    <div class="trade-enroll-card fade-up">
+      <span class="trade-enroll-icon">🔩</span>
+      <div class="trade-enroll-name">Welding</div>
+      <div class="trade-enroll-desc">Gain expertise in welding techniques and metal fabrication</div>
+    </div>
+  </div>
+  <div class="enroll-center fade-up">
+    <button class="btn-primary" onclick="openModal('apply')">Apply for Classes Now</button>
+  </div>
+</section>
+
+<!-- DONATE -->
+<section id="donate">
+  <div class="text-center fade-up">
+    <p class="section-label">Support Our Mission</p>
+    <h2 class="section-title">Your Generosity Builds Futures</h2>
+    <p class="section-sub">Every contribution helps fund training, mentorship, and property acquisition — directly transforming lives and neighborhoods in Detroit.</p>
+  </div>
+  <div class="donate-grid">
+    <div class="donate-card featured fade-up">
+      <span class="donate-icon">💵</span>
+      <div class="donate-title">Financial Gifts</div>
+      <p class="donate-desc">Monetary contributions fund training programs, mentorship initiatives, and property acquisition for student renovation projects.</p>
+    </div>
+    <div class="donate-card fade-up">
+      <span class="donate-icon">🙋</span>
+      <div class="donate-title">Volunteer Your Time</div>
+      <p class="donate-desc">Dedicate your skills as a mentor or assist on hands-on renovation projects to directly support student development.</p>
+    </div>
+    <div class="donate-card fade-up">
+      <span class="donate-icon">🔨</span>
+      <div class="donate-title">Tools & Equipment</div>
+      <p class="donate-desc">Provide new or gently used tools for hands-on student training — every tool donated directly supports a student's education.</p>
+    </div>
+    <div class="donate-card fade-up">
+      <span class="donate-icon">🪵</span>
+      <div class="donate-title">Building Materials</div>
+      <p class="donate-desc">Donate construction materials vital for property restoration. Your materials become a student's classroom and a family's new home.</p>
+    </div>
+    <div class="donate-card fade-up" style="grid-column: span 2;">
+      <span class="donate-icon">🏚️</span>
+      <div class="donate-title">Property Donations</div>
+      <p class="donate-desc">Transform vacant Detroit properties into student training sites and restored homes for low-income families. Property donations are one of the most impactful ways to support our mission and directly fuel our revitalization work across the city.</p>
+    </div>
+  </div>
+  <div class="donate-cta fade-up">
+    <button class="btn-primary" onclick="openModal('donate')">Contact Us to Donate</button>
+  </div>
+</section>
+
+<!-- SHOP -->
+<section id="shop">
+  <div class="text-center fade-up">
+    <p class="section-label">Shop to Support</p>
+    <h2 class="section-title">Every Purchase Makes a Difference</h2>
+    <p class="section-sub">Explore our selection of merchandise and sweet treats — every item purchased directly funds our training programs and property renovations.</p>
+  </div>
+  <div class="shop-grid">
+    <div class="shop-card fade-up">
+      <span class="shop-icon">🍬</span>
+      <div>
+        <div class="shop-title">Delicious Candy</div>
+        <p class="shop-desc">Indulge in a variety of sweet treats, perfect for satisfying your cravings or gifting to friends and family. Every purchase supports our students.</p>
+      </div>
+    </div>
+    <div class="shop-card fade-up">
+      <span class="shop-icon">🍿</span>
+      <div>
+        <div class="shop-title">Gourmet Popcorn</div>
+        <p class="shop-desc">Enjoy our freshly popped gourmet popcorn, available in classic and unique flavors — perfect for movie nights or everyday snacking.</p>
+      </div>
+    </div>
+    <div class="shop-card fade-up">
+      <span class="shop-icon">🎟️</span>
+      <div>
+        <div class="shop-title">50/50 Raffle</div>
+        <p class="shop-desc">Enter our 50/50 raffle for a chance to win big while supporting our mission. Half of all proceeds go directly to our training programs.</p>
+      </div>
+    </div>
+    <div class="shop-card fade-up">
+      <span class="shop-icon">👕</span>
+      <div>
+        <div class="shop-title">Unique Merchandise</div>
+        <p class="shop-desc">Discover a range of exciting items — from branded accessories to handmade crafts, all supporting a great cause and Detroit's future.</p>
+      </div>
+    </div>
+  </div>
+  <div class="text-center fade-up">
+    <button class="btn-primary" onclick="openModal('shop')">Shop Now</button>
+  </div>
+</section>
+
+<!-- JOIN CTA -->
+<section id="join">
+  <p class="section-label" style="color: rgba(26,26,46,0.6);">Get Involved Today</p>
+  <h2 class="section-title" style="color: var(--white); max-width: 700px; margin: 0 auto 16px;">Join Us in Building Detroit's Future</h2>
+  <p class="section-sub" style="color: rgba(26,26,46,0.7); margin: 0 auto;">
+    Whether you're a student seeking opportunity, a mentor ready to share expertise, a business looking to partner, or a community member wanting to support — there's a place for you in our mission to transform lives and neighborhoods.
+  </p>
+  <div class="join-btns">
+    <button class="btn-dark" onclick="openModal('apply')">Apply Now</button>
+    <button class="btn-white" onclick="openModal('volunteer')">Volunteer</button>
+    <button class="btn-dark" onclick="openModal('contact')">Contact Us</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#hero" class="nav-logo">Jacks <span style="color:white">of All Trades</span></a>
+      <p class="footer-tagline">
+        Apprenticeship and Mentoring Program transforming Detroit's youth through skilled trade training and community revitalization. One home at a time.
+      </p>
+      <span class="footer-nonprofit">A Non-Profit Corporation</span>
+    </div>
+    <div class="footer-col">
+      <h4>Programs</h4>
+      <ul>
+        <li><a href="#programs">Carpentry</a></li>
+        <li><a href="#programs">Electrical</a></li>
+        <li><a href="#programs">Plumbing</a></li>
+        <li><a href="#programs">Landscaping</a></li>
+        <li><a href="#programs">Drywalling</a></li>
+        <li><a href="#programs">Roofing</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Get Involved</h4>
+      <ul>
+        <li><a href="#enroll" onclick="openModal('apply')">Apply as Student</a></li>
+        <li><a href="#donate" onclick="openModal('volunteer')">Volunteer / Mentor</a></li>
+        <li><a href="#donate">Donate</a></li>
+        <li><a href="#shop">Shop</a></li>
+        <li><a href="#partners">Partner With Us</a></li>
+        <li><a href="#join" onclick="openModal('contact')">Contact Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 Jacks of All Trades Apprenticeship and Mentoring Program. All rights reserved.</span>
+    <span>Detroit, Michigan · Non-Profit Corporation</span>
+  </div>
+</footer>
+
+<!-- APPLY MODAL -->
+<div class="modal-overlay" id="modal-apply">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('apply')">✕</button>
+    <div id="apply-form-wrap">
+      <div class="modal-title">Apply Now</div>
+      <p class="modal-sub">Take the first step toward your future in skilled trades.</p>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" placeholder="Your full name" />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" placeholder="you@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" placeholder="(313) 000-0000" />
+      </div>
+      <div class="form-group">
+        <label>Trade of Interest</label>
+        <select>
+          <option value="">Select a trade...</option>
+          <option>Electrical</option>
+          <option>Plumbing</option>
+          <option>Carpentry</option>
+          <option>HVAC</option>
+          <option>Masonry</option>
+          <option>Welding</option>
+          <option>Landscaping</option>
+          <option>Drywalling</option>
+          <option>Roofing</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tell us about yourself</label>
+        <textarea rows="3" placeholder="Brief background and why you want to join..."></textarea>
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="submitForm('apply')">Submit Application</button>
+    </div>
+    <div class="form-success" id="apply-success">
+      <div class="check">✅</div>
+      <h3>Application Submitted!</h3>
+      <p>Thank you for applying. Our team will reach out within 2–3 business days to discuss next steps.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DONATE MODAL -->
+<div class="modal-overlay" id="modal-donate">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('donate')">✕</button>
+    <div id="donate-form-wrap">
+      <div class="modal-title">Contact Us to Donate</div>
+      <p class="modal-sub">Your generosity directly fuels our mission in Detroit.</p>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" placeholder="Your name or organization" />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" placeholder="you@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Type of Donation</label>
+        <select>
+          <option value="">Select donation type...</option>
+          <option>Financial Gift</option>
+          <option>Volunteer Time / Mentorship</option>
+          <option>Tools & Equipment</option>
+          <option>Building Materials</option>
+          <option>Property Donation</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea rows="3" placeholder="Tell us about your intended donation..."></textarea>
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="submitForm('donate')">Send Message</button>
+    </div>
+    <div class="form-success" id="donate-success">
+      <div class="check">🙏</div>
+      <h3>Thank You!</h3>
+      <p>We appreciate your generosity. Our team will reach out soon to coordinate your contribution.</p>
+    </div>
+  </div>
+</div>
+
+<!-- VOLUNTEER MODAL -->
+<div class="modal-overlay" id="modal-volunteer">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('volunteer')">✕</button>
+    <div id="volunteer-form-wrap">
+      <div class="modal-title">Volunteer With Us</div>
+      <p class="modal-sub">Share your expertise and help shape Detroit's next generation of skilled tradespeople.</p>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" placeholder="Your full name" />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" placeholder="you@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Your Trade or Skill</label>
+        <input type="text" placeholder="e.g. Electrician, Plumber, Project Manager..." />
+      </div>
+      <div class="form-group">
+        <label>How would you like to help?</label>
+        <select>
+          <option value="">Select role...</option>
+          <option>Trade Mentor</option>
+          <option>Renovation Project Assistant</option>
+          <option>Administrative Support</option>
+          <option>Job Placement / Career Advisor</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="submitForm('volunteer')">Get Involved</button>
+    </div>
+    <div class="form-success" id="volunteer-success">
+      <div class="check">🤝</div>
+      <h3>You're In!</h3>
+      <p>Welcome to the team. We'll be in touch with next steps to get you started.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="modal-contact">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('contact')">✕</button>
+    <div id="contact-form-wrap">
+      <div class="modal-title">Contact Us</div>
+      <p class="modal-sub">Ready to learn more about Jacks of All Trades? We'd love to hear from you.</p>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" placeholder="Your full name" />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" placeholder="you@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Subject</label>
+        <input type="text" placeholder="What can we help you with?" />
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea rows="4" placeholder="Tell us how you'd like to be part of Detroit's renewal story..."></textarea>
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="submitForm('contact')">Send Message</button>
+    </div>
+    <div class="form-success" id="contact-success">
+      <div class="check">📬</div>
+      <h3>Message Sent!</h3>
+      <p>Thank you for reaching out. We'll get back to you shortly.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SHOP MODAL -->
+<div class="modal-overlay" id="modal-shop">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('shop')">✕</button>
+    <div class="modal-title">Shop Coming Soon</div>
+    <p class="modal-sub">Our online shop is being set up. Contact us directly to purchase items and support our mission.</p>
+    <div style="text-align:center; padding: 20px 0;">
+      <span style="font-size:4rem">🛍️</span>
+      <p style="color:rgba(255,255,255,0.6); margin-top:16px; line-height:1.6;">Every purchase directly funds student training programs and property renovations across Detroit.</p>
+    </div>
+    <button class="btn-primary" style="width:100%; margin-top:16px;" onclick="closeModal('shop'); openModal('contact')">Contact Us to Order</button>
+  </div>
+</div>
+
+<script>
+  // ── PARTICLES ──
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 80 + 20;
+    p.style.cssText = `
+      width: ${size}px; height: ${size}px;
+      left: ${Math.random() * 100}%;
+      animation-duration: ${Math.random() * 15 + 10}s;
+      animation-delay: ${Math.random() * 10}s;
+    `;
+    container.appendChild(p);
+  }
+
+  // ── NAV SCROLL ──
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // ── MOBILE MENU ──
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileClose = document.getElementById('mobileClose');
+  hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+  mobileClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
+  function closeMobile() { mobileMenu.classList.remove('open'); }
+
+  // ── INTERSECTION OBSERVER (fade-up) ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ── COUNTER ANIMATION ──
+  function animateCounter(el) {
+    const target = parseInt(el.dataset.target);
+    if (isNaN(target)) return;
+    const suffix = el.querySelector('span') ? el.querySelector('span').outerHTML : '';
+    let current = 0;
+    const step = target / 60;
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.innerHTML = Math.floor(current) + suffix;
+      if (current >= target) clearInterval(timer);
+    }, 20);
+  }
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('[data-target]').forEach(animateCounter);
+        statObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('#stats-banner').forEach(el => statObserver.observe(el));
+
+  // ── MODALS ──
+  function openModal(name) {
+    document.getElementById('modal-' + name).classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(name) {
+    document.getElementById('modal-' + name).classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  function submitForm(name) {
+    const wrap = document.getElementById(name + '-form-wrap');
+    const success = document.getElementById(name + '-success');
+    if (wrap && success) {
+      wrap.style.display = 'none';
+      success.style.display = 'block';
+      setTimeout(() => closeModal(name), 3000);
+      setTimeout(() => {
+        if (wrap) wrap.style.display = '';
+        if (success) success.style.display = 'none';
+      }, 3500);
+    }
+  }
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+
+  // ── SMOOTH ACTIVE NAV ──
+  const sections = document.querySelectorAll('section[id]');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(sec => {
+      if (window.scrollY >= sec.offsetTop - 120) current = sec.id;
+    });
+    document.querySelectorAll('.nav-links a').forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current
+        ? 'var(--gold)' : '';
+    });
+  });
+</script>
+</body>
+</html>

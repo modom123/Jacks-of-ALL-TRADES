@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Jacks of All Trades",
+    "slug": "jacks-of-all-trades",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "joat",
+    "platforms": ["ios", "android"],
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#080C10"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "org.jacksofalltradesdetroit.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0076B6"
+      },
+      "package": "org.jacksofalltradesdetroit.app"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ]
+  }
+}

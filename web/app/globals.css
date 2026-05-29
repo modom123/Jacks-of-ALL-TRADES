@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --lions-blue: #0076B6;
+  --lions-silver: #B0B7BC;
+  --lions-black: #080C10;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #080C10;
+  color: #ffffff;
+  font-family: var(--font-opensans), sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-montserrat), sans-serif;
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-lions-blue to-lions-blue-light;
+  }
+}
