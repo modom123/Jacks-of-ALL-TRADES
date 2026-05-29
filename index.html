@@ -59,10 +59,10 @@
     }
     .nav-links a:hover { color: var(--gold); }
     .nav-cta {
-      background: var(--gold); color: var(--darker) !important;
+      background: var(--gold); color: var(--white) !important;
       padding: 10px 22px; border-radius: 4px;
     }
-    .nav-cta:hover { background: var(--gold-light) !important; color: var(--darker) !important; }
+    .nav-cta:hover { background: var(--gold-light) !important; color: var(--white) !important; }
 
     .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
     .hamburger span { width: 26px; height: 2px; background: var(--white); transition: 0.3s; }
@@ -117,7 +117,7 @@
     .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
     .btn-primary {
       background: linear-gradient(135deg, var(--gold), var(--accent2));
-      color: var(--darker); font-weight: 700; font-size: 1rem;
+      color: var(--white); font-weight: 700; font-size: 1rem;
       padding: 16px 36px; border-radius: 6px; text-decoration: none;
       border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
       display: inline-block; letter-spacing: 0.5px;
@@ -201,7 +201,7 @@
       display: flex; gap: 12px; white-space: nowrap;
     }
     .stat-pill {
-      background: var(--gold); color: var(--darker);
+      background: var(--gold); color: var(--white);
       padding: 10px 20px; border-radius: 40px;
       font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.85rem;
     }
@@ -217,9 +217,9 @@
     }
     .stat-number {
       font-family: 'Montserrat', sans-serif; font-weight: 900;
-      font-size: clamp(2.5rem, 5vw, 4rem); color: var(--darker); line-height: 1;
+      font-size: clamp(2.5rem, 5vw, 4rem); color: var(--white); line-height: 1;
     }
-    .stat-label { color: rgba(26,26,46,0.8); font-weight: 600; font-size: 0.95rem; margin-top: 8px; }
+    .stat-label { color: rgba(255,255,255,0.85); font-weight: 600; font-size: 0.95rem; margin-top: 8px; }
 
     /* ── PROGRAMS ── */
     #programs { background: var(--darker); }
@@ -460,16 +460,16 @@
 
     /* ── JOIN CTA ── */
     #join {
-      background: linear-gradient(135deg, #0076B6 0%, #1A2A3A 100%);
+      background: linear-gradient(135deg, #005A8C 0%, #0076B6 60%, #0099E6 100%);
       text-align: center; padding: 100px 60px;
     }
-    #join .section-title { color: var(--darker); }
-    #join .section-sub { color: rgba(26,26,46,0.75); }
+    #join .section-title { color: var(--white); }
+    #join .section-sub { color: rgba(255,255,255,0.75); }
     .join-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
     .btn-dark {
-      background: var(--darker); color: var(--gold); font-weight: 700;
+      background: var(--white); color: #0076B6; font-weight: 700;
       padding: 16px 36px; border-radius: 6px; text-decoration: none;
-      border: 2px solid var(--darker); cursor: pointer;
+      border: 2px solid var(--white); cursor: pointer;
       transition: all 0.3s; font-size: 1rem; display: inline-block;
     }
     .btn-dark:hover { background: transparent; color: var(--darker); border-color: var(--darker); }
@@ -1093,7 +1093,7 @@
 <!-- JOIN CTA -->
 <section id="join">
   <p class="section-label" style="color: rgba(26,26,46,0.6);">Get Involved Today</p>
-  <h2 class="section-title" style="color: var(--darker); max-width: 700px; margin: 0 auto 16px;">Join Us in Building Detroit's Future</h2>
+  <h2 class="section-title" style="color: var(--white); max-width: 700px; margin: 0 auto 16px;">Join Us in Building Detroit's Future</h2>
   <p class="section-sub" style="color: rgba(26,26,46,0.7); margin: 0 auto;">
     Whether you're a student seeking opportunity, a mentor ready to share expertise, a business looking to partner, or a community member wanting to support — there's a place for you in our mission to transform lives and neighborhoods.
   </p>
