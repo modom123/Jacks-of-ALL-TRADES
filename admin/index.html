@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!--
+  Jacks of All Trades Community Development
+  File: admin/index.html  (Command Center / Business Hub)
+  Generated: 2026-09-03 16:32 UTC  |  joatamp.net redesign
+  Runs in DEMO mode with sample data until Supabase is configured in
+  assets/js/config.js, then becomes a live, auth-protected dashboard.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 48 48%27%3E%3Crect width=%2748%27 height=%2748%27 rx=%2712%27 fill=%27%230e2242%27/%3E%3Cpath d=%27M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z%27 fill=%27%23fff%27/%3E%3Cpath d=%27M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z%27 fill=%27%233b82f6%27/%3E%3C/svg%3E">
+<title>Command Center · Jacks of All Trades</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#050b1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;650;750;800;850&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/main.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+
+<!-- ===== LOGIN ===== -->
+<div id="login" class="login-screen">
+  <div class="login-card">
+    <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0e2242"/><path d="M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z" fill="#fff"/><path d="M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z" fill="#3b82f6"/></svg>
+    <h2>Command Center</h2>
+    <p class="sub">Sign in to manage the Jacks of All Trades business hub.</p>
+    <form id="login-form">
+      <div class="field"><label for="li-email">Email</label><input id="li-email" name="email" type="email" required placeholder="you@joatamp.net"></div>
+      <div class="field"><label for="li-pass">Password</label><input id="li-pass" name="password" type="password" placeholder="••••••••"></div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Sign in</button>
+      <div class="form-status" id="login-status" hidden></div>
+    </form>
+    <div class="login-demo">
+      <strong>Demo mode</strong> is active until Supabase is connected. <button class="btn btn-ghost btn-sm" id="demo-enter" type="button" style="margin-top:.6rem">Explore the dashboard →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app" class="app" hidden>
+  <div class="scrim" id="scrim"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="side-brand">
+      <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#123058"/><path d="M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z" fill="#fff"/><path d="M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z" fill="#3b82f6"/></svg>
+      <div><b style="color:#fff">Jacks of All Trades</b><span>Command Center</span></div>
+    </div>
+
+    <div class="side-group">Overview</div>
+    <button class="side-link active" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</button>
+    <button class="side-link" data-view="raffle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v9H4zM9 8V6a3 3 0 0 1 6 0v2M12 12v2"/></svg>Raffle &amp; Fundraising</button>
+    <button class="side-link" data-view="renovation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>Renovation Progress</button>
+
+    <div class="side-group">Leads &amp; People</div>
+    <button class="side-link" data-view="contact_messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4zM4 6l8 6 8-6"/></svg>Contact Messages<span class="count" data-count-for="contact_messages">0</span></button>
+    <button class="side-link" data-view="enrollment_applications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5zM6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/></svg>Enrollment<span class="count" data-count-for="enrollment_applications">0</span></button>
+    <button class="side-link" data-view="volunteer_signups"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-3-3.87M4 21v-2a4 4 0 0 1 3-3.87M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Volunteers<span class="count" data-count-for="volunteer_signups">0</span></button>
+    <button class="side-link" data-view="partnership_inquiries"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zM4 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>Partnerships<span class="count" data-count-for="partnership_inquiries">0</span></button>
+    <button class="side-link" data-view="newsletter_signups"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3zM3 7l9 6 9-6"/></svg>Newsletter<span class="count" data-count-for="newsletter_signups">0</span></button>
+
+    <div class="side-group">System</div>
+    <button class="side-link" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H1a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 2.6 7a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H7a1.6 1.6 0 0 0 1-1.5V1a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V7a1.6 1.6 0 0 0 1.5 1H23a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>Setup &amp; Connection</button>
+
+    <div class="side-foot">
+      <a class="side-link" href="../home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>View live site</a>
+      <button class="side-link" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 17l5-5-5-5M21 12H9M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="burger" id="burger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <h1 id="view-title">Dashboard</h1>
+      <div class="topbar-right">
+        <span class="env-badge demo" id="env-badge">Demo mode</span>
+        <div class="user-chip"><span class="avatar" id="avatar">JA</span><span id="user-email">demo@joatamp.net</span></div>
+      </div>
+    </div>
+    <div class="view" id="view"><!-- rendered by admin.js --></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../assets/js/config.js"></script>
+<script type="module" src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/admin.js"></script>
+</body>
+</html>
