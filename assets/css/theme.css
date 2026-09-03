@@ -1,0 +1,89 @@
+/* ============================================================================
+   Jacks of All Trades Community Development — Design System (Tokens)
+   File: assets/css/theme.css
+   Generated: 2026-09-03 16:32 UTC  |  joatamp.net redesign
+   Palette: Blue · White · Silver · Black
+   ========================================================================== */
+
+:root {
+  /* ---- Brand blues -------------------------------------------------------- */
+  --navy-950: #050b1a;
+  --navy-900: #0a1730;
+  --navy-800: #0e2242;
+  --navy-700: #123058;
+  --navy-600: #17457f;
+  --blue-600: #1d4ed8;
+  --blue-500: #2563eb;
+  --blue-400: #3b82f6;
+  --blue-300: #60a5fa;
+  --blue-100: #dbe7fb;
+  --blue-050: #eef4fe;
+
+  /* ---- Silver / slate neutrals ------------------------------------------- */
+  --black:    #05070d;
+  --ink-900:  #0c1220;
+  --ink-700:  #27303f;
+  --ink-500:  #55617a;
+  --slate-400:#8793a8;
+  --silver-300:#b9c2d0;
+  --silver-200:#d5dbe5;
+  --silver-100:#e7ebf2;
+  --silver-050:#f3f6fb;
+  --white:    #ffffff;
+
+  /* ---- Semantic ----------------------------------------------------------- */
+  --bg:            var(--white);
+  --bg-alt:        var(--silver-050);
+  --bg-inverse:    var(--navy-900);
+  --surface:       var(--white);
+  --text:          var(--ink-900);
+  --text-soft:     var(--ink-500);
+  --text-invert:   #eaf0fb;
+  --text-invert-soft: #a9b8d6;
+  --border:        var(--silver-200);
+  --border-strong: var(--silver-300);
+  --accent:        var(--blue-600);
+  --accent-hover:  var(--blue-500);
+  --focus:         var(--blue-400);
+  --success:       #128a5a;
+  --warning:       #b7791f;
+  --danger:        #c02b2b;
+
+  /* ---- Typography --------------------------------------------------------- */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "Inter", var(--font-sans);
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.14em;
+
+  /* ---- Radius & shadow ---------------------------------------------------- */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 26px;
+  --r-pill: 999px;
+  --shadow-xs: 0 1px 2px rgba(9, 18, 38, .06);
+  --shadow-sm: 0 2px 6px rgba(9, 18, 38, .07), 0 1px 2px rgba(9, 18, 38, .05);
+  --shadow-md: 0 12px 30px -12px rgba(9, 23, 48, .22);
+  --shadow-lg: 0 30px 60px -22px rgba(9, 23, 48, .35);
+  --shadow-blue: 0 18px 40px -16px rgba(29, 78, 216, .45);
+
+  /* ---- Layout ------------------------------------------------------------- */
+  --container: 1200px;
+  --container-wide: 1360px;
+  --gutter: clamp(20px, 5vw, 48px);
+  --nav-h: 74px;
+  --ease: cubic-bezier(.22, .61, .36, 1);
+}
+
+/* Fluid type scale */
+:root {
+  --fs-eyebrow: .78rem;
+  --fs-body: 1.02rem;
+  --fs-lead: clamp(1.1rem, 1.4vw, 1.28rem);
+  --fs-h6: 1.05rem;
+  --fs-h5: 1.28rem;
+  --fs-h4: clamp(1.35rem, 2.2vw, 1.7rem);
+  --fs-h3: clamp(1.7rem, 3vw, 2.3rem);
+  --fs-h2: clamp(2rem, 4.4vw, 3.1rem);
+  --fs-h1: clamp(2.6rem, 6vw, 4.4rem);
+}

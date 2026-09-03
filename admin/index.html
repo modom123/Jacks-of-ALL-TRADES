@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!--
+  Jacks of All Trades Community Development
+  File: admin/index.html  (Command Center / Business Hub)
+  Generated: 2026-09-03 16:32 UTC · Expanded 2026-09-03 17:10 UTC
+  Runs in DEMO mode with sample data until Supabase is configured in
+  assets/js/config.js, then becomes a live, auth-protected operations hub.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 48 48%27%3E%3Crect width=%2748%27 height=%2748%27 rx=%2712%27 fill=%27%230e2242%27/%3E%3Cpath d=%27M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z%27 fill=%27%23fff%27/%3E%3Cpath d=%27M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z%27 fill=%27%233b82f6%27/%3E%3C/svg%3E">
+<title>Command Center · Jacks of All Trades</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#050b1a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;650;750;800;850&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/main.css">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="admin">
+
+<!-- ===== LOGIN ===== -->
+<div id="login" class="login-screen">
+  <div class="login-card">
+    <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0e2242"/><path d="M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z" fill="#fff"/><path d="M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z" fill="#3b82f6"/></svg>
+    <h2>Command Center</h2>
+    <p class="sub">Sign in to manage the Jacks of All Trades business hub.</p>
+    <form id="login-form">
+      <div class="field"><label for="li-email">Email</label><input id="li-email" name="email" type="email" required placeholder="you@joatamp.net"></div>
+      <div class="field"><label for="li-pass">Password</label><input id="li-pass" name="password" type="password" placeholder="••••••••"></div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Sign in</button>
+      <div class="form-status" id="login-status" hidden></div>
+    </form>
+    <div class="login-demo">
+      <strong>Demo mode</strong> is active until Supabase is connected. <button class="btn btn-ghost btn-sm" id="demo-enter" type="button" style="margin-top:.6rem">Explore the hub →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app" class="app" hidden>
+  <div class="scrim" id="scrim"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="side-brand">
+      <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#123058"/><path d="M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z" fill="#fff"/><path d="M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z" fill="#3b82f6"/></svg>
+      <div><b style="color:#fff">Jacks of All Trades</b><span>Command Center</span></div>
+    </div>
+    <nav id="side-nav"><!-- built by admin.js (role-aware) --></nav>
+    <div class="side-foot">
+      <a class="side-link" href="../home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>View live site</a>
+      <button class="side-link" id="signout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 17l5-5-5-5M21 12H9M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>Sign out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="burger" id="burger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <h1 id="view-title">Dashboard</h1>
+      <div class="topbar-right">
+        <label class="role-switch" id="role-switch" title="Preview access level">
+          <span>Role</span>
+          <select id="role-select"><option value="admin">Admin</option><option value="board">Board</option><option value="staff">Staff</option></select>
+        </label>
+        <span class="env-badge demo" id="env-badge">Demo mode</span>
+        <div class="user-chip"><span class="avatar" id="avatar">JA</span><span id="user-email">demo@joatamp.net</span></div>
+      </div>
+    </div>
+    <div class="view" id="view"><!-- rendered by admin.js --></div>
+  </div>
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-backdrop" id="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3 id="modal-title">Add</h3><button class="modal-x" id="modal-close" aria-label="Close">&times;</button></div>
+    <form id="modal-form"><div id="modal-fields"></div>
+      <div class="modal-actions"><button type="button" class="btn btn-ghost" id="modal-cancel">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../assets/js/config.js"></script>
+<script type="module" src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/agents.js"></script>
+<script src="../assets/js/admin.js"></script>
+<!-- Command Center plugins (each self-registers; remove a line to disable) -->
+<script src="../assets/js/finance.plugin.js"></script>
+</body>
+</html>
