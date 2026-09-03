@@ -42,14 +42,17 @@ Blue · White · Silver · Black — defined as design tokens in
 ├── shop.html               Shop to support
 ├── contact.html            Contact + transparency
 ├── admin/
-│   └── index.html          Command Center (Business Hub)
+│   └── index.html          Command Center (operations hub)
 ├── assets/
 │   ├── css/  theme.css · main.css · admin.css
-│   ├── js/   config.js · supabase-client.js · main.js · forms.js · admin.js
+│   ├── js/   config.js · supabase-client.js · main.js · forms.js
+│   │         admin.js · agents.js
 │   └── img/  photography, renders, QR, brochure
 ├── supabase/
-│   ├── schema.sql                     Run this in Supabase (canonical copy)
-│   └── schema_2026-09-03_1632.sql     Timestamped snapshot
+│   ├── schema.sql                          Public-site tables (run first)
+│   ├── schema_2026-09-03_1632.sql          Timestamped snapshot
+│   ├── schema_hub_2026-09-03_1710.sql      Hub tables (run second)
+│   └── functions/ai-agent/index.ts         AI-agent Edge Function (Claude)
 ├── CNAME                   joatamp.net
 └── .nojekyll               Serve asset folders verbatim on GitHub Pages
 ```
@@ -94,20 +97,71 @@ is ever lost.
 
 ---
 
-## Command Center (`/admin`)
+## Command Center (`/admin`) — the operations hub
 
-- **Dashboard** — KPIs (raffle pot, funds raised, total leads, new this week),
-  fundraising progress, and a recent-activity feed.
-- **Raffle & Fundraising** — edit the live pot, amount raised, tickets sold, and
-  goal shown across the public site.
-- **Renovation Progress** — set each milestone phase to upcoming / active / done.
-- **Leads** — searchable, exportable (CSV) tables for every submission type with
-  per-record status.
-- **Setup & Connection** — connection status and step-by-step Supabase guide.
+A full nonprofit operations hub, separate from the public site. Runs in **demo
+mode** with realistic sample data until Supabase is connected — click *Explore
+the hub* to try everything.
 
-Runs in **demo mode** with realistic sample data until Supabase is connected,
-so the whole interface is explorable out of the box (click *Explore the
-dashboard*).
+**Modules**
+- **Dashboard** — fundraising totals, active projects, donor count, inbound
+  leads, campaign progress, an "Ask an AI agent" panel, and recent activity.
+- **Campaigns** — create and track fundraising campaigns (goal vs. raised).
+- **Donors (CRM)** — donor records, giving history, stages, tags, owners, and a
+  one-click "Draft" that hands the donor to an AI agent for outreach.
+- **Outreach** — the donor-outreach pipeline (planned → sent → replied →
+  converted), AI-drafted where useful.
+- **50/50 Raffle** — edit the live pot, raised, tickets, and goal shown on the
+  public site. (The raffle is one community-project fundraiser, not the org.)
+- **Projects** — create and track projects (renovation, programs, events) with
+  budget/spent, progress, lead, and target dates.
+- **Renovation Tracker** — milestone phases for the community renovation project.
+- **Inbound Leads** — searchable, exportable (CSV) tables for every public-form
+  submission, with per-record status.
+- **Board & Team** — members with roles (admin / board / staff / volunteer).
+- **AI Agents** — three assistants (see below).
+- **Setup & Connection** — connection status and step-by-step setup.
+
+**Role-based access.** Access is scoped by role — `admin` sees everything,
+`board` sees fundraising/projects/team/agents (not raw inbound leads or
+settings), `staff` sees operations (not team management or settings). In demo
+mode a **Role** switcher in the top bar previews each level; in live mode the
+role is read from the signed-in user's `team_members` row.
+
+## AI Agents
+
+Three agents help run the organization, each with a defined role:
+
+| Agent | Role | Helps with |
+|---|---|---|
+| **Ada** | Development Officer | Donor & grant outreach, prospect research, ask amounts, appeals |
+| **Max** | Project Manager | Task plans, budgets, timelines, board-ready status updates |
+| **Nova** | Communications Director | Newsletters, social posts, press releases, recruitment content |
+
+Agents run through a **Supabase Edge Function** (`supabase/functions/ai-agent`)
+so your Anthropic API key stays **server-side, never in the browser**. Each
+request is grounded with a live summary of your campaigns, projects, and donors.
+
+**Deploy the AI backend**
+```bash
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...   # your Anthropic key
+# optional — defaults to claude-opus-5:
+supabase secrets set ANTHROPIC_MODEL=claude-opus-5
+supabase functions deploy ai-agent
+```
+Until it's deployed, the agents produce useful **simulated drafts** so you can
+trial the workflow end-to-end.
+
+## Database setup for the hub
+
+Run **both** SQL files in the Supabase SQL Editor (in order):
+1. `supabase/schema.sql` — public-site tables (leads, raffle, renovation).
+2. `supabase/schema_hub_2026-09-03_1710.sql` — hub tables (campaigns, donors,
+   donations, outreach, projects, tasks, team, agent log) with RLS.
+
+Internal hub tables are readable/writable by **authenticated users only**; the
+optional block at the bottom of the hub schema shows how to tighten access to
+specific roles at the database level.
 
 ---
 
