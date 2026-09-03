@@ -276,21 +276,44 @@
   const view = $("#view");
   function go(name) { location.hash = name; }
   window.addEventListener("hashchange", () => route());
+
+  /* ---- Plugin system ---------------------------------------------------- */
+  // Plugins register via JOAT.registerPlugin({...}) and are merged once, at
+  // sign-in, so they can extend nav, tables, demo data, roles, and views.
+  A.plugins = A.plugins || [];
+  A.registerPlugin = (p) => { if (p && p.id && !A.plugins.some((x) => x.id === p.id)) A.plugins.push(p); };
+  const pluginViews = {};
+  let pluginsReady = false;
+  function initPlugins() {
+    if (pluginsReady) return; pluginsReady = true;
+    (A.plugins || []).forEach((p) => {
+      try {
+        if (p.tables) Object.assign(T, p.tables);
+        if (p.demo) Object.assign(DEMO_DATA, p.demo);
+        if (p.views) Object.assign(pluginViews, p.views);
+        if (p.titles) Object.assign(VIEW_TITLES, p.titles);
+        if (p.roles) for (const r in p.roles) { if (Array.isArray(ROLE_VIEWS[r])) ROLE_VIEWS[r].push(...p.roles[r]); }
+        if (p.nav) { const i = NAV.findIndex((s) => s.group === "System"); NAV.splice(i < 0 ? NAV.length : i, 0, ...p.nav); }
+      } catch (e) { console.error("[plugin]", p && p.id, e); }
+    });
+  }
+
   function route() {
-    let name = location.hash.slice(1) || "dashboard";
+    let name = (location.hash.slice(1).split("#")[0]) || "dashboard";
     if (!allowed(name)) name = "dashboard";
     $$(".side-link[data-view]").forEach((b) => b.classList.toggle("active", b.dataset.view === name));
-    const titles = { dashboard: "Dashboard", raffle: "50/50 Raffle", renovation: "Renovation Tracker", agents: "AI Agents", settings: "Setup & Connection", team: "Board & Team" };
-    $("#view-title").textContent = titles[name] || (T[name] && T[name].label) || "Dashboard";
+    $("#view-title").textContent = VIEW_TITLES[name] || (T[name] && T[name].label) || "Dashboard";
     if (name === "dashboard") return renderDashboard();
     if (name === "raffle") return renderRaffle();
     if (name === "renovation") return renderRenovation();
     if (name === "agents") return renderAgents();
     if (name === "settings") return renderSettings();
     if (name === "team") return renderTable("team_members");
+    if (pluginViews[name]) return pluginViews[name](A.hub);
     if (T[name]) return T[name].kind === "cards" ? renderCards(name) : renderTable(name);
     renderDashboard();
   }
+  const VIEW_TITLES = { dashboard: "Dashboard", raffle: "50/50 Raffle", renovation: "Renovation Tracker", agents: "AI Agents", settings: "Setup & Connection", team: "Board & Team" };
 
   /* =====================================================================
      DASHBOARD
@@ -324,12 +347,15 @@
             ${(A.agents ? A.agents.list : []).map((ag) => `<button class="agent-mini" data-agent="${ag.key}"><span class="agent-dot" style="background:${ag.accent}"></span><b>${ag.name}</b><span>${ag.title}</span></button>`).join("")}
           </div></div>
       </div>
+      <div id="plugin-dash-slot"></div>
       <div class="panel"><div class="panel-head"><h3>Recent activity</h3></div>
         <div class="table-wrap"><table class="data"><thead><tr><th>Type</th><th>Name</th><th>Detail</th><th>When</th></tr></thead><tbody>
         ${recent.slice(0, 8).map((r) => `<tr><td><span class="tag new">${esc(r.t)}</span></td><td>${esc(r.name)}</td><td class="muted">${esc((r.detail || "").slice(0, 60) || "—")}</td><td class="muted">${fmtDate(r.when)}</td></tr>`).join("") || emptyRow(4)}
         </tbody></table></div></div>`;
     $$("[data-goto]").forEach((b) => b.onclick = () => go(b.dataset.goto));
     $$(".agent-mini").forEach((b) => b.onclick = () => go("agents#" + b.dataset.agent));
+    const slot = view.querySelector("#plugin-dash-slot");
+    if (slot) for (const p of (A.plugins || [])) { if (p.dashboardMount) { try { await p.dashboardMount(slot, A.hub); } catch (e) { console.error(e); } } }
   }
   const campaignBar = (c) => { const pct = c.goal ? Math.min(100, Math.round((c.raised / c.goal) * 100)) : 0;
     return `<div class="cbar"><div class="cbar-top"><span><b>${esc(c.name)}</b> <span class="tag">${esc(c.type)}</span></span><span class="text-soft">${money(c.raised)} / ${money(c.goal)}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`; };
@@ -555,7 +581,7 @@
         <ol class="text-soft" style="line-height:1.9;padding-left:1.2rem">
           <li>Create a project at <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a>.</li>
           <li>Paste your Project URL + anon key into <code>assets/js/config.js</code>.</li>
-          <li>Run <code>supabase/schema.sql</code> then <code>supabase/schema_hub_2026-09-03_1710.sql</code> in the SQL Editor.</li>
+          <li>Run <code>supabase/schema.sql</code>, then <code>schema_hub_2026-09-03_1710.sql</code>, then <code>schema_finance_2026-09-03_1740.sql</code> in the SQL Editor.</li>
           <li>Create an admin user in <strong>Authentication → Users</strong>, then reload and sign in.</li>
         </ol>
         <div class="field" style="max-width:520px"><label>Project URL</label><input value="${esc(cfg.url || "")}" readonly></div></div></div>
@@ -576,10 +602,9 @@
   const emptyRow = (n) => `<tr><td colspan="${n}" class="empty">${ICO("inbox")}<div>No records yet.</div></td></tr>`;
   const emptyPanel = (def) => `<div class="empty" style="grid-column:1/-1;background:#fff;border:1px solid var(--border);border-radius:var(--r-lg)">${ICO("inbox")}<div>No ${def.label.toLowerCase()} yet. Click “New ${def.singular}”.</div></div>`;
   function statusClass(s) { s = String(s || "").toLowerCase();
-    if (["done", "active", "converted", "accepted", "subscribed", "complete", "replied", "confirmed"].includes(s)) return "done";
-    if (["new", "planned", "prospect", "planning", "todo"].includes(s)) return "new";
-    if (["active"].includes(s)) return "active";
-    if (["on_hold", "paused", "lapsed", "no_response", "waitlist", "review", "cultivating", "invited", "doing"].includes(s)) return "active";
+    if (["done", "active", "converted", "accepted", "subscribed", "complete", "replied", "confirmed", "paid", "cleared", "income", "yes"].includes(s)) return "done";
+    if (["new", "planned", "prospect", "planning", "todo", "open", "pending"].includes(s)) return "new";
+    if (["on_hold", "paused", "lapsed", "no_response", "waitlist", "review", "cultivating", "invited", "doing", "overdue", "restricted"].includes(s)) return "active";
     return ""; }
   function exportCSV(name, rows) {
     if (!rows.length) return toast("Nothing to export");
@@ -611,6 +636,18 @@
   }
 
   /* =====================================================================
+     HUB API  (surface exposed to plugins)
+     ==================================================================== */
+  A.hub = {
+    el: () => view,
+    esc, money, fmtDate, toast, ICO, statusClass, uid, castId,
+    fetchTable, insertRow, updateField, exportCSV, openModal,
+    tableRows, bindRowActions, kpi, emptyRow,
+    isDemo: () => DEMO, db: () => db, go, route,
+    T, cache,
+  };
+
+  /* =====================================================================
      AUTH / BOOT / SIDEBAR
      ==================================================================== */
   const sidebar = $("#sidebar"), scrim = $("#scrim");
@@ -625,7 +662,7 @@
     $("#env-badge").className = "env-badge " + (DEMO ? "demo" : "live"); $("#env-badge").textContent = DEMO ? "Demo mode" : "Live";
     $("#role-switch").style.display = DEMO ? "" : "none"; // live role comes from team_members
     if (!DEMO) { role = await resolveRole(email); }
-    buildNav(); await refreshCounts(); route();
+    initPlugins(); buildNav(); await refreshCounts(); route();
   }
   async function resolveRole(email) {
     try { const { data } = await db.from("team_members").select("role").eq("email", email).maybeSingle(); return (data && data.role) || "admin"; }

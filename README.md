@@ -46,13 +46,15 @@ Blue · White · Silver · Black — defined as design tokens in
 ├── assets/
 │   ├── css/  theme.css · main.css · admin.css
 │   ├── js/   config.js · supabase-client.js · main.js · forms.js
-│   │         admin.js · agents.js
+│   │         admin.js · agents.js · finance.plugin.js
 │   └── img/  photography, renders, QR, brochure
 ├── supabase/
 │   ├── schema.sql                          Public-site tables (run first)
-│   ├── schema_2026-09-03_1632.sql          Timestamped snapshot
 │   ├── schema_hub_2026-09-03_1710.sql      Hub tables (run second)
-│   └── functions/ai-agent/index.ts         AI-agent Edge Function (Claude)
+│   ├── schema_finance_2026-09-03_1740.sql  Finance tables (run third)
+│   └── functions/
+│       ├── ai-agent/index.ts               AI-agent Edge Function (Claude)
+│       └── ops-cron/index.ts               24/7 scheduled operations
 ├── CNAME                   joatamp.net
 └── .nojekyll               Serve asset folders verbatim on GitHub Pages
 ```
@@ -152,16 +154,58 @@ supabase functions deploy ai-agent
 Until it's deployed, the agents produce useful **simulated drafts** so you can
 trial the workflow end-to-end.
 
+## Finances plugin (nonprofit accounting)
+
+The Command Center has a **plugin system**. The Finances module ships as a
+self-contained plugin — `assets/js/finance.plugin.js` — that self-registers and
+adds a **Finances** section, customized for a nonprofit:
+
+- **Ledger** — general ledger of income & expenses, tagged by **fund**
+  (Unrestricted / Restricted / Board-Designated) and **program**, with a live
+  income / expense / net summary.
+- **Bills & Vendors** — accounts payable (open / paid / overdue).
+- **Contractors (1099)** — contractor pay tracking with W-9 and 1099 flags.
+- **Budgets** — annual budget vs. actual, with actuals computed live from the
+  ledger.
+- **Financial Reports** — a nonprofit **Statement of Activities** plus fund and
+  program breakdowns, printable to PDF.
+
+It also adds a **Financial snapshot** to the dashboard. Access follows the same
+roles (admin sees all; board sees ledger/budgets/reports; staff sees
+ledger/bills/contractors/budgets).
+
+**Writing your own plugin:** call `JOAT.registerPlugin({ id, nav, tables, demo,
+roles, views, titles, dashboardMount })`. Load it with a `<script>` after
+`admin.js` in `admin/index.html`. Remove the script tag to disable a plugin.
+
+## Always-on (24/7) operation
+
+The hub is static + Supabase, so it stays online continuously on any static host
+(Vercel / Netlify / Cloudflare Pages / GitHub Pages) with Supabase as the
+always-on backend — nothing to keep running on a server.
+
+For work that must happen **even when no one is logged in**, deploy the
+scheduled ops function:
+
+```bash
+supabase functions deploy ops-cron --no-verify-jwt
+```
+Then schedule it in the SQL editor (needs `pg_cron` + `pg_net`) — the header
+comment in `supabase/functions/ops-cron/index.ts` has the exact `cron.schedule`
+snippet. Each run flags overdue bills and posts due recurring ledger entries.
+
 ## Database setup for the hub
 
-Run **both** SQL files in the Supabase SQL Editor (in order):
+Run these SQL files in the Supabase SQL Editor **in order**:
 1. `supabase/schema.sql` — public-site tables (leads, raffle, renovation).
 2. `supabase/schema_hub_2026-09-03_1710.sql` — hub tables (campaigns, donors,
-   donations, outreach, projects, tasks, team, agent log) with RLS.
+   donations, outreach, projects, tasks, team, agent log).
+3. `supabase/schema_finance_2026-09-03_1740.sql` — finance tables (ledger,
+   bills, contractors, budgets, recurring entries).
 
-Internal hub tables are readable/writable by **authenticated users only**; the
-optional block at the bottom of the hub schema shows how to tighten access to
-specific roles at the database level.
+Internal hub/finance tables are readable/writable by **authenticated users
+only**; the optional block at the bottom of the hub schema shows how to tighten
+access to specific roles at the database level.
 
 ---
 
