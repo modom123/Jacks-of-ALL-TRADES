@@ -161,12 +161,18 @@ self-contained plugin — `assets/js/finance.plugin.js` — that self-registers 
 adds a **Finances** section, customized for a nonprofit:
 
 - **Ledger** — general ledger of income & expenses, tagged by **fund**
-  (Unrestricted / Restricted / Board-Designated) and **program**, with a live
-  income / expense / net summary.
-- **Bills & Vendors** — accounts payable (open / paid / overdue).
-- **Contractors (1099)** — contractor pay tracking with W-9 and 1099 flags.
-- **Budgets** — annual budget vs. actual, with actuals computed live from the
-  ledger.
+  (Unrestricted / Restricted / Board-Designated), **program**, and **project**,
+  with a live income / expense / net summary.
+- **Project Budgets** — per-project budget & expense tracking. Each project
+  shows budget-vs-actual by category (actuals computed live from ledger
+  expenses tagged to it), its expenses & outstanding bills, and the contractors
+  & mentors assigned. Click a project card (in Projects or here) to drill in.
+- **Bills & Vendors** — accounts payable (open / paid / overdue), linkable to a
+  project.
+- **Contractors & Mentors** — tracks the people doing the work *and* the
+  mentoring: role (Trades Contractor / Mentor / Both), assigned project, number
+  of students mentored, hours, rate, YTD pay, W-9, and 1099 flags.
+- **Org Budget** — organization-wide annual budget vs. actual by category.
 - **Financial Reports** — a nonprofit **Statement of Activities** plus fund and
   program breakdowns, printable to PDF.
 
@@ -202,6 +208,8 @@ Run these SQL files in the Supabase SQL Editor **in order**:
    donations, outreach, projects, tasks, team, agent log).
 3. `supabase/schema_finance_2026-09-03_1740.sql` — finance tables (ledger,
    bills, contractors, budgets, recurring entries).
+4. `supabase/schema_finance_projects_2026-09-03_1755.sql` — project expense
+   linkage, `project_budget_lines`, and contractor/mentor fields.
 
 Internal hub/finance tables are readable/writable by **authenticated users
 only**; the optional block at the bottom of the hub schema shows how to tighten

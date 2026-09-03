@@ -22,6 +22,9 @@
   const FUNDS = ["Unrestricted", "Restricted", "Board-Designated"];
   const PROGRAMS = ["Trades Training", "Community Home Renovation", "Apprenticeship", "General Operating", "Fundraising"];
   const METHODS = ["bank", "card", "cash", "zeffy", "check", "in_kind"];
+  const ROLES = ["Trades Contractor", "Mentor", "Both"];
+  // Live list of project names for the project-linking dropdowns.
+  const projectOpts = () => (A.hub && A.hub.cache && A.hub.cache.projects ? A.hub.cache.projects.map((p) => p.name) : []);
 
   /* ---- SVG icons -------------------------------------------------------- */
   const I = {
@@ -38,7 +41,7 @@
       label: "Ledger", singular: "Entry", kind: "table",
       cols: [
         { k: "date", label: "Date" }, { k: "type", label: "Type", badge: true }, { k: "category", label: "Category" },
-        { k: "fund", label: "Fund", badge: true }, { k: "program", label: "Program" },
+        { k: "fund", label: "Fund", badge: true }, { k: "project", label: "Project" },
         { k: "payee", label: "Payee / Source" }, { k: "amount", label: "Amount", money: true },
       ],
       status: { field: "status", opts: ["cleared", "pending"] },
@@ -47,7 +50,8 @@
         { k: "type", label: "Type", type: "select", opts: ["income", "expense"] },
         { k: "category", label: "Category", type: "select", opts: ALL_CATS },
         { k: "fund", label: "Fund", type: "select", opts: FUNDS },
-        { k: "program", label: "Program", type: "select", opts: PROGRAMS },
+        { k: "program", label: "Program area", type: "select", opts: PROGRAMS },
+        { k: "project", label: "Project", type: "select", optsFrom: projectOpts },
         { k: "payee", label: "Payee / Source" },
         { k: "method", label: "Method", type: "select", opts: METHODS },
         { k: "amount", label: "Amount ($)", type: "number", req: true },
@@ -59,29 +63,39 @@
       label: "Bills & Vendors", singular: "Bill", kind: "table",
       cols: [
         { k: "vendor", label: "Vendor" }, { k: "description", label: "Description" }, { k: "category", label: "Category" },
-        { k: "program", label: "Program" }, { k: "amount", label: "Amount", money: true }, { k: "due_date", label: "Due" },
+        { k: "project", label: "Project" }, { k: "amount", label: "Amount", money: true }, { k: "due_date", label: "Due" },
       ],
       status: { field: "status", opts: ["open", "paid", "overdue"] },
       form: [
         { k: "vendor", label: "Vendor", req: true }, { k: "description", label: "Description" },
         { k: "category", label: "Category", type: "select", opts: EXPENSE_CATS },
-        { k: "program", label: "Program", type: "select", opts: PROGRAMS },
+        { k: "program", label: "Program area", type: "select", opts: PROGRAMS },
+        { k: "project", label: "Project", type: "select", optsFrom: projectOpts },
         { k: "amount", label: "Amount ($)", type: "number", req: true },
         { k: "due_date", label: "Due date", type: "date" },
         { k: "status", label: "Status", type: "select", opts: ["open", "paid", "overdue"] },
       ],
     },
     contractors: {
-      label: "Contractors (1099)", singular: "Contractor", kind: "table",
+      label: "Contractors & Mentors", singular: "Person", kind: "table",
       cols: [
-        { k: "full_name", label: "Name" }, { k: "work", label: "Work" }, { k: "ytd_paid", label: "YTD paid", money: true },
-        { k: "w9", label: "W-9", badge: true }, { k: "needs_1099", label: "1099?", badge: true },
+        { k: "full_name", label: "Name" }, { k: "role", label: "Role", badge: true }, { k: "work", label: "Trade / work" },
+        { k: "project", label: "Project" }, { k: "mentees", label: "Mentees" }, { k: "ytd_paid", label: "YTD paid", money: true },
+        { k: "needs_1099", label: "1099?", badge: true },
       ],
+      status: { field: "status", opts: ["active", "inactive"] },
       form: [
-        { k: "full_name", label: "Name", req: true }, { k: "email", label: "Email", type: "email" },
-        { k: "work", label: "Type of work" }, { k: "ytd_paid", label: "YTD paid ($)", type: "number" },
+        { k: "full_name", label: "Name", req: true }, { k: "email", label: "Email", type: "email" }, { k: "phone", label: "Phone" },
+        { k: "role", label: "Role", type: "select", opts: ROLES },
+        { k: "work", label: "Trade / type of work" },
+        { k: "project", label: "Assigned project", type: "select", optsFrom: projectOpts },
+        { k: "mentees", label: "# Students mentored", type: "number" },
+        { k: "hours", label: "Hours (period)", type: "number" },
+        { k: "rate", label: "Rate ($/hr)", type: "number" },
+        { k: "ytd_paid", label: "YTD paid ($)", type: "number" },
         { k: "w9", label: "W-9 on file", type: "select", opts: ["yes", "no"] },
         { k: "needs_1099", label: "Needs 1099", type: "select", opts: ["yes", "no"] },
+        { k: "status", label: "Status", type: "select", opts: ["active", "inactive"] },
       ],
     },
     budget_lines: {
@@ -93,35 +107,56 @@
         { k: "budgeted", label: "Budgeted ($)", type: "number", req: true },
       ],
     },
+    project_budget_lines: {
+      label: "Project budget lines", singular: "Budget line", kind: "table",
+      cols: [{ k: "project", label: "Project" }, { k: "category", label: "Category" }, { k: "budgeted", label: "Budgeted", money: true }],
+      form: [
+        { k: "project", label: "Project", type: "select", optsFrom: projectOpts, req: true },
+        { k: "category", label: "Category", type: "select", opts: EXPENSE_CATS },
+        { k: "budgeted", label: "Budgeted ($)", type: "number", req: true },
+        { k: "note", label: "Note" },
+      ],
+    },
   };
 
   /* ---- Demo data -------------------------------------------------------- */
   const iso = (d) => { const x = new Date(); x.setDate(x.getDate() + d); return x.toISOString().slice(0, 10); };
+  const RENO = "Community Home Renovation — 4BR", COHORT = "Youth Trades Cohort — Fall", APPR = "Adult Apprenticeship Program";
   const demo = {
     ledger_entries: [
-      { id: "le1", date: iso(-40), type: "income", category: "Grants", fund: "Restricted", program: "Trades Training", payee: "The Riverside Foundation", method: "check", amount: 15000, status: "cleared", created_at: iso(-40) },
-      { id: "le2", date: iso(-30), type: "income", category: "Corporate Sponsorship", fund: "Unrestricted", program: "General Operating", payee: "Midtown Supply Co.", method: "check", amount: 5000, status: "cleared", created_at: iso(-30) },
-      { id: "le3", date: iso(-21), type: "income", category: "Raffle & Events", fund: "Restricted", program: "Community Home Renovation", payee: "50/50 Raffle (Zeffy)", method: "zeffy", amount: 4200, status: "cleared", created_at: iso(-21) },
-      { id: "le4", date: iso(-14), type: "income", category: "Individual Donations", fund: "Unrestricted", program: "General Operating", payee: "Marcus & Dana Reed", method: "zeffy", amount: 500, status: "cleared", created_at: iso(-14) },
-      { id: "le5", date: iso(-10), type: "income", category: "In-Kind Contributions", fund: "Restricted", program: "Community Home Renovation", payee: "Donated lumber", method: "in_kind", amount: 3000, status: "cleared", created_at: iso(-10) },
-      { id: "le6", date: iso(-35), type: "expense", category: "Salaries & Wages", fund: "Unrestricted", program: "General Operating", payee: "Staff payroll", method: "bank", amount: 8000, status: "cleared", created_at: iso(-35) },
-      { id: "le7", date: iso(-28), type: "expense", category: "Materials & Supplies", fund: "Restricted", program: "Community Home Renovation", payee: "Midtown Supply Co.", method: "card", amount: 6400, status: "cleared", created_at: iso(-28) },
-      { id: "le8", date: iso(-24), type: "expense", category: "Contractor / Trades Labor", fund: "Restricted", program: "Community Home Renovation", payee: "Licensed trades", method: "bank", amount: 3500, status: "cleared", created_at: iso(-24) },
-      { id: "le9", date: iso(-18), type: "expense", category: "Tools & Equipment", fund: "Restricted", program: "Trades Training", payee: "ToolPro", method: "card", amount: 2100, status: "cleared", created_at: iso(-18) },
-      { id: "le10", date: iso(-12), type: "expense", category: "Training & Certification", fund: "Restricted", program: "Trades Training", payee: "Cert exams", method: "card", amount: 1200, status: "cleared", created_at: iso(-12) },
-      { id: "le11", date: iso(-8), type: "expense", category: "Rent & Utilities", fund: "Unrestricted", program: "General Operating", payee: "Workshop rent + DTE", method: "bank", amount: 1500, status: "cleared", created_at: iso(-8) },
-      { id: "le12", date: iso(-4), type: "expense", category: "Office & Admin", fund: "Unrestricted", program: "General Operating", payee: "Software & supplies", method: "card", amount: 450, status: "pending", created_at: iso(-4) },
+      { id: "le1", date: iso(-40), type: "income", category: "Grants", fund: "Restricted", program: "Trades Training", project: COHORT, payee: "The Riverside Foundation", method: "check", amount: 15000, status: "cleared", created_at: iso(-40) },
+      { id: "le2", date: iso(-30), type: "income", category: "Corporate Sponsorship", fund: "Unrestricted", program: "General Operating", project: "", payee: "Midtown Supply Co.", method: "check", amount: 5000, status: "cleared", created_at: iso(-30) },
+      { id: "le3", date: iso(-21), type: "income", category: "Raffle & Events", fund: "Restricted", program: "Community Home Renovation", project: RENO, payee: "50/50 Raffle (Zeffy)", method: "zeffy", amount: 4200, status: "cleared", created_at: iso(-21) },
+      { id: "le4", date: iso(-14), type: "income", category: "Individual Donations", fund: "Unrestricted", program: "General Operating", project: "", payee: "Marcus & Dana Reed", method: "zeffy", amount: 500, status: "cleared", created_at: iso(-14) },
+      { id: "le5", date: iso(-10), type: "income", category: "In-Kind Contributions", fund: "Restricted", program: "Community Home Renovation", project: RENO, payee: "Donated lumber", method: "in_kind", amount: 3000, status: "cleared", created_at: iso(-10) },
+      { id: "le6", date: iso(-35), type: "expense", category: "Salaries & Wages", fund: "Unrestricted", program: "General Operating", project: "", payee: "Staff payroll", method: "bank", amount: 8000, status: "cleared", created_at: iso(-35) },
+      { id: "le7", date: iso(-28), type: "expense", category: "Materials & Supplies", fund: "Restricted", program: "Community Home Renovation", project: RENO, payee: "Midtown Supply Co.", method: "card", amount: 6400, status: "cleared", created_at: iso(-28) },
+      { id: "le8", date: iso(-24), type: "expense", category: "Contractor / Trades Labor", fund: "Restricted", program: "Community Home Renovation", project: RENO, payee: "Licensed trades", method: "bank", amount: 3500, status: "cleared", created_at: iso(-24) },
+      { id: "le9", date: iso(-18), type: "expense", category: "Tools & Equipment", fund: "Restricted", program: "Trades Training", project: COHORT, payee: "ToolPro", method: "card", amount: 2100, status: "cleared", created_at: iso(-18) },
+      { id: "le10", date: iso(-12), type: "expense", category: "Training & Certification", fund: "Restricted", program: "Trades Training", project: COHORT, payee: "Cert exams", method: "card", amount: 1200, status: "cleared", created_at: iso(-12) },
+      { id: "le11", date: iso(-8), type: "expense", category: "Rent & Utilities", fund: "Unrestricted", program: "General Operating", project: "", payee: "Workshop rent + DTE", method: "bank", amount: 1500, status: "cleared", created_at: iso(-8) },
+      { id: "le12", date: iso(-4), type: "expense", category: "Office & Admin", fund: "Unrestricted", program: "General Operating", project: "", payee: "Software & supplies", method: "card", amount: 450, status: "pending", created_at: iso(-4) },
     ],
     bills: [
-      { id: "b1", vendor: "Midtown Supply Co.", description: "Lumber & drywall", category: "Materials & Supplies", program: "Community Home Renovation", amount: 2400, due_date: iso(9), status: "open", created_at: iso(-3) },
-      { id: "b2", vendor: "DTE Energy", description: "Workshop utilities", category: "Rent & Utilities", program: "General Operating", amount: 320, due_date: iso(-2), status: "overdue", created_at: iso(-10) },
-      { id: "b3", vendor: "ToolPro Rental", description: "Scaffolding rental", category: "Tools & Equipment", program: "Community Home Renovation", amount: 580, due_date: iso(14), status: "open", created_at: iso(-1) },
-      { id: "b4", vendor: "City of Detroit — Permits", description: "Building permits", category: "Property & Renovation", program: "Community Home Renovation", amount: 750, due_date: iso(-20), status: "paid", created_at: iso(-25) },
+      { id: "b1", vendor: "Midtown Supply Co.", description: "Lumber & drywall", category: "Materials & Supplies", program: "Community Home Renovation", project: RENO, amount: 2400, due_date: iso(9), status: "open", created_at: iso(-3) },
+      { id: "b2", vendor: "DTE Energy", description: "Workshop utilities", category: "Rent & Utilities", program: "General Operating", project: "", amount: 320, due_date: iso(-2), status: "overdue", created_at: iso(-10) },
+      { id: "b3", vendor: "ToolPro Rental", description: "Scaffolding rental", category: "Tools & Equipment", program: "Community Home Renovation", project: RENO, amount: 580, due_date: iso(14), status: "open", created_at: iso(-1) },
+      { id: "b4", vendor: "City of Detroit — Permits", description: "Building permits", category: "Property & Renovation", program: "Community Home Renovation", project: RENO, amount: 750, due_date: iso(-20), status: "paid", created_at: iso(-25) },
     ],
     contractors: [
-      { id: "c1", full_name: "Tom Alvarez", email: "tom@example.com", work: "Master plumber — mentor", ytd_paid: 4200, w9: "yes", needs_1099: "yes", created_at: iso(-60) },
-      { id: "c2", full_name: "Grace Kim", email: "grace@example.com", work: "Electrical instructor", ytd_paid: 3800, w9: "yes", needs_1099: "yes", created_at: iso(-50) },
-      { id: "c3", full_name: "R. Daniels", email: "rd@example.com", work: "Roofing subcontractor", ytd_paid: 520, w9: "no", needs_1099: "no", created_at: iso(-20) },
+      { id: "c1", full_name: "Tom Alvarez", email: "tom@example.com", role: "Both", work: "Master plumber", project: RENO, mentees: 3, hours: 60, rate: 45, ytd_paid: 4200, w9: "yes", needs_1099: "yes", status: "active", created_at: iso(-60) },
+      { id: "c2", full_name: "Grace Kim", email: "grace@example.com", role: "Mentor", work: "Electrical instructor", project: COHORT, mentees: 5, hours: 40, rate: 40, ytd_paid: 3800, w9: "yes", needs_1099: "yes", status: "active", created_at: iso(-50) },
+      { id: "c3", full_name: "R. Daniels", email: "rd@example.com", role: "Trades Contractor", work: "Roofing subcontractor", project: RENO, mentees: 0, hours: 12, rate: 55, ytd_paid: 520, w9: "no", needs_1099: "no", status: "active", created_at: iso(-20) },
+      { id: "c4", full_name: "Luis Ortega", email: "luis@example.com", role: "Both", work: "Master carpenter", project: RENO, mentees: 4, hours: 72, rate: 50, ytd_paid: 5600, w9: "yes", needs_1099: "yes", status: "active", created_at: iso(-45) },
+    ],
+    project_budget_lines: [
+      { id: "pb1", project: RENO, category: "Materials & Supplies", budgeted: 40000, created_at: iso(-40) },
+      { id: "pb2", project: RENO, category: "Contractor / Trades Labor", budgeted: 25000, created_at: iso(-40) },
+      { id: "pb3", project: RENO, category: "Tools & Equipment", budgeted: 8000, created_at: iso(-40) },
+      { id: "pb4", project: RENO, category: "Property & Renovation", budgeted: 20000, created_at: iso(-40) },
+      { id: "pb5", project: COHORT, category: "Training & Certification", budgeted: 10000, created_at: iso(-20) },
+      { id: "pb6", project: COHORT, category: "Tools & Equipment", budgeted: 6000, created_at: iso(-20) },
+      { id: "pb7", project: COHORT, category: "Salaries & Wages", budgeted: 9000, created_at: iso(-20) },
     ],
     budget_lines: [
       { id: "bl1", category: "Salaries & Wages", period: 2026, budgeted: 96000, created_at: iso(-200) },
@@ -143,6 +178,7 @@
      VIEW: Ledger  (summary + transactions table)
      ==================================================================== */
   async function renderLedger(hub) {
+    await hub.fetchTable("projects"); // populate project dropdown options
     const rows = await hub.fetchTable("ledger_entries");
     const income = sum(rows, (r) => r.type === "income");
     const expense = sum(rows, (r) => r.type === "expense");
@@ -253,6 +289,7 @@
      DASHBOARD widget: finance snapshot
      ==================================================================== */
   async function dashboardMount(slot, hub) {
+    await hub.fetchTable("projects"); // populate project dropdown options
     const ledger = await hub.fetchTable("ledger_entries");
     const bills = await hub.fetchTable("bills");
     const income = sum(ledger, (r) => r.type === "income");
@@ -276,23 +313,113 @@
     el.querySelector("[data-fin-goto]").onclick = () => hub.go("finances");
   }
 
+  /* =====================================================================
+     VIEW: Project Budgets  (per-project budget vs. actual + detail)
+     ==================================================================== */
+  async function renderProjectBudgets(hub) {
+    await hub.fetchTable("projects");
+    const id = location.hash.split("#")[2] || null;
+    if (id) return renderProjectDetail(hub, id);
+    const [projects, ledger, pbLines, contractors] = await Promise.all([
+      hub.fetchTable("projects"), hub.fetchTable("ledger_entries"),
+      hub.fetchTable("project_budget_lines"), hub.fetchTable("contractors"),
+    ]);
+    const view = hub.el();
+    const cards = projects.map((p) => {
+      const budgeted = pbLines.filter((l) => l.project === p.name).reduce((s, l) => s + Number(l.budgeted || 0), 0) || Number(p.budget || 0);
+      const actual = sum(ledger, (e) => e.type === "expense" && e.project === p.name);
+      const team = contractors.filter((c) => c.project === p.name).length;
+      const pct = budgeted ? Math.min(100, Math.round((actual / budgeted) * 100)) : 0;
+      const over = actual > budgeted;
+      return `<div class="ncard" data-open="${hub.esc(p.id)}" style="cursor:pointer">
+        <div class="ncard-top"><span class="tag ${hub.statusClass(p.status)}">${hub.esc((p.status || "").replace("_", " "))}</span><span class="tag">${hub.esc(p.type)}</span></div>
+        <h4>${hub.esc(p.name)}</h4>
+        <div class="progress-bar" style="margin:.6rem 0 .5rem"><div class="progress-fill" style="width:${pct}%;background:${over ? "var(--danger)" : ""}"></div></div>
+        <div class="ncard-foot"><span><b>${hub.money(actual)}</b> <span class="text-soft">/ ${hub.money(budgeted)}</span></span><span class="text-soft">${pct}% ${over ? "· over" : "used"}</span></div>
+        <div class="ncard-meta text-soft">${team} contractor${team === 1 ? "" : "s"} / mentor${team === 1 ? "" : "s"} · tap for detail</div></div>`;
+    }).join("");
+    view.innerHTML = `
+      <div class="view-head"><div><h2 style="margin:0">Project Budgets</h2><p>Budget &amp; expense tracking per project — actuals computed live from the ledger.</p></div></div>
+      <div class="card-grid">${cards || hub.emptyRow(1)}</div>`;
+    view.querySelectorAll(".ncard[data-open]").forEach((c) => c.onclick = () => hub.go("project_budgets#" + c.dataset.open));
+  }
+
+  async function renderProjectDetail(hub, id) {
+    const [projects, ledger, bills, pbLines, contractors] = await Promise.all([
+      hub.fetchTable("projects"), hub.fetchTable("ledger_entries"), hub.fetchTable("bills"),
+      hub.fetchTable("project_budget_lines"), hub.fetchTable("contractors"),
+    ]);
+    const p = projects.find((x) => String(x.id) === String(id));
+    const view = hub.el();
+    if (!p) { view.innerHTML = `<div class="view-head"><h2>Project not found</h2></div><button class="btn btn-ghost" onclick="location.hash='project_budgets'">← Back</button>`; return; }
+    const exp = ledger.filter((e) => e.type === "expense" && e.project === p.name);
+    const inc = ledger.filter((e) => e.type === "income" && e.project === p.name);
+    const lines = pbLines.filter((l) => l.project === p.name);
+    const outstanding = bills.filter((b) => b.project === p.name && b.status !== "paid");
+    const team = contractors.filter((c) => c.project === p.name);
+    const actualBy = groupSum(exp, "category");
+    const budgeted = lines.reduce((s, l) => s + Number(l.budgeted || 0), 0) || Number(p.budget || 0);
+    const spent = sum(exp, () => true);
+    const funding = sum(inc, () => true);
+    const remaining = budgeted - spent;
+    // union of budget + expense categories
+    const cats = Array.from(new Set(lines.map((l) => l.category).concat(Object.keys(actualBy))));
+    const budgetRows = cats.map((cat) => {
+      const b = lines.filter((l) => l.category === cat).reduce((s, l) => s + Number(l.budgeted || 0), 0);
+      const a = actualBy[cat] || 0; const pct = b ? Math.min(100, Math.round((a / b) * 100)) : (a ? 100 : 0); const over = a > b;
+      return `<tr><td><strong>${hub.esc(cat)}</strong></td><td>${hub.money(b)}</td><td>${hub.money(a)}</td>
+        <td><b style="color:${over ? "var(--danger)" : "var(--success)"}">${over ? "-" : ""}${hub.money(Math.abs(b - a))}</b></td>
+        <td style="min-width:130px"><div class="progress-bar" style="height:9px"><div class="progress-fill" style="width:${pct}%;background:${over ? "var(--danger)" : ""}"></div></div></td></tr>`;
+    }).join("");
+    view.innerHTML = `
+      <div class="view-head"><div>
+        <button class="btn btn-ghost btn-xs" id="pd-back" style="margin-bottom:.5rem">← All projects</button>
+        <h2 style="margin:0">${hub.esc(p.name)}</h2><p><span class="tag ${hub.statusClass(p.status)}">${hub.esc((p.status || "").replace("_", " "))}</span> ${p.location ? "· " + hub.esc(p.location) : ""} ${p.lead_name ? "· Lead: " + hub.esc(p.lead_name) : ""}</p>
+      </div></div>
+      <div class="kpis">
+        ${hub.kpi("Budget", hub.money(budgeted), "budget", "")}
+        ${hub.kpi("Spent", hub.money(spent), "build", "")}
+        ${hub.kpi("Remaining", (remaining < 0 ? "-" : "") + hub.money(Math.abs(remaining)), "target", remaining >= 0 ? '<span class="delta up">On budget</span>' : '<span class="tag active">Over</span>')}
+        ${hub.kpi("Funding raised", hub.money(funding), "mega", "")}
+      </div>
+      <div class="dash-2" style="align-items:start">
+        <div class="panel"><div class="panel-head"><h3>Budget vs. actual</h3><button class="btn btn-primary btn-sm" id="pd-addbudget">${hub.ICO("plus")} Budget line</button></div>
+          <div class="table-wrap"><table class="data"><thead><tr><th>Category</th><th>Budgeted</th><th>Actual</th><th>Remaining</th><th>Used</th></tr></thead>
+          <tbody>${budgetRows || hub.emptyRow(5)}</tbody></table></div></div>
+        <div class="panel"><div class="panel-head"><h3>Contractors &amp; mentors</h3><button class="btn btn-primary btn-sm" id="pd-addteam">${hub.ICO("plus")} Assign</button></div>
+          <div class="table-wrap"><table class="data"><thead><tr><th>Name</th><th>Role</th><th>Mentees</th><th>YTD paid</th></tr></thead>
+          <tbody>${team.map((c) => `<tr><td><strong>${hub.esc(c.full_name)}</strong><br><span class="muted">${hub.esc(c.work || "")}</span></td><td><span class="tag ${hub.statusClass(c.role)}">${hub.esc(c.role || "")}</span></td><td>${c.mentees || 0}</td><td>${hub.money(c.ytd_paid)}</td></tr>`).join("") || hub.emptyRow(4)}</tbody></table></div></div>
+      </div>
+      <div class="panel"><div class="panel-head"><h3>Expenses &amp; bills</h3><button class="btn btn-primary btn-sm" id="pd-addexp">${hub.ICO("plus")} Log expense</button></div>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Date</th><th>Category</th><th>Payee / Vendor</th><th>Type</th><th>Amount</th></tr></thead><tbody>
+        ${exp.map((e) => `<tr><td>${hub.esc(e.date)}</td><td>${hub.esc(e.category || "")}</td><td>${hub.esc(e.payee || "")}</td><td><span class="tag">ledger</span></td><td><b>${hub.money(e.amount)}</b></td></tr>`).join("")}
+        ${outstanding.map((b) => `<tr><td>${hub.esc(b.due_date || "")}</td><td>${hub.esc(b.category || "")}</td><td>${hub.esc(b.vendor || "")}</td><td><span class="tag ${hub.statusClass(b.status)}">${hub.esc(b.status)}</span></td><td><b>${hub.money(b.amount)}</b></td></tr>`).join("")}
+        ${(!exp.length && !outstanding.length) ? hub.emptyRow(5) : ""}
+        </tbody></table></div></div>`;
+    view.querySelector("#pd-back").onclick = () => hub.go("project_budgets");
+    view.querySelector("#pd-addbudget").onclick = () => hub.openModal("project_budget_lines", { project: p.name });
+    view.querySelector("#pd-addteam").onclick = () => hub.openModal("contractors", { project: p.name, status: "active" });
+    view.querySelector("#pd-addexp").onclick = () => hub.openModal("ledger_entries", { type: "expense", project: p.name, program: p.type === "renovation" ? "Community Home Renovation" : "Trades Training", fund: "Restricted", date: new Date().toISOString().slice(0, 10) });
+  }
+
   /* ---- Register --------------------------------------------------------- */
   A.registerPlugin({
     id: "finance",
     tables,
     demo,
-    titles: { finances: "Finance Ledger", budgets: "Budgets", finance_reports: "Financial Reports", bills: "Bills & Vendors", contractors: "Contractors (1099)" },
+    titles: { finances: "Finance Ledger", budgets: "Budgets", finance_reports: "Financial Reports", bills: "Bills & Vendors", contractors: "Contractors & Mentors", project_budgets: "Project Budgets" },
     roles: {
-      board: ["finances", "budgets", "finance_reports"],
-      staff: ["finances", "bills", "contractors", "budgets"],
+      board: ["finances", "budgets", "finance_reports", "project_budgets", "contractors"],
+      staff: ["finances", "bills", "contractors", "budgets", "project_budgets"],
     },
-    views: { finances: renderLedger, budgets: renderBudgets, finance_reports: renderReports },
+    views: { finances: renderLedger, budgets: renderBudgets, finance_reports: renderReports, project_budgets: renderProjectBudgets },
     nav: [{
       group: "Finances", items: [
         ["finances", "Ledger", I.ledger],
+        ["project_budgets", "Project Budgets", I.budget],
         ["bills", "Bills & Vendors", I.bill],
-        ["contractors", "Contractors (1099)", I.contractor],
-        ["budgets", "Budgets", I.budget],
+        ["contractors", "Contractors & Mentors", I.contractor],
+        ["budgets", "Org Budget", I.report],
         ["finance_reports", "Financial Reports", I.report],
       ],
     }],
