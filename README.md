@@ -228,15 +228,29 @@ flow through the site.
 
 ## Deploy
 
+**Vercel (recommended)** — the repo includes `vercel.json` (static, no build).
+1. Go to [vercel.com/new](https://vercel.com/new) and **Import** the
+   `modom123/Jacks-of-ALL-TRADES` GitHub repo.
+2. Framework Preset: **Other**. Build Command: **none**. Output Directory: `.`
+   (Vercel reads these from `vercel.json`, so just click **Deploy**.)
+3. **Production branch:** the redesign lives on
+   `claude/joat-amp-redesign-vz4owi`. To make it the live site, either merge it
+   into `main`, or in **Project → Settings → Git** set the Production Branch to
+   `claude/joat-amp-redesign-vz4owi`. (Until then, Vercel serves the redesign as
+   a per-branch **Preview** URL, and `main` as Production.)
+4. **Custom domain:** Project → Settings → Domains → add `joatamp.net`, then
+   point your DNS at Vercel (A record `76.76.21.21`, or a `CNAME` to
+   `cname.vercel-dns.com`). The `CNAME` file in the repo is for GitHub Pages and
+   is ignored by Vercel.
+
 **GitHub Pages** — push to the default branch and enable Pages (root). The
-`CNAME` maps the site to `joatamp.net`; `.nojekyll` keeps `assets/` intact.
+`CNAME` file maps the site to `joatamp.net`; `.nojekyll` keeps `assets/` intact.
 
-**Any static host** (Vercel, Netlify, Cloudflare Pages) — deploy the repository
-root as-is; there is no build step.
+**Any static host** (Netlify, Cloudflare Pages) — deploy the repository root
+as-is; there is no build step.
 
-> Set your custom domain's DNS to your host per their instructions. Update the
-> real phone number and social links in `assets/js/config.js` and the footer
-> before launch.
+> Update the real phone number and social links in `assets/js/config.js` and the
+> footer before launch.
 
 ---
 
