@@ -6,18 +6,18 @@
    ========================================================================== */
 
 :root {
-  /* ---- Brand blues -------------------------------------------------------- */
-  --navy-950: #050b1a;
-  --navy-900: #0a1730;
-  --navy-800: #0e2242;
-  --navy-700: #123058;
-  --navy-600: #17457f;
-  --blue-600: #1d4ed8;
-  --blue-500: #2563eb;
-  --blue-400: #3b82f6;
-  --blue-300: #60a5fa;
-  --blue-100: #dbe7fb;
-  --blue-050: #eef4fe;
+  /* ---- Brand blues — Honolulu Blue system (Detroit Lions blue) ----------- */
+  --navy-950: #03151f;   /* deepest — hero / splash background */
+  --navy-900: #062a40;   /* dark surfaces: sidebar, footer, inverse bg */
+  --navy-800: #083550;
+  --navy-700: #0b4a6e;
+  --navy-600: #0f6699;
+  --blue-600: #0076b6;   /* Honolulu Blue — primary accent */
+  --blue-500: #0089d1;
+  --blue-400: #33a3dd;
+  --blue-300: #66bce8;
+  --blue-100: #cfe9fa;
+  --blue-050: #eaf6fd;
 
   /* ---- Silver / slate neutrals ------------------------------------------- */
   --black:    #05070d;
@@ -65,7 +65,7 @@
   --shadow-sm: 0 2px 6px rgba(9, 18, 38, .07), 0 1px 2px rgba(9, 18, 38, .05);
   --shadow-md: 0 12px 30px -12px rgba(9, 23, 48, .22);
   --shadow-lg: 0 30px 60px -22px rgba(9, 23, 48, .35);
-  --shadow-blue: 0 18px 40px -16px rgba(29, 78, 216, .45);
+  --shadow-blue: 0 18px 40px -16px rgba(0, 118, 182, .45);
 
   /* ---- Layout ------------------------------------------------------------- */
   --container: 1200px;
