@@ -1,0 +1,15 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Jacks of All Trades — repo ignore rules
+#  NEVER commit secrets. API keys live in Supabase/Vercel secrets, not in git.
+# ─────────────────────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+supabase/.env
+supabase/.temp/
+.vercel/
+node_modules/
+.DS_Store
