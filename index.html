@@ -22,21 +22,25 @@
 <style>
   /* ---- Splash-specific ---- */
   body { background: var(--navy-950); color: #fff; overflow: hidden; }
-  .splash { position: fixed; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; }
+  .splash { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px 76px; overflow-y: auto; overflow-x: hidden; }
   .splash-bg { position: absolute; inset: 0; z-index: 0; }
   .splash-bg img { width: 100%; height: 100%; object-fit: cover; opacity: .22; }
   .splash-bg::after { content: ""; position: absolute; inset: 0;
     background: radial-gradient(120% 90% at 50% 20%, rgba(0, 118, 182,.30), transparent 60%),
       linear-gradient(180deg, rgba(5,11,26,.72), rgba(5,11,26,.94)); }
-  .splash-inner { position: relative; z-index: 2; max-width: 680px; opacity: 0; transform: translateY(18px); animation: rise .9s .15s var(--ease) forwards; }
+  .splash-inner { position: relative; z-index: 2; width: 100%; max-width: 620px; min-width: 0; box-sizing: border-box; opacity: 0; transform: translateY(18px); animation: rise .9s .15s var(--ease) forwards; }
   @keyframes rise { to { opacity: 1; transform: none; } }
   .splash .mark { width: 92px; height: 92px; margin: 0 auto 26px; filter: drop-shadow(0 18px 40px rgba(0,118,182,.5)); animation: pop 1s var(--ease) both; }
-  .splash .mark-logo { width: min(300px, 76vw); height: auto; margin: 0 auto 28px; display: block; background: #fff; padding: 20px 26px; border-radius: 24px; box-shadow: 0 26px 64px -22px rgba(0,0,0,.65); animation: pop 1s var(--ease) both; }
+  .splash .mark-logo { width: min(198px, 56vw); height: auto; margin: 0 auto 1.35rem; display: block; background: #fff; padding: 14px 18px; border-radius: 20px; box-shadow: 0 22px 52px -22px rgba(0,0,0,.6); animation: pop 1s var(--ease) both; }
   @keyframes pop { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
-  .splash h1 { font-size: clamp(2rem, 6vw, 3.4rem); font-weight: 850; letter-spacing: -.02em; color: #fff; line-height: 1.05; margin: 0 0 .5rem; }
-  .splash .kicker { font-size: .78rem; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--blue-300); margin-bottom: 1.4rem; }
-  .splash .sub { font-size: clamp(1.02rem, 2vw, 1.22rem); color: #c6d3ee; max-width: 520px; margin: 0 auto 2.2rem; }
-  .splash-cta { display: flex; flex-wrap: wrap; gap: .9rem; justify-content: center; }
+  .splash h1 { font-size: clamp(1.9rem, 5vw, 3rem); font-weight: 850; letter-spacing: -.02em; color: #fff; line-height: 1.06; margin: 0 0 .55rem; }
+  .splash .kicker { font-size: .78rem; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--blue-300); margin-bottom: 1rem; }
+  .splash .sub { font-size: clamp(1rem, 1.8vw, 1.16rem); color: #c6d3ee; max-width: 520px; margin: 0 auto 1.7rem; }
+  .splash-cta { display: flex; flex-wrap: wrap; gap: .9rem; justify-content: center; max-width: 100%; }
+  @media (max-width: 520px) {
+    .splash-cta { flex-direction: column; align-items: stretch; width: 100%; max-width: 300px; margin: 0 auto; }
+    .s-btn { width: 100%; justify-content: center; }
+  }
   .s-btn { display: inline-flex; align-items: center; gap: .5em; font-weight: 650; font-size: 1rem; padding: 1em 1.8em; border-radius: var(--r-pill); border: 1px solid transparent; cursor: pointer; transition: transform .18s var(--ease), box-shadow .2s, background .2s; text-decoration: none; }
   .s-btn.primary { background: var(--blue-600); color: #fff; box-shadow: 0 18px 40px -16px rgba(0, 118, 182,.7); }
   .s-btn.ghost { background: rgba(255,255,255,.06); color: #fff; border-color: rgba(255,255,255,.28); }
@@ -44,7 +48,7 @@
   .s-btn.ghost:hover { background: rgba(255,255,255,.12); }
   .splash-foot { position: absolute; bottom: 22px; left: 0; right: 0; z-index: 2; text-align: center; font-size: .82rem; color: #8ea1c6; }
   .splash-foot a { color: #c6d3ee; }
-  .enter-hint { margin-top: 1.8rem; font-size: .82rem; letter-spacing: .1em; text-transform: uppercase; color: #7f92ba; }
+  .enter-hint { margin-top: 1.25rem; font-size: .82rem; letter-spacing: .1em; text-transform: uppercase; color: #7f92ba; }
   @media (prefers-reduced-motion: reduce) { .splash-inner, .splash .mark { animation: none; opacity: 1; transform: none; } }
 </style>
 </head>
