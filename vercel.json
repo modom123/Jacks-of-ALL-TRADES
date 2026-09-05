@@ -1,6 +1,6 @@
 {
-  "_generated": "2026-09-05 15:35 UTC — static hosting config for joatamp.net",
-  "cleanUrls": true,
+  "_generated": "2026-09-05 15:35 UTC — static hosting config for joatamp.net (Vercel)",
+  "cleanUrls": false,
   "trailingSlash": false,
   "headers": [
     {
