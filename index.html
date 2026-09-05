@@ -8,13 +8,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 48 48%27%3E%3Crect width=%2748%27 height=%2748%27 rx=%2712%27 fill=%27%230e2242%27/%3E%3Cpath d=%27M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z%27 fill=%27%23fff%27/%3E%3Cpath d=%27M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z%27 fill=%27%233b82f6%27/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 48 48%27%3E%3Crect width=%2748%27 height=%2748%27 rx=%2712%27 fill=%27%23062a40%27/%3E%3Cpath d=%27M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z%27 fill=%27%23fff%27/%3E%3Cpath d=%27M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z%27 fill=%27%230076b6%27/%3E%3C/svg%3E">
 <title>Jacks of All Trades Community Development — Building Futures, Rebuilding Detroit</title>
 <meta name="description" content="Revitalizing Detroit neighborhoods and building futures through skilled-trades training. Enter the 50/50 Neighborhood Revitalization Raffle and support community renewal.">
 <meta property="og:title" content="Jacks of All Trades Community Development">
 <meta property="og:description" content="Building Futures, Rebuilding Detroit — trades training & neighborhood revitalization.">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#0a1730">
+<meta name="theme-color" content="#062a40">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;650;750;800;850&display=swap" rel="stylesheet">
@@ -26,18 +26,19 @@
   .splash-bg { position: absolute; inset: 0; z-index: 0; }
   .splash-bg img { width: 100%; height: 100%; object-fit: cover; opacity: .22; }
   .splash-bg::after { content: ""; position: absolute; inset: 0;
-    background: radial-gradient(120% 90% at 50% 20%, rgba(29,78,216,.30), transparent 60%),
+    background: radial-gradient(120% 90% at 50% 20%, rgba(0, 118, 182,.30), transparent 60%),
       linear-gradient(180deg, rgba(5,11,26,.72), rgba(5,11,26,.94)); }
   .splash-inner { position: relative; z-index: 2; max-width: 680px; opacity: 0; transform: translateY(18px); animation: rise .9s .15s var(--ease) forwards; }
   @keyframes rise { to { opacity: 1; transform: none; } }
-  .splash .mark { width: 92px; height: 92px; margin: 0 auto 26px; filter: drop-shadow(0 18px 40px rgba(29,78,216,.5)); animation: pop 1s var(--ease) both; }
+  .splash .mark { width: 92px; height: 92px; margin: 0 auto 26px; filter: drop-shadow(0 18px 40px rgba(0,118,182,.5)); animation: pop 1s var(--ease) both; }
+  .splash .mark-logo { width: min(300px, 76vw); height: auto; margin: 0 auto 28px; display: block; background: #fff; padding: 20px 26px; border-radius: 24px; box-shadow: 0 26px 64px -22px rgba(0,0,0,.65); animation: pop 1s var(--ease) both; }
   @keyframes pop { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
   .splash h1 { font-size: clamp(2rem, 6vw, 3.4rem); font-weight: 850; letter-spacing: -.02em; color: #fff; line-height: 1.05; margin: 0 0 .5rem; }
   .splash .kicker { font-size: .78rem; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--blue-300); margin-bottom: 1.4rem; }
   .splash .sub { font-size: clamp(1.02rem, 2vw, 1.22rem); color: #c6d3ee; max-width: 520px; margin: 0 auto 2.2rem; }
   .splash-cta { display: flex; flex-wrap: wrap; gap: .9rem; justify-content: center; }
   .s-btn { display: inline-flex; align-items: center; gap: .5em; font-weight: 650; font-size: 1rem; padding: 1em 1.8em; border-radius: var(--r-pill); border: 1px solid transparent; cursor: pointer; transition: transform .18s var(--ease), box-shadow .2s, background .2s; text-decoration: none; }
-  .s-btn.primary { background: var(--blue-600); color: #fff; box-shadow: 0 18px 40px -16px rgba(29,78,216,.7); }
+  .s-btn.primary { background: var(--blue-600); color: #fff; box-shadow: 0 18px 40px -16px rgba(0, 118, 182,.7); }
   .s-btn.ghost { background: rgba(255,255,255,.06); color: #fff; border-color: rgba(255,255,255,.28); }
   .s-btn:hover { transform: translateY(-2px); }
   .s-btn.ghost:hover { background: rgba(255,255,255,.12); }
@@ -51,12 +52,8 @@
 <main class="splash">
   <div class="splash-bg"><img src="assets/img/interior-living.jpg" alt="" aria-hidden="true"></div>
   <div class="splash-inner">
-    <svg class="mark" viewBox="0 0 48 48" fill="none" role="img" aria-label="Jacks of All Trades emblem">
-      <rect width="48" height="48" rx="12" fill="url(#g)"/>
-      <path d="M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z" fill="#fff"/>
-      <path d="M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z" fill="#3b82f6"/>
-      <defs><linearGradient id="g" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#123058"/><stop offset="1" stop-color="#0a1730"/></linearGradient></defs>
-    </svg>
+    <img class="mark-logo" src="assets/img/logo-jack.png" alt="Jack of All Trades — One Call. Every Solution.">
+
     <p class="kicker">Jacks of All Trades · Community Development</p>
     <h1>Building Futures,<br>Rebuilding Detroit.</h1>
     <p class="sub">Through hands-on skilled-trades training and neighborhood revitalization, we turn vacant homes into symbols of hope — and young people into master tradespeople.</p>

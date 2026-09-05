@@ -116,6 +116,40 @@ p { margin: 0 0 1em; }
   .nav-toggle { display: inline-flex; }
 }
 
+/* ---- Desktop: left SIDEBAR navigation (public site) ---------------------- */
+@media (min-width: 961px) {
+  :root { --sidebar-w: 250px; }
+  body:not(.admin) { padding-left: var(--sidebar-w); }
+  .site-nav {
+    position: fixed; inset: 0 auto 0 0; height: 100vh; width: var(--sidebar-w);
+    display: block; background: var(--navy-900); color: #fff;
+    border-bottom: none; border-right: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: none; box-shadow: var(--shadow-md); overflow-y: auto;
+  }
+  .site-nav.scrolled { box-shadow: var(--shadow-md); }
+  .site-nav .container {
+    flex-direction: column; align-items: stretch; gap: 0;
+    height: 100%; max-width: none; padding: 1.6rem 1.1rem;
+  }
+  /* Brand gets its own space at the top of the rail */
+  .brand { flex-direction: column; align-items: flex-start; gap: .55rem; color: #fff; padding: .2rem .3rem 1.1rem; }
+  .brand:hover { color: #fff; }
+  .brand .mark { width: 52px; height: 52px; }
+  .brand-name b { font-size: 1.26rem; color: #fff; line-height: 1.1; }
+  .brand-name span { color: var(--text-invert-soft); font-size: .62rem; }
+  /* Vertical nav items */
+  .nav-links { flex-direction: column; align-items: stretch; gap: .18rem; margin: .3rem 0 0; }
+  .nav-links a {
+    color: var(--text-invert-soft); font-weight: 600; font-size: 1rem;
+    padding: .66rem .8rem; border-radius: var(--r-sm); text-align: left;
+  }
+  .nav-links a:hover { background: rgba(255,255,255,.09); color: #fff; }
+  .nav-links a.active { background: var(--accent); color: #fff; }
+  .nav-cta { margin: 1rem 0 .2rem; }
+  .nav-cta.btn { width: 100%; }
+  .nav-toggle { display: none; }
+}
+
 /* ---- Hero ---------------------------------------------------------------- */
 .hero { position: relative; overflow: hidden; background: var(--navy-950); color: #fff; }
 .hero-media { position: absolute; inset: 0; }
