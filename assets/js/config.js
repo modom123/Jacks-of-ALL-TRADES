@@ -25,7 +25,7 @@ window.JOAT.ORG = {
   mission: "Revitalizing Detroit neighborhoods and building futures through skilled-trades training.",
   city: "Detroit, Michigan",
   email: "info@joatamp.net",
-  phone: "(313) 555-0123",           // update with the real number
+  phone: "(313) 639-9373",           // update with the real number
   domain: "joatamp.net",
   zeffyUrl: "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development",
   social: {
