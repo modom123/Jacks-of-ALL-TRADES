@@ -38,8 +38,8 @@ window.JOAT.ORG = {
 
 /* ---- 50/50 Raffle -------------------------------------------------------- */
 window.JOAT.RAFFLE = {
-  drawingDateISO: "2026-11-15T18:00:00-05:00",
-  drawingLabel: "November 15, 2026",
+  drawingDateISO: "2026-10-25T14:00:00-04:00",
+  drawingLabel: "October 25, 2026",
   tiers: [
     { price: 1,   tickets: 1,   badge: "" },
     { price: 20,  tickets: 30,  badge: "Popular Choice" },
