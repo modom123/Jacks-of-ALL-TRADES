@@ -25,7 +25,7 @@ window.JOAT.ORG = {
   mission: "Revitalizing Detroit neighborhoods and building futures through skilled-trades training.",
   city: "Detroit, Michigan",
   email: "info@joatamp.net",
-  phone: "(313) 555-0123",           // update with the real number
+  phone: "(313) 639-9373",           // update with the real number
   domain: "joatamp.net",
   zeffyUrl: "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development",
   social: {
@@ -38,8 +38,8 @@ window.JOAT.ORG = {
 
 /* ---- 50/50 Raffle -------------------------------------------------------- */
 window.JOAT.RAFFLE = {
-  drawingDateISO: "2026-11-15T18:00:00-05:00",
-  drawingLabel: "November 15, 2026",
+  drawingDateISO: "2026-10-25T14:00:00-04:00",
+  drawingLabel: "October 25, 2026",
   tiers: [
     { price: 1,   tickets: 1,   badge: "" },
     { price: 20,  tickets: 30,  badge: "Popular Choice" },
