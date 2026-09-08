@@ -73,8 +73,8 @@ p { margin: 0 0 1em; }
 .btn-dark { --btn-bg: var(--navy-900); }
 .btn-ghost { --btn-bg: transparent; --btn-fg: var(--navy-900); border-color: var(--border-strong); box-shadow: none; }
 .btn-ghost:hover { background: var(--navy-900); color: #fff; border-color: var(--navy-900); box-shadow: var(--shadow-md); }
-.bg-ink .btn-ghost { --btn-fg: #fff; border-color: rgba(255,255,255,.35); }
-.bg-ink .btn-ghost:hover { background: #fff; color: var(--navy-900); border-color: #fff; }
+.bg-ink .btn-ghost, .hero .btn-ghost { --btn-fg: #fff; border-color: rgba(255,255,255,.5); }
+.bg-ink .btn-ghost:hover, .hero .btn-ghost:hover { background: #fff; color: var(--navy-900); border-color: #fff; }
 .btn-white { --btn-bg: #fff; --btn-fg: var(--navy-900); }
 .btn-white:hover { color: var(--navy-800); }
 .btn-block { width: 100%; }
