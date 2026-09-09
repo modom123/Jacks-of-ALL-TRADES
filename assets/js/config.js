@@ -1,7 +1,7 @@
 /* ============================================================================
    Jacks of All Trades Community Development — Site Configuration
    File: assets/js/config.js
-   Generated: 2026-09-03 16:32 UTC  |  joatamp.net redesign
+   Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
 
    Single source of truth for public site data + Supabase credentials.
    Update the SUPABASE values below with your project's URL + anon key.
@@ -24,9 +24,9 @@ window.JOAT.ORG = {
   tagline: "One Call. Every Solution.",
   mission: "Revitalizing Detroit neighborhoods and building futures through skilled-trades training.",
   city: "Detroit, Michigan",
-  email: "info@joatamp.net",
+  email: "info@joatamp.org",
   phone: "(313) 639-9373",           // update with the real number
-  domain: "joatamp.net",
+  domain: "joatamp.org",
   zeffyUrl: "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development",
   social: {
     facebook: "#",

@@ -1,7 +1,7 @@
 /* ============================================================================
    Jacks of All Trades Community Development — Supabase Client
    File: assets/js/supabase-client.js
-   Generated: 2026-09-03 16:32 UTC  |  joatamp.net redesign
+   Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
 
    Loads the Supabase JS SDK from CDN and exposes window.JOAT.db.
    `configured` is false until you fill in real credentials in config.js —

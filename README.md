@@ -1,10 +1,10 @@
 <!--
   Jacks of All Trades Community Development — README
   File: README.md
-  Generated: 2026-09-03 16:32 UTC  |  joatamp.net redesign
+  Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
 -->
 
-# Jacks of All Trades Community Development — joatamp.net
+# Jacks of All Trades Community Development — joatamp.org
 
 A modern, Fortune 500–quality website and business hub for **Jacks of All Trades
 Community Development**, a Detroit nonprofit revitalizing neighborhoods and
@@ -55,7 +55,7 @@ Blue · White · Silver · Black — defined as design tokens in
 │   └── functions/
 │       ├── ai-agent/index.ts               AI-agent Edge Function (Claude)
 │       └── ops-cron/index.ts               24/7 scheduled operations
-├── CNAME                   joatamp.net
+├── CNAME                   joatamp.org
 └── .nojekyll               Serve asset folders verbatim on GitHub Pages
 ```
 
@@ -229,7 +229,7 @@ flow through the site.
 ## Deploy
 
 **GitHub Pages** — push to the default branch and enable Pages (root). The
-`CNAME` maps the site to `joatamp.net`; `.nojekyll` keeps `assets/` intact.
+`CNAME` maps the site to `joatamp.org`; `.nojekyll` keeps `assets/` intact.
 
 **Any static host** (Vercel, Netlify, Cloudflare Pages) — deploy the repository
 root as-is; there is no build step.

@@ -197,10 +197,10 @@
       { id: uid(), donor_name: "Great Lakes Credit Union", channel: "meeting", status: "planned", subject: "Introductory sponsorship conversation", drafted_by: "Board Chair", owner: "Board Chair", created_at: iso(-2) },
     ],
     team_members: [
-      { id: uid(), full_name: "Executive Director", email: "director@joatamp.net", role: "admin", title: "Executive Director", status: "active", created_at: iso(-200) },
-      { id: uid(), full_name: "Board Chair", email: "chair@joatamp.net", role: "board", title: "Board Chair", status: "active", created_at: iso(-200) },
-      { id: uid(), full_name: "Program Manager", email: "programs@joatamp.net", role: "staff", title: "Program Manager", status: "active", created_at: iso(-150) },
-      { id: uid(), full_name: "Volunteer Coordinator", email: "volunteer@joatamp.net", role: "staff", title: "Volunteer Coordinator", status: "invited", created_at: iso(-4) },
+      { id: uid(), full_name: "Executive Director", email: "director@joatamp.org", role: "admin", title: "Executive Director", status: "active", created_at: iso(-200) },
+      { id: uid(), full_name: "Board Chair", email: "chair@joatamp.org", role: "board", title: "Board Chair", status: "active", created_at: iso(-200) },
+      { id: uid(), full_name: "Program Manager", email: "programs@joatamp.org", role: "staff", title: "Program Manager", status: "active", created_at: iso(-150) },
+      { id: uid(), full_name: "Volunteer Coordinator", email: "volunteer@joatamp.org", role: "staff", title: "Volunteer Coordinator", status: "invited", created_at: iso(-4) },
     ],
     contact_messages: [
       { id: 1, full_name: "Marcus Reed", email: "marcus@example.com", topic: "Enrollment", message: "Interested in the electrical program for my son.", status: "new", created_at: iso(-1) },
@@ -690,13 +690,13 @@
   $("#login-form").onsubmit = async (e) => {
     e.preventDefault();
     const st = $("#login-status"), email = $("#li-email").value, password = $("#li-pass").value;
-    if (!A.configured || !A.db) { DEMO = true; return enterApp(email || "demo@joatamp.net"); }
+    if (!A.configured || !A.db) { DEMO = true; return enterApp(email || "demo@joatamp.org"); }
     st.hidden = false; st.className = "form-status info"; st.textContent = "Signing in…";
     const { data, error } = await A.db.auth.signInWithPassword({ email, password });
     if (error) { st.className = "form-status err"; st.textContent = error.message; return; }
     DEMO = false; enterApp(data.user.email);
   };
-  $("#demo-enter").onclick = () => { DEMO = true; enterApp("demo@joatamp.net"); };
+  $("#demo-enter").onclick = () => { DEMO = true; enterApp("demo@joatamp.org"); };
   $("#signout").onclick = async () => { if (!DEMO && A.db) await A.db.auth.signOut(); location.hash = ""; $("#app").hidden = true; $("#login").hidden = false; };
 
 })();

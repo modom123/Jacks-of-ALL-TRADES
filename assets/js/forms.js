@@ -1,7 +1,7 @@
 /* ============================================================================
    Jacks of All Trades Community Development — Form Handling
    File: assets/js/forms.js
-   Generated: 2026-09-03 16:32 UTC  |  joatamp.net redesign
+   Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
 
    Progressive enhancement: any <form data-collection="table_name"> submits to
    the matching Supabase table. When Supabase is not yet configured, it falls
@@ -46,7 +46,7 @@
           show(form, "ok", form.dataset.success || "Thank you — we've received your message and will be in touch soon.");
         } catch (err) {
           console.error("[JOAT] insert failed:", err);
-          show(form, "err", "We couldn't submit right now. Please email " + (window.JOAT.ORG?.email || "info@joatamp.net") + ".");
+          show(form, "err", "We couldn't submit right now. Please email " + (window.JOAT.ORG?.email || "info@joatamp.org") + ".");
         }
       } else {
         // Fallback: open a pre-filled email so the lead still reaches the org.
@@ -54,7 +54,7 @@
         const subject = encodeURIComponent("[" + table + "] website submission");
         const body = encodeURIComponent(Object.entries(data).map(([k, v]) => `${k}: ${v}`).join("\n"));
         show(form, "ok", "Thanks! Opening your email app to complete the message…");
-        setTimeout(() => { window.location.href = `mailto:${org.email || "info@joatamp.net"}?subject=${subject}&body=${body}`; }, 600);
+        setTimeout(() => { window.location.href = `mailto:${org.email || "info@joatamp.org"}?subject=${subject}&body=${body}`; }, 600);
       }
       if (btn) { btn.disabled = false; btn.textContent = original; }
     });

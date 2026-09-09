@@ -396,7 +396,7 @@
         <div class="foot">
           Cryptographically random, ticket-weighted draw (method: ${esc(rec.method || "crypto-weighted")}).<br>
           Verification seed: ${esc(rec.seed || "—")}<br>
-          Nonprofit EIN 41-2680557 · JOAT.AMP.ORG · Generated ${stamp}
+          Nonprofit EIN 41-2680557 · JOATAMP.ORG · Generated ${stamp}
         </div>
       </div>
       <script>window.onload=function(){window.print()}<\/script>

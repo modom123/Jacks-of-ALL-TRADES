@@ -1,7 +1,7 @@
 -- ============================================================================
 -- Jacks of All Trades Community Development — Supabase Schema
 -- File: supabase/schema_2026-09-03_1632.sql
--- Generated: 2026-09-03 16:32 UTC  |  joatamp.net redesign
+-- Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
 --
 -- HOW TO USE
 --   1. Create a project at supabase.com.
@@ -163,6 +163,6 @@ end $$;
 --    in immediately). Then log in at /admin with those credentials.
 --
 -- Optional hardening: restrict the Command Center to specific admin emails by
--- adding "using ( auth.jwt() ->> 'email' in ('you@joatamp.net') )" to the
+-- adding "using ( auth.jwt() ->> 'email' in ('you@joatamp.org') )" to the
 -- admin read/update policies above.
 -- ============================================================================

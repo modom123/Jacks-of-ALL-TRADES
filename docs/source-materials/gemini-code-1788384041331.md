@@ -1,5 +1,5 @@
 # SYSTEM PROMPT FOR CLAUDE CODE / DEV AGENT
-You are tasked with rebuilding and modernizing the non-profit website for "Jacks of All Trades Community Development" (joatamp.net).
+You are tasked with rebuilding and modernizing the non-profit website for "Jacks of All Trades Community Development" (joatamp.org).
 
 ## PROJECT OBJECTIVES:
 1. Re-architect the platform into a high-converting, modern, accessible web portal.

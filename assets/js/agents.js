@@ -220,7 +220,7 @@
         "",
         "**2 (LinkedIn):** Skilled tradespeople: your expertise can launch a career. Mentor a Jacks of All Trades student 1:1 and help rebuild a Detroit neighborhood. Comment “mentor” and we'll reach out.",
         "",
-        "**3 (X):** Half raffle prize, half neighborhood revival. 🎟️ Enter the 50/50 & help us finish a full home renovation. joatamp.net",
+        "**3 (X):** Half raffle prize, half neighborhood revival. 🎟️ Enter the 50/50 & help us finish a full home renovation. joatamp.org",
       ].join("\n");
     }
     if (p.includes("press")) {
@@ -233,7 +233,7 @@
         "",
         "“We're building futures and rebuilding neighborhoods at the same time,” said [Spokesperson].",
         "",
-        "To enroll, volunteer, or support the mission, visit joatamp.net.",
+        "To enroll, volunteer, or support the mission, visit joatamp.org.",
         "",
         "###",
       ].join("\n");

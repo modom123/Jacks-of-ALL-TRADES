@@ -166,9 +166,9 @@ end $$;
 -- ---------------------------------------------------------------------------
 insert into public.team_members (full_name, email, role, title)
 select * from (values
-  ('Executive Director', 'director@joatamp.net', 'admin', 'Executive Director'),
-  ('Board Chair',        'chair@joatamp.net',    'board', 'Board Chair'),
-  ('Program Manager',    'programs@joatamp.net', 'staff', 'Program Manager')
+  ('Executive Director', 'director@joatamp.org', 'admin', 'Executive Director'),
+  ('Board Chair',        'chair@joatamp.org',    'board', 'Board Chair'),
+  ('Program Manager',    'programs@joatamp.org', 'staff', 'Program Manager')
 ) as v(full_name,email,role,title)
 where not exists (select 1 from public.team_members);
 

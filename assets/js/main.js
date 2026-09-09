@@ -1,7 +1,7 @@
 /* ============================================================================
    Jacks of All Trades Community Development — Front-end Interactions
    File: assets/js/main.js
-   Generated: 2026-09-03 16:32 UTC  |  joatamp.net redesign
+   Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
 
    Handles: mobile nav, sticky-nav state, scroll reveal, animated counters,
    before/after slider, raffle countdown, and live figures from Supabase
