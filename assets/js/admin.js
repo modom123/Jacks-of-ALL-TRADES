@@ -589,7 +589,7 @@
         <ol class="text-soft" style="line-height:1.9;padding-left:1.2rem">
           <li>Create a project at <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a>.</li>
           <li>Paste your Project URL + anon key into <code>assets/js/config.js</code>.</li>
-          <li>Run, in order, <code>supabase/schema.sql</code>, <code>schema_hub_2026-09-03_1710.sql</code>, <code>schema_finance_2026-09-03_1740.sql</code>, and <code>schema_finance_projects_2026-09-03_1755.sql</code> in the SQL Editor.</li>
+          <li>Run, in order, <code>supabase/schema.sql</code>, <code>schema_hub_2026-09-03_1710.sql</code>, <code>schema_finance_2026-09-03_1740.sql</code>, <code>schema_finance_projects_2026-09-03_1755.sql</code>, <code>schema_zeffy_2026-09-05_1535.sql</code>, and <code>schema_raffle_2026-09-08_2210.sql</code> in the SQL Editor.</li>
           <li>Create an admin user in <strong>Authentication → Users</strong>, then reload and sign in.</li>
         </ol>
         <div class="field" style="max-width:520px"><label>Project URL</label><input value="${esc(cfg.url || "")}" readonly></div></div></div>
