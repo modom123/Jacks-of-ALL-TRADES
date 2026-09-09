@@ -229,7 +229,7 @@
         "",
         "**Jacks of All Trades Launches Fall Skilled-Trades Cohort, Pairing Detroit Residents with Home-Renovation Training**",
         "",
-        "DETROIT — Jacks of All Trades Community Development today announced its fall training cohort across six high-demand trades — electrical, plumbing, carpentry, HVAC, masonry, and drywall & framing — with 1:1 mentorship and a direct path to employment. Students train by renovating a vacant Detroit home into quality community housing.",
+        "DETROIT — Jacks of All Trades Community Development today announced its fall training cohort across six high-demand trades — electrical, plumbing, carpentry, HVAC, masonry, and drywall — with 1:1 mentorship and a direct path to employment. Students train by renovating a vacant Detroit home into quality community housing.",
         "",
         "“We're building futures and rebuilding neighborhoods at the same time,” said [Spokesperson].",
         "",
