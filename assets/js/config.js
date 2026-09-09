@@ -76,5 +76,5 @@ window.JOAT.TRADES = [
   { key: "carpentry",  name: "Carpentry",  desc: "Framing, finishing, and custom woodwork through real projects." },
   { key: "hvac",       name: "HVAC",       desc: "Heating, ventilation, and air-conditioning system training." },
   { key: "masonry",    name: "Masonry",    desc: "Brick, block, and stone work for durable structures." },
-  { key: "welding",    name: "Welding",    desc: "Welding techniques and metal fabrication for the trades." },
+  { key: "drywall",    name: "Drywall & Framing", desc: "Wall framing, hanging, taping, and finishing for interior build-outs." },
 ];
