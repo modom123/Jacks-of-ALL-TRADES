@@ -1,0 +1,21 @@
+# ============================================================================
+#  Jacks of All Trades — Supabase CLI project config
+#  File: supabase/config.toml
+#  Generated: 2026-09-13 17:05 UTC
+#
+#  Pins the CLI to the PRODUCTION project so `supabase link` and
+#  `supabase functions deploy` target the same project the website reads
+#  from (assets/js/config.js -> gecnvzjuppmqcfcpmugq). Run CLI commands from
+#  the repo root so functions resolve at supabase/functions/<name>/index.ts.
+# ============================================================================
+
+project_id = "gecnvzjuppmqcfcpmugq"
+
+[functions.zeffy-sync]
+verify_jwt = false
+
+[functions.ops-cron]
+verify_jwt = false
+
+[functions.ai-agent]
+verify_jwt = true
