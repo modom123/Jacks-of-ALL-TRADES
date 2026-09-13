@@ -2,6 +2,7 @@
    Jacks of All Trades Community Development — Site Configuration
    File: assets/js/config.js
    Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
+   Updated: 2026-09-13 17:00 UTC  |  Live Supabase URL + anon public key wired in
 
    Single source of truth for public site data + Supabase credentials.
    Update the SUPABASE values below with your project's URL + anon key.
@@ -13,8 +14,8 @@ window.JOAT = window.JOAT || {};
 
 /* ---- Supabase connection (fill these in) --------------------------------- */
 window.JOAT.SUPABASE = {
-  url: "https://YOUR-PROJECT-ref.supabase.co",   // e.g. https://abcd1234.supabase.co
-  anonKey: "YOUR-SUPABASE-ANON-PUBLIC-KEY",       // Project Settings → API → anon public
+  url: "https://gecnvzjuppmqcfcpmugq.supabase.co",   // Project Settings → API → Project URL
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlY252emp1cHBtcWNmY3BtdWdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMTI0MzAsImV4cCI6MjEwNDg4ODQzMH0.j-I03fuwAX4R_lq3Z6J3GT13WsxosBk755l8GXqbKjw", // anon public — safe to commit (RLS protects data)
 };
 
 /* ---- Organization -------------------------------------------------------- */
