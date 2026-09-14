@@ -198,6 +198,38 @@
       </div>
     </div>
   </section>
+
+  <!-- Raffle updates opt-in (feeds marketing_consent for compliant SMS/email/voice) -->
+  <section class="section bg-alt" id="updates-optin">
+    <div class="container">
+      <div class="split">
+        <div data-reveal>
+          <span class="eyebrow">Stay in the loop</span>
+          <h2>Get raffle updates &mdash; pot milestones &amp; the live draw</h2>
+          <p class="lead">Be the first to know when the pot jumps and when we go live at Ford Field. Pick how you&rsquo;d like to hear from us.</p>
+        </div>
+        <div class="card" data-reveal data-delay="1">
+          <form data-collection="marketing_consent" data-success="You're in! Watch for updates — reply STOP anytime to opt out of texts.">
+            <div class="field-row">
+              <div class="field"><label for="mc-name">Name</label><input id="mc-name" name="name" type="text" placeholder="Your name"></div>
+              <div class="field"><label for="mc-email">Email</label><input id="mc-email" name="email" type="email" placeholder="you@example.com"></div>
+            </div>
+            <div class="field"><label for="mc-phone">Mobile number</label><input id="mc-phone" name="phone" type="tel" placeholder="(313) 555-0123"></div>
+            <fieldset style="border:0;padding:0;margin:.3rem 0 .6rem">
+              <legend class="text-soft" style="font-size:.86rem;margin-bottom:.4rem">How can we reach you?</legend>
+              <label style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0"><input type="checkbox" name="email_opt_in" value="true" checked> Email updates</label>
+              <label style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0"><input type="checkbox" name="sms_opt_in" value="true"> Text (SMS) updates</label>
+              <label style="display:flex;align-items:center;gap:.5rem;margin:.3rem 0"><input type="checkbox" name="voice_opt_in" value="true"> Occasional phone calls</label>
+            </fieldset>
+            <input type="hidden" name="consent_source" value="raffle-page-form">
+            <input type="hidden" name="consent_text" value="By providing my number and opting in, I agree to receive recurring automated marketing texts and/or calls from Jacks of All Trades about the 50/50 raffle and its programs. Consent is not a condition of entry or purchase. Message & data rates may apply. Reply STOP to unsubscribe, HELP for help.">
+            <p class="form-note" style="margin:.2rem 0 .8rem">By opting in to texts or calls you agree to receive recurring automated marketing messages from Jacks of All Trades. Consent is not a condition of entry or purchase. Msg &amp; data rates may apply. Reply <b>STOP</b> to unsubscribe, <b>HELP</b> for help.</p>
+            <button class="btn btn-primary" type="submit">Keep me posted</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <script>
