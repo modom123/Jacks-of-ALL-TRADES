@@ -147,7 +147,7 @@
     if (s.show_pot) {
       try {
         const { data: r } = await db.from("raffle_stats").select("pot_total").order("updated_at", { ascending: false }).limit(1).maybeSingle();
-        if (r && r.pot_total != null) potTxt = " · Pot: " + usd(r.pot_total);
+        if (r && r.pot_total != null) potTxt = " · Winner takes home: " + usd(r.pot_total);
       } catch (e) { /* ignore */ }
     }
     const key = "joat_promo_dismissed";

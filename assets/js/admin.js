@@ -515,9 +515,9 @@
     const r = await fetchRaffle();
     view.innerHTML = `
       <div class="view-head"><div><h2 style="margin:0">50/50 Raffle</h2><p>A community-project fundraiser. Update the live figures shown on the site.</p></div></div>
-      <div class="kpis">${kpi("Pot total", money(r.pot_total), "ticket", "")}${kpi("Renovation raised", money(r.renovation_raised), "home", "")}${kpi("Gross raised", money(r.gross_raised || ((Number(r.pot_total)||0)+(Number(r.renovation_raised)||0))), "mega", "")}${kpi("Tickets sold", (r.tickets_sold || 0).toLocaleString(), "mega", "")}${kpi("Goal", money(r.goal || 100000), "target", "")}</div>
+      <div class="kpis">${kpi("Winner takes home", money(r.pot_total), "ticket", "")}${kpi("Renovation raised", money(r.renovation_raised), "home", "")}${kpi("Gross raised", money(r.gross_raised || ((Number(r.pot_total)||0)+(Number(r.renovation_raised)||0))), "mega", "")}${kpi("Tickets sold", (r.tickets_sold || 0).toLocaleString(), "mega", "")}${kpi("Goal", money(r.goal || 100000), "target", "")}</div>
       <div class="panel"><div class="panel-head"><h3>Edit live figures</h3></div><div class="panel-body">
-        <form id="raffle-form"><div class="field-row"><div class="field"><label>Pot total ($)</label><input name="pot_total" type="number" value="${r.pot_total}"></div><div class="field"><label>Renovation raised ($)</label><input name="renovation_raised" type="number" value="${r.renovation_raised}"></div></div>
+        <form id="raffle-form"><div class="field-row"><div class="field"><label>Winner takes home ($) &mdash; the 50% share</label><input name="pot_total" type="number" value="${r.pot_total}"></div><div class="field"><label>Renovation raised ($)</label><input name="renovation_raised" type="number" value="${r.renovation_raised}"></div></div>
         <div class="field-row"><div class="field"><label>Tickets sold</label><input name="tickets_sold" type="number" value="${r.tickets_sold || 0}"></div><div class="field"><label>Goal ($)</label><input name="goal" type="number" value="${r.goal || 100000}"></div></div>
         <button class="btn btn-primary" type="submit">Save figures</button></form></div></div>`;
     $("#raffle-form").onsubmit = async (e) => {
