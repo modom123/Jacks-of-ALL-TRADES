@@ -78,7 +78,7 @@ Deno.serve(async (req: Request) => {
   const paymentsPath = env("ZEFFY_PAYMENTS_PATH", "/payments");
   const campaignId = env("ZEFFY_RAFFLE_CAMPAIGN_ID");
   const campaignParam = env("ZEFFY_CAMPAIGN_PARAM", "campaignId"); // override if Zeffy names it differently
-  const amountDivisor = parseFloat(env("ZEFFY_AMOUNT_DIVISOR", "1")) || 1; // set to 100 if amounts come in cents
+  const amountDivisor = parseFloat(env("ZEFFY_AMOUNT_DIVISOR", "100")) || 100; // Zeffy returns amounts in cents
   const potShare = parseFloat(env("ZEFFY_POT_SHARE", "0.5"));   // 50% to the winner
   const renoShare = parseFloat(env("ZEFFY_RENO_SHARE", "0.5")); // 50% funds renovation
 
@@ -111,16 +111,22 @@ Deno.serve(async (req: Request) => {
 
     // 2) Upsert each payment (idempotent on zeffy_id).
     if (payments.length) {
-      const rows = payments.map((p) => ({
-        zeffy_id: extractId(p),
-        amount: extractAmount(p, amountDivisor),
-        currency: (p.currency ?? "USD") as string,
-        campaign_id: (p.campaignId ?? campaignId ?? null) as string | null,
-        buyer_email: (p.email ?? (p.contact as Record<string, unknown>)?.email ?? null) as string | null,
-        status: (p.status ?? null) as string | null,
-        created_at: (p.createdAt ?? p.date ?? new Date().toISOString()) as string,
-        raw: p,
-      }));
+      const rows = payments.map((p) => {
+        const buyer = (p.buyer ?? {}) as Record<string, unknown>;
+        const createdSec = Number(p.created);
+        return {
+          zeffy_id: extractId(p),
+          amount: extractAmount(p, amountDivisor),
+          currency: (p.currency ?? "USD") as string,
+          campaign_id: (p.campaign_id ?? p.campaignId ?? campaignId ?? null) as string | null,
+          buyer_email: (buyer.email ?? p.email ?? null) as string | null,
+          status: (p.status ?? null) as string | null,
+          created_at: Number.isFinite(createdSec)
+            ? new Date(createdSec * 1000).toISOString()
+            : ((p.createdAt ?? p.date ?? new Date().toISOString()) as string),
+          raw: p,
+        };
+      });
       const { error } = await db.from("zeffy_payments").upsert(rows, { onConflict: "zeffy_id" });
       if (error) return json({ error: "upsert zeffy_payments failed", detail: error.message }, 500);
     }
@@ -129,7 +135,7 @@ Deno.serve(async (req: Request) => {
     const { data: agg, error: aggErr } = await db
       .from("zeffy_payments")
       .select("amount")
-      .not("status", "eq", "refunded");
+      .eq("status", "succeeded");
     if (aggErr) return json({ error: "aggregate failed", detail: aggErr.message }, 500);
     const gross = (agg ?? []).reduce((s, r) => s + Number(r.amount || 0), 0);
 
