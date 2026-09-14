@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!--
+  Jacks of All Trades Community Development
+  File: video.html  (30-second donor story, self-playing; embedded on updates.html)
+  Generated: 2026-09-14 12:40 UTC
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Our Story — Jacks of All Trades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#062a40; --gold:#ebb53c; }
+  * { box-sizing:border-box; }
+  html,body { height:100%; }
+  body { margin:0; background:var(--navy); color:#fff; font-family:"Inter",system-ui,-apple-system,sans-serif; overflow:hidden; }
+  .stage { position:relative; width:100vw; height:100vh; overflow:hidden; background:var(--navy); }
+  .scene { position:absolute; inset:0; opacity:0; }
+  .scene .bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .scene::after { content:""; position:absolute; inset:0; background:linear-gradient(to top, rgba(4,18,28,.92) 0%, rgba(4,18,28,.32) 46%, rgba(4,18,28,.22) 100%); }
+  .cap { position:absolute; left:0; right:0; bottom:0; padding:clamp(20px,5%,44px); z-index:2; }
+  .eyebrow { font-size:clamp(11px,2.2vw,15px); font-weight:800; letter-spacing:.22em; color:var(--gold); text-transform:uppercase; margin-bottom:.5rem; }
+  .line { font-size:clamp(22px,4.8vw,44px); font-weight:900; line-height:1.05; letter-spacing:-.01em; text-wrap:balance; }
+  .logo { width:clamp(120px,26%,220px); background:#fff; border-radius:16px; padding:12px 16px; margin-bottom:1rem; }
+  .cta-sub { font-size:clamp(13px,2.6vw,20px); font-weight:600; color:#cfe0ea; margin-top:.6rem; }
+  .pill { display:inline-block; background:var(--gold); color:var(--navy); font-weight:900; font-size:clamp(14px,3vw,22px); padding:.5em 1.1em; border-radius:999px; margin-top:1rem; }
+  .bar { position:absolute; left:0; bottom:0; height:5px; background:var(--gold); width:0; z-index:5; }
+  .replay { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px; background:rgba(4,18,28,.72); z-index:6; text-align:center; }
+  .replay button { background:var(--gold); color:var(--navy); border:0; font-weight:900; font-size:18px; padding:.7em 1.4em; border-radius:999px; cursor:pointer; }
+  @keyframes fade { 0%{opacity:0} 8%{opacity:1} 86%{opacity:1} 100%{opacity:0} }
+  @keyframes fade5 { 0%{opacity:0} 10%{opacity:1} 100%{opacity:1} }
+  @keyframes zoom { from{transform:scale(1.02)} to{transform:scale(1.12)} }
+  @keyframes rise { 0%{opacity:0;transform:translateY(24px)} 14%{opacity:1;transform:translateY(0)} 100%{opacity:1} }
+  @keyframes prog { from{width:0} to{width:100%} }
+  .stage.play .s1 { animation:fade 6.6s ease forwards; animation-delay:0s; }
+  .stage.play .s2 { animation:fade 6.6s ease forwards; animation-delay:6s; }
+  .stage.play .s3 { animation:fade 6.6s ease forwards; animation-delay:12s; }
+  .stage.play .s4 { animation:fade 6.6s ease forwards; animation-delay:18s; }
+  .stage.play .s5 { animation:fade5 6s ease forwards; animation-delay:24s; opacity:0; }
+  .stage.play .scene .bg { animation:zoom 6.8s ease forwards; }
+  .stage.play .s1 .bg{animation-delay:0s} .stage.play .s2 .bg{animation-delay:6s} .stage.play .s3 .bg{animation-delay:12s} .stage.play .s4 .bg{animation-delay:18s} .stage.play .s5 .bg{animation-delay:24s}
+  .stage.play .cap { animation:rise 6.6s ease forwards; opacity:0; }
+  .stage.play .s1 .cap{animation-delay:.3s} .stage.play .s2 .cap{animation-delay:6.3s} .stage.play .s3 .cap{animation-delay:12.3s} .stage.play .s4 .cap{animation-delay:18.3s} .stage.play .s5 .cap{animation-delay:24.3s}
+  .stage.play .bar { animation:prog 30s linear forwards; }
+  @media (prefers-reduced-motion: reduce){ .stage.play .scene .bg{animation:none} }
+</style>
+</head>
+<body>
+  <div class="stage play" id="stage">
+    <div class="scene s1"><img class="bg" src="assets/img/home-exterior-before-1.jpg" alt=""><div class="cap"><div class="eyebrow">The challenge</div><div class="line">Thousands of Detroit homes sit vacant.</div></div></div>
+    <div class="scene s2"><img class="bg" src="assets/img/programs-collage_2026-09-14_0132.jpg" alt=""><div class="cap"><div class="eyebrow">The program</div><div class="line">We train young Detroiters in six skilled trades.</div></div></div>
+    <div class="scene s3"><img class="bg" src="assets/img/programs-before-after_2026-09-14_0137.jpg" alt=""><div class="cap"><div class="eyebrow">The work</div><div class="line">They rebuild these homes &mdash; by hand.</div></div></div>
+    <div class="scene s4"><img class="bg" src="assets/img/volunteer-heroes_2026-09-13_1548.jpg" alt=""><div class="cap"><div class="eyebrow">The impact</div><div class="line">Careers. Housing. Neighborhoods reborn.</div></div></div>
+    <div class="scene s5"><img class="bg" src="assets/img/home-exterior-after.jpg" alt=""><div class="cap" style="text-align:center;display:flex;flex-direction:column;align-items:center"><img class="logo" src="assets/img/logo-jack.png" alt="Jack of All Trades"><div class="line">Your gift funds the next home.</div><div class="cta-sub">Donate at <b>joatamp.org</b></div><div class="pill">One Call. Every Solution.</div></div></div>
+    <div class="bar"></div>
+    <div class="replay" id="replay"><div style="font-weight:800">Thanks for watching</div><button id="replayBtn">&#9654; Replay</button></div>
+  </div>
+<script>
+(function(){
+  var stage=document.getElementById('stage'), replay=document.getElementById('replay'), t;
+  function run(){
+    clearTimeout(t); replay.style.display='none';
+    stage.classList.remove('play'); void stage.offsetWidth; stage.classList.add('play');
+    t=setTimeout(function(){ replay.style.display='flex'; }, 30000);
+  }
+  document.getElementById('replayBtn').onclick=run;
+  run();
+})();
+</script>
+</body>
+</html>
