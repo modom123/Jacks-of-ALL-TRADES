@@ -317,3 +317,25 @@ p { margin: 0 0 1em; }
 .divider { height: 1px; background: var(--border); border: 0; margin: 0; }
 .ratio-4-3 { aspect-ratio: 4/3; object-fit: cover; }
 .ratio-16-9 { aspect-ratio: 16/9; object-fit: cover; }
+
+/* ---- Marketing promo bar (bottom-fixed, Command Center controlled) -------- */
+.promo-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 200;
+  background: var(--navy-900, #062a40); color: #fff; display: flex; align-items: center;
+  justify-content: center; gap: .9rem; flex-wrap: wrap; padding: .7rem 3rem .7rem 1rem;
+  box-shadow: 0 -6px 24px -12px rgba(0,0,0,.5); font-size: .95rem; text-align: center; }
+.promo-bar b { font-weight: 800; }
+.promo-bar .promo-cta { background: var(--accent, #f5b301); color: var(--navy-900, #062a40);
+  font-weight: 800; padding: .45rem 1rem; border-radius: 999px; text-decoration: none; white-space: nowrap; }
+.promo-bar .promo-cta:hover { filter: brightness(1.05); }
+.promo-bar .promo-close { position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
+  background: transparent; border: 0; color: #fff; font-size: 1.3rem; line-height: 1; cursor: pointer; opacity: .8; }
+.promo-bar .promo-close:hover { opacity: 1; }
+@media (max-width: 560px) { .promo-bar { font-size: .86rem; padding-right: 2.4rem; } }
+
+/* ---- Share buttons -------------------------------------------------------- */
+.share-row { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+.share-btn { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .9rem;
+  border-radius: 999px; border: 1px solid var(--border, #e6e8ee); background: #fff;
+  color: var(--navy-900, #062a40); font-weight: 650; font-size: .9rem; cursor: pointer; text-decoration: none; }
+.share-btn:hover { background: var(--alt, #f5f7fb); }
+.share-btn svg { width: 18px; height: 18px; }

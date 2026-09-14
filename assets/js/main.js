@@ -2,6 +2,7 @@
    Jacks of All Trades Community Development — Front-end Interactions
    File: assets/js/main.js
    Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
+   Updated: 2026-09-14 02:04 UTC  |  Added Command-Center-controlled promo bar (marketing_settings)
 
    Handles: mobile nav, sticky-nav state, scroll reveal, animated counters,
    before/after slider, raffle countdown, and live figures from Supabase
@@ -131,6 +132,47 @@
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
   const fmtDate = (d) => { if (!d) return ""; const x = new Date(d + (String(d).length <= 10 ? "T00:00:00" : "")); return isNaN(x) ? "" : x.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); };
   const usd = (n) => (n == null || n === "") ? "" : "$" + Number(n).toLocaleString();
+
+  /* ---- Marketing promo bar (Command Center controlled) ------------------- */
+  async function loadPromoBar() {
+    const db = window.JOAT && window.JOAT.db;
+    if (!db || document.querySelector(".promo-bar")) return;
+    let s = null;
+    try {
+      const { data } = await db.from("marketing_settings").select("*").eq("id", 1).maybeSingle();
+      s = data;
+    } catch (e) { return; }
+    if (!s || !s.banner_enabled) return;
+    let potTxt = "";
+    if (s.show_pot) {
+      try {
+        const { data: r } = await db.from("raffle_stats").select("pot_total").order("updated_at", { ascending: false }).limit(1).maybeSingle();
+        if (r && r.pot_total != null) potTxt = " · Pot: " + usd(r.pot_total);
+      } catch (e) { /* ignore */ }
+    }
+    const key = "joat_promo_dismissed";
+    const sig = (s.updated_at || "") + "|" + (s.banner_message || "");
+    try { if (localStorage.getItem(key) === sig) return; } catch (e) { /* ignore */ }
+    const bar = document.createElement("div");
+    bar.className = "promo-bar";
+    const msg = document.createElement("span");
+    msg.innerHTML = esc(s.banner_message || "Support the 50/50 Neighborhood Revitalization Raffle") + esc(potTxt);
+    bar.appendChild(msg);
+    if (s.banner_cta_url) {
+      const a = document.createElement("a");
+      a.className = "promo-cta"; a.href = s.banner_cta_url;
+      a.textContent = s.banner_cta_label || "Buy tickets";
+      bar.appendChild(a);
+    }
+    const close = document.createElement("button");
+    close.className = "promo-close"; close.type = "button";
+    close.setAttribute("aria-label", "Dismiss"); close.innerHTML = "&times;";
+    close.onclick = () => { bar.remove(); try { localStorage.setItem(key, sig); } catch (e) { /* ignore */ } };
+    bar.appendChild(close);
+    document.body.appendChild(bar);
+  }
+  document.addEventListener("joat:db-ready", loadPromoBar);
+  if (window.JOAT && "configured" in window.JOAT) loadPromoBar();
 
   function mediaEmbed(mediaType, videoUrl, imageUrl, alt) {
     if (mediaType === "video" && videoUrl) {

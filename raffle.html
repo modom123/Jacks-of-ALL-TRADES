@@ -4,6 +4,7 @@
   File: raffle.html
   Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
   Updated: 2026-09-13 16:37 UTC  |  Added Jack of All Trades raffle-booth-at-Ford-Field banner photo
+  Updated: 2026-09-14 02:04 UTC  |  Added social share tags + "Share the raffle" buttons
 -->
 <html lang="en">
 <head>
@@ -13,6 +14,13 @@
 <title>50/50 Neighborhood Revitalization Raffle | Jacks of All Trades</title>
 <meta name="description" content="Enter the 50/50 Neighborhood Revitalization Raffle. Tickets at $1, $20, $50, and $100 tiers. Win 50% of the pot while funding the renovation of a Detroit home.">
 <meta name="theme-color" content="#062a40">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jacks of All Trades Community Development">
+<meta property="og:title" content="50/50 Neighborhood Revitalization Raffle — Win Half the Pot">
+<meta property="og:description" content="Win 50% of the pot. The other half rebuilds a Detroit home. Drawing live Dec 28 at Ford Field. Every ticket rebuilds a block.">
+<meta property="og:url" content="https://joatamp.org/raffle.html">
+<meta property="og:image" content="https://joatamp.org/assets/img/raffle-booth-fordfield_2026-09-13_1636.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;650;750;800;850&display=swap" rel="stylesheet">
@@ -140,7 +148,49 @@
       <p class="center text-soft" style="margin-top:1.6rem;font-size:.9rem">Please play responsibly. Must be 18+ and a Michigan resident to enter. See official rules for details.</p>
     </div>
   </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="card" style="max-width:820px;margin-inline:auto;text-align:center;padding:clamp(1.6rem,4vw,2.4rem)" data-reveal>
+        <span class="eyebrow" style="justify-content:center">Spread the word</span>
+        <h2>Share the raffle</h2>
+        <p class="lead">Every share sells more tickets and rebuilds more of the block. Post it, text it, send it.</p>
+        <div class="share-row" style="justify-content:center" id="raffle-share"></div>
+      </div>
+    </div>
+  </section>
 </main>
+
+<script>
+(function () {
+  var url = location.href.split("#")[0];
+  var text = "Win 50% of the pot — rebuild a Detroit home with Jacks of All Trades. Drawing Dec 28 at Ford Field!";
+  var u = encodeURIComponent(url), t = encodeURIComponent(text + " " + url);
+  var row = document.getElementById("raffle-share");
+  if (!row) return;
+  var links = [
+    ["Facebook", "https://www.facebook.com/sharer/sharer.php?u=" + u],
+    ["X / Twitter", "https://twitter.com/intent/tweet?text=" + t],
+    ["WhatsApp", "https://api.whatsapp.com/send?text=" + t],
+    ["Text (SMS)", "sms:?&body=" + t],
+    ["Email", "mailto:?subject=" + encodeURIComponent("Support the 50/50 raffle") + "&body=" + t]
+  ];
+  row.innerHTML = links.map(function (l) {
+    return '<a class="share-btn" target="_blank" rel="noopener" href="' + l[1] + '">' + l[0] + "</a>";
+  }).join("") + '<button class="share-btn" type="button" id="raffle-copy">Copy link</button>';
+  var c = document.getElementById("raffle-copy");
+  if (c) c.onclick = function () {
+    try { navigator.clipboard.writeText(url); } catch (e) { /* ignore */ }
+    c.textContent = "Copied!"; setTimeout(function () { c.textContent = "Copy link"; }, 1500);
+  };
+  if (navigator.share) {
+    var s = document.createElement("button");
+    s.className = "share-btn"; s.type = "button"; s.textContent = "Share…";
+    s.onclick = function () { navigator.share({ title: "50/50 Raffle", text: text, url: url }).catch(function () {}); };
+    row.insertBefore(s, row.firstChild);
+  }
+})();
+</script>
 
 <footer class="site-footer">
   <div class="container">
