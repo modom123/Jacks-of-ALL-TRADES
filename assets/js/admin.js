@@ -3,6 +3,7 @@
    File: assets/js/admin.js
    Generated: 2026-09-03 16:32 UTC · Expanded 2026-09-03 17:10 UTC
    Updated: 2026-09-14 00:42 UTC · Project cards show live fundraising tied to their linked campaign (renovation 50% + gross)
+   Updated: 2026-09-14 11:40 UTC · Added Merch Orders view (shop order fulfillment queue)
 
    A nonprofit operations hub: projects, fundraising campaigns, donor CRM,
    outreach, board/team, inbound leads, and three AI agents. Role-based access
@@ -141,6 +142,9 @@
     newsletter_signups: { label: "Newsletter", singular: "Subscriber", kind: "table", lead: true,
       cols: [{ k: "email", label: "Email" }, { k: "source_page", label: "Source" }],
       status: { field: "status", opts: ["subscribed", "unsubscribed"] } },
+    merch_orders: { label: "Merch Orders", singular: "Order", kind: "table", lead: true,
+      cols: [{ k: "full_name", label: "Name" }, { k: "email", label: "Email" }, { k: "product", label: "Item" }, { k: "size", label: "Size" }, { k: "quantity", label: "Qty" }, { k: "phone", label: "Phone" }],
+      status: { field: "status", opts: ["new", "confirmed", "paid", "fulfilled", "cancelled"] } },
   };
 
   /* =====================================================================
@@ -151,13 +155,14 @@
     { group: "Fundraising", items: [["campaigns", "Campaigns", ICO("mega")], ["donors", "Donors (CRM)", ICO("heart")], ["outreach", "Outreach", ICO("send")], ["raffle", "50/50 Raffle", ICO("ticket")]] },
     { group: "Programs & Projects", items: [["projects", "Projects", ICO("build")], ["renovation", "Renovation Tracker", ICO("home")]] },
     { group: "Inbound Leads", items: [["contact_messages", "Contact", ICO("mail")], ["enrollment_applications", "Enrollment", ICO("cap")], ["volunteer_signups", "Volunteers", ICO("users")], ["partnership_inquiries", "Partnerships", ICO("brief")], ["newsletter_signups", "Newsletter", ICO("mail")]] },
+    { group: "Shop", items: [["merch_orders", "Merch Orders", ICO("ticket")]] },
     { group: "Organization", items: [["team", "Board & Team", ICO("users")], ["agents", "AI Agents", ICO("spark")]] },
     { group: "System", items: [["settings", "Setup & Connection", ICO("gear")]] },
   ];
   const ROLE_VIEWS = {
     admin: "*",
     board: ["dashboard", "campaigns", "donors", "outreach", "raffle", "projects", "renovation", "team", "agents"],
-    staff: ["dashboard", "campaigns", "donors", "outreach", "raffle", "projects", "renovation", "contact_messages", "enrollment_applications", "volunteer_signups", "partnership_inquiries", "newsletter_signups", "agents"],
+    staff: ["dashboard", "campaigns", "donors", "outreach", "raffle", "projects", "renovation", "contact_messages", "enrollment_applications", "volunteer_signups", "partnership_inquiries", "newsletter_signups", "merch_orders", "agents"],
   };
   const allowed = (view) => role === "admin" || ROLE_VIEWS[role] === "*" || (ROLE_VIEWS[role] || []).includes(view);
 
@@ -223,6 +228,10 @@
       { id: 1, email: "supporter1@example.com", source_page: "home", status: "subscribed", created_at: iso(-1) },
       { id: 2, email: "supporter2@example.com", source_page: "programs", status: "subscribed", created_at: iso(-2) },
       { id: 3, email: "supporter3@example.com", source_page: "impact", status: "subscribed", created_at: iso(-8) },
+    ],
+    merch_orders: [
+      { id: 1, full_name: "Andre Cole", email: "andre@example.com", phone: "(313) 555-0198", product: "Card Logo Hoodie", size: "L", quantity: 1, message: "Navy if available", status: "new", created_at: iso(-1) },
+      { id: 2, full_name: "Renee Park", email: "renee@example.com", phone: "", product: "Dad Cap", size: "One size", quantity: 2, message: "", status: "confirmed", created_at: iso(-3) },
     ],
   };
   const DEMO_RAFFLE = { pot_total: 12480, renovation_raised: 42500, goal: 100000, tickets_sold: 640 };
