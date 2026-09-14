@@ -181,9 +181,10 @@
     const grid = document.getElementById("merch-grid");
     if (grid && list.length) {
       grid.innerHTML = list.map((m) => {
-        const price = (m.price != null && m.price !== "") ? "$" + Number(m.price).toLocaleString() : "See order form";
-        const cta = shopUrl
-          ? '<a class="btn btn-primary btn-sm" href="' + esc(shopUrl) + '" target="_blank" rel="noopener">Buy now</a>'
+        const buy = (m.buyUrl && String(m.buyUrl).trim()) ? String(m.buyUrl).trim() : shopUrl;
+        const price = (m.price != null && m.price !== "") ? "$" + Number(m.price).toLocaleString() : (buy ? "" : "See order form");
+        const cta = buy
+          ? '<a class="btn btn-primary btn-sm" href="' + esc(buy) + '" target="_blank" rel="noopener">Buy now</a>'
           : '<a class="btn btn-primary btn-sm" href="#order">Order</a>';
         const media = m.img
           ? '<div style="margin:-1.4rem -1.4rem .9rem;border-radius:var(--r-lg) var(--r-lg) 0 0;overflow:hidden;background:#f4f5f7;aspect-ratio:1/1"><img src="' + esc(m.img) + '" alt="' + esc(m.name) + '" style="width:100%;height:100%;object-fit:contain;display:block"></div>'
