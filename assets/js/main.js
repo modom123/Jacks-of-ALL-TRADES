@@ -174,6 +174,31 @@
   document.addEventListener("joat:db-ready", loadPromoBar);
   if (window.JOAT && "configured" in window.JOAT) loadPromoBar();
 
+  /* ---- Shop: render merch grid + order-form product list from config ------ */
+  function loadMerch() {
+    const list = (window.JOAT && Array.isArray(window.JOAT.MERCH)) ? window.JOAT.MERCH : [];
+    const shopUrl = (window.JOAT && window.JOAT.ORG && window.JOAT.ORG.shopUrl) || "";
+    const grid = document.getElementById("merch-grid");
+    if (grid && list.length) {
+      grid.innerHTML = list.map((m) => {
+        const price = (m.price != null && m.price !== "") ? "$" + Number(m.price).toLocaleString() : "See order form";
+        const cta = shopUrl
+          ? '<a class="btn btn-primary btn-sm" href="' + esc(shopUrl) + '" target="_blank" rel="noopener">Buy now</a>'
+          : '<a class="btn btn-primary btn-sm" href="#order">Order</a>';
+        return '<article class="card hover" data-reveal><span class="pill">' + esc(m.cat) + '</span>'
+          + '<h4 style="margin:.6rem 0 .2rem">' + esc(m.name) + '</h4>'
+          + '<p class="text-soft" style="min-height:2.6em;margin:0">' + esc(m.desc || "") + '</p>'
+          + '<div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-top:.9rem">'
+          + '<b>' + price + '</b>' + cta + '</div></article>';
+      }).join("");
+    }
+    const sel = document.getElementById("merch-product");
+    if (sel && list.length && sel.options.length <= 1) {
+      list.forEach((m) => { const o = document.createElement("option"); o.value = m.name; o.textContent = m.name; sel.appendChild(o); });
+    }
+  }
+  loadMerch();
+
   function mediaEmbed(mediaType, videoUrl, imageUrl, alt) {
     if (mediaType === "video" && videoUrl) {
       if (/\.(mp4|webm|ogg)(\?|$)/i.test(videoUrl))
