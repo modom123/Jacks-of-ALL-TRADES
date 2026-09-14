@@ -162,8 +162,10 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- SEED DATA (only if empty)
+-- SEED DATA — DISABLED (was demo/sample data). Real data comes from
+-- go_live_*.sql / seed_single_project_*.sql and from using the Command Center.
 -- ---------------------------------------------------------------------------
+/*  demo seeds disabled — do not re-enable
 insert into public.team_members (full_name, email, role, title)
 select * from (values
   ('Executive Director', 'director@joatamp.org', 'admin', 'Executive Director'),
@@ -202,6 +204,7 @@ select * from (values
   ('Great Lakes Credit Union', 'meeting', 'planned', 'Introductory sponsorship conversation', 'Board Chair', 'Board Chair')
 ) as v(donor_name,channel,status,subject,drafted_by,owner)
 where not exists (select 1 from public.outreach);
+*/  -- end demo seeds
 
 -- ---------------------------------------------------------------------------
 -- ROW LEVEL SECURITY — internal tables: authenticated users only
