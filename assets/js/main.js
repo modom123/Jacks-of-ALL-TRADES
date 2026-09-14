@@ -185,7 +185,10 @@
         const cta = shopUrl
           ? '<a class="btn btn-primary btn-sm" href="' + esc(shopUrl) + '" target="_blank" rel="noopener">Buy now</a>'
           : '<a class="btn btn-primary btn-sm" href="#order">Order</a>';
-        return '<article class="card hover" data-reveal><span class="pill">' + esc(m.cat) + '</span>'
+        const media = m.img
+          ? '<div style="margin:-1.4rem -1.4rem .9rem;border-radius:var(--r-lg) var(--r-lg) 0 0;overflow:hidden;background:#f4f5f7;aspect-ratio:1/1"><img src="' + esc(m.img) + '" alt="' + esc(m.name) + '" style="width:100%;height:100%;object-fit:contain;display:block"></div>'
+          : '';
+        return '<article class="card hover" data-reveal>' + media + '<span class="pill">' + esc(m.cat) + '</span>'
           + '<h4 style="margin:.6rem 0 .2rem">' + esc(m.name) + '</h4>'
           + '<p class="text-soft" style="min-height:2.6em;margin:0">' + esc(m.desc || "") + '</p>'
           + '<div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-top:.9rem">'

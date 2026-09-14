@@ -5,6 +5,7 @@
    Updated: 2026-09-13 17:00 UTC  |  Live Supabase URL + anon public key wired in
    Updated: 2026-09-14 00:59 UTC  |  Zeroed raffle fallbacks (no placeholder numbers; live from raffle_stats)
    Updated: 2026-09-14 11:40 UTC  |  Added shop merchandise list (JOAT.MERCH) + ORG.shopUrl
+   Updated: 2026-09-14 11:57 UTC  |  Added individual product images per merch item
 
    Single source of truth for public site data + Supabase credentials.
    Update the SUPABASE values below with your project's URL + anon key.
@@ -80,18 +81,18 @@ window.JOAT.STATS = [
 window.JOAT.ORG.shopUrl = "";
 // Set `price` (a number) on each item when you know it; null shows "See order form".
 window.JOAT.MERCH = [
-  { name: "Card Logo Hoodie",         cat: "Apparel",   price: null, desc: "Heavyweight fleece hoodie with the Jack of All Trades crest." },
-  { name: "Crest Crewneck",           cat: "Apparel",   price: null, desc: "Classic crewneck sweatshirt with embroidered crest." },
-  { name: "Card Fan Tee",             cat: "Apparel",   price: null, desc: "Soft cotton tee with the full card-fan logo." },
-  { name: "Sweatsuit Set",            cat: "Apparel",   price: null, desc: "Matching hoodie + joggers in the collection colorways." },
-  { name: "Card Logo Robe",           cat: "Apparel",   price: null, desc: "Plush robe with crest embroidery." },
-  { name: "Dad Cap",                  cat: "Headwear",  price: null, desc: "Structured cap with embroidered mark." },
-  { name: "Cuffed Beanie",            cat: "Headwear",  price: null, desc: "Ribbed knit beanie with woven label." },
-  { name: "Varsity Bomber",           cat: "Outerwear", price: null, desc: "Wool-body varsity bomber with crest." },
-  { name: "MA-1 Flight Bomber",       cat: "Outerwear", price: null, desc: "Navy flight bomber with full-back card-fan graphic." },
-  { name: "Wool Trench Coat",         cat: "Outerwear", price: null, desc: "Belted burgundy trench with embossed crest." },
-  { name: "Hooded Puffer",            cat: "Outerwear", price: null, desc: "Insulated puffer with fur-trim hood." },
-  { name: "Shearling Leather Jacket", cat: "Outerwear", price: null, desc: "Distressed leather with shearling collar." },
+  { name: "Card Logo Hoodie",         cat: "Apparel",   price: null, img: "assets/img/products/hoodie_2026-09-14_1157.jpg",      desc: "Heavyweight fleece hoodie with the Jack of All Trades crest." },
+  { name: "Crest Crewneck",           cat: "Apparel",   price: null, img: "assets/img/products/crewneck_2026-09-14_1157.jpg",    desc: "Classic crewneck sweatshirt with embroidered crest." },
+  { name: "Card Fan Tee",             cat: "Apparel",   price: null, img: "assets/img/products/tee_2026-09-14_1157.jpg",         desc: "Soft cotton tee with the full card-fan logo." },
+  { name: "Sweatsuit Set",            cat: "Apparel",   price: null, img: "assets/img/products/sweatsuit_2026-09-14_1157.jpg",   desc: "Matching hoodie + joggers in the collection colorways." },
+  { name: "Card Logo Robe",           cat: "Apparel",   price: null, img: "assets/img/products/robe_2026-09-14_1157.jpg",        desc: "Plush robe with crest embroidery." },
+  { name: "Dad Cap",                  cat: "Headwear",  price: null, img: "assets/img/products/cap_2026-09-14_1157.jpg",         desc: "Structured cap with embroidered mark." },
+  { name: "Cuffed Beanie",            cat: "Headwear",  price: null, img: "assets/img/products/beanie_2026-09-14_1157.jpg",      desc: "Ribbed knit beanie with woven label." },
+  { name: "Varsity Bomber",           cat: "Outerwear", price: null, img: "assets/img/products/varsity_2026-09-14_1157.jpg",     desc: "Wool-body varsity bomber with crest." },
+  { name: "MA-1 Flight Bomber",       cat: "Outerwear", price: null, img: "assets/img/products/bomber-navy_2026-09-14_1157.jpg", desc: "Navy flight bomber with full-back card-fan graphic." },
+  { name: "Wool Trench Coat",         cat: "Outerwear", price: null, img: "assets/img/products/trench_2026-09-14_1157.jpg",      desc: "Belted burgundy trench with embossed crest." },
+  { name: "Hooded Puffer",            cat: "Outerwear", price: null, img: "assets/img/products/puffer_2026-09-14_1157.jpg",      desc: "Insulated puffer with fur-trim hood." },
+  { name: "Shearling Leather Jacket", cat: "Outerwear", price: null, img: "assets/img/products/leather_2026-09-14_1157.jpg",    desc: "Distressed leather with shearling collar." },
 ];
 
 /* ---- Trade programs ------------------------------------------------------ */
