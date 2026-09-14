@@ -3,6 +3,7 @@
    File: assets/js/config.js
    Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
    Updated: 2026-09-13 17:00 UTC  |  Live Supabase URL + anon public key wired in
+   Updated: 2026-09-14 00:59 UTC  |  Zeroed raffle fallbacks (no placeholder numbers; live from raffle_stats)
 
    Single source of truth for public site data + Supabase credentials.
    Update the SUPABASE values below with your project's URL + anon key.
@@ -47,10 +48,12 @@ window.JOAT.RAFFLE = {
     { price: 50,  tickets: 70,  badge: "Best Value" },
     { price: 100, tickets: 150, badge: "Community Hero" },
   ],
-  // Fallback figures shown before Supabase live data loads.
-  potFallback: 12480,
+  // Fallback figures shown only if live data can't load. Kept at 0 so no
+  // placeholder numbers ever appear — real figures come from raffle_stats
+  // (set in Command Center → 50/50 Raffle).
+  potFallback: 0,
   goal: 100000,
-  raisedFallback: 42500,
+  raisedFallback: 0,
 };
 
 /* ---- Renovation milestone phases ----------------------------------------- */
