@@ -5,6 +5,7 @@
    Updated: 2026-09-14 00:42 UTC · Project cards show live fundraising tied to their linked campaign (renovation 50% + gross)
    Updated: 2026-09-14 11:40 UTC · Added Merch Orders view (shop order fulfillment queue)
    Updated: 2026-09-14 13:10 UTC · Click project/campaign cards to view & edit; edit-mode modal saves changes
+   Updated: 2026-09-14 13:41 UTC · Removed front-end demo/sample data (hub shows only real data)
 
    A nonprofit operations hub: projects, fundraising campaigns, donor CRM,
    outreach, board/team, inbound leads, and three AI agents. Role-based access
@@ -182,7 +183,9 @@
      DEMO DATA
      ==================================================================== */
   const iso = (d) => { const x = new Date(); x.setDate(x.getDate() + d); return x.toISOString(); };
-  const DEMO_DATA = {
+  // Demo/sample data removed — the Command Center shows only real data.
+  const DEMO_DATA = {};
+  const _demoUnused = {
     campaigns: [
       { id: uid(), name: "50/50 Neighborhood Revitalization Raffle", type: "raffle", status: "active", goal: 100000, raised: 42500, description: "Raffle funding a community home renovation.", created_at: iso(-30) },
       { id: uid(), name: "2026 Annual Fund", type: "annual", status: "active", goal: 75000, raised: 18400, description: "General operating support.", created_at: iso(-60) },
@@ -235,7 +238,7 @@
       { id: 2, full_name: "Renee Park", email: "renee@example.com", phone: "", product: "Dad Cap", size: "One size", quantity: 2, message: "", status: "confirmed", created_at: iso(-3) },
     ],
   };
-  const DEMO_RAFFLE = { pot_total: 12480, renovation_raised: 42500, goal: 100000, tickets_sold: 640 };
+  const DEMO_RAFFLE = { pot_total: 0, renovation_raised: 0, gross_raised: 0, goal: 100000, tickets_sold: 0 };
   const DEMO_PHASES = (A.PHASES || []).map((p) => ({ ...p }));
 
   /* =====================================================================
@@ -300,7 +303,7 @@
     (A.plugins || []).forEach((p) => {
       try {
         if (p.tables) Object.assign(T, p.tables);
-        if (p.demo) Object.assign(DEMO_DATA, p.demo);
+        // Plugin demo/sample data intentionally not merged (demo data removed).
         if (p.views) Object.assign(pluginViews, p.views);
         if (p.titles) Object.assign(VIEW_TITLES, p.titles);
         if (p.roles) for (const r in p.roles) { if (Array.isArray(ROLE_VIEWS[r])) ROLE_VIEWS[r].push(...p.roles[r]); }
