@@ -14,13 +14,14 @@
 //   browser. Do not place it in assets/js/config.js. Set it with:
 //     supabase secrets set ZEFFY_API_KEY=***  (then REGENERATE the key in Zeffy)
 //
-// CONFIRM BEFORE PRODUCTION
-//   Zeffy's exact base URL / auth header / endpoint paths + JSON field names come
-//   from your dashboard's interactive API docs (Settings → Organization →
-//   Integrations → API). They are all env-overridable below so no code change is
-//   needed — set the ones that differ as secrets. The response mapping in
-//   `extractAmount()` / `extractId()` is defensive; adjust field names once
-//   confirmed.
+// ZEFFY API (confirmed 2026-09-14)
+//   Base: https://api.zeffy.com/api/v1  ·  GET /payments  ·  Authorization: Bearer <key>
+//   Cursor pagination: response has_more + next_cursor, passed back as starting_after.
+//   Everything is env-overridable so no code change is needed if Zeffy adjusts:
+//     ZEFFY_API_BASE (default https://api.zeffy.com/api/v1)
+//     ZEFFY_PAYMENTS_PATH (default /payments)
+//     ZEFFY_RAFFLE_CAMPAIGN_ID + ZEFFY_CAMPAIGN_PARAM (default campaignId)
+//     ZEFFY_AMOUNT_DIVISOR (default 1; set to 100 if amounts arrive in cents)
 //
 // DEPLOY
 //   supabase functions deploy zeffy-sync --no-verify-jwt
@@ -56,10 +57,10 @@ function zeffyHeaders(): HeadersInit {
 function extractId(p: Record<string, unknown>): string {
   return String(p.id ?? p.paymentId ?? p.transactionId ?? p.uuid ?? crypto.randomUUID());
 }
-function extractAmount(p: Record<string, unknown>): number {
-  const raw = (p.amount ?? p.totalAmount ?? p.netAmount ?? p.total ?? 0) as number | string;
+function extractAmount(p: Record<string, unknown>, divisor: number): number {
+  const raw = (p.amount ?? p.totalAmount ?? p.netAmount ?? p.total ?? p.amountInCents ?? 0) as number | string;
   const n = typeof raw === "string" ? parseFloat(raw) : Number(raw);
-  return Number.isFinite(n) ? n : 0;
+  return Number.isFinite(n) ? n / divisor : 0;
 }
 
 Deno.serve(async (req: Request) => {
@@ -71,18 +72,30 @@ Deno.serve(async (req: Request) => {
   if (!env("ZEFFY_API_KEY")) return json({ error: "ZEFFY_API_KEY secret not set." }, 500);
 
   const db = createClient(SUPA_URL, SUPA_KEY);
-  const base = env("ZEFFY_API_BASE", "https://api.zeffy.com").replace(/\/$/, "");
-  const paymentsPath = env("ZEFFY_PAYMENTS_PATH", "/v1/payments");
+  // Zeffy public API: GET https://api.zeffy.com/api/v1/payments (Bearer auth),
+  // cursor pagination via has_more + next_cursor -> starting_after.
+  const base = env("ZEFFY_API_BASE", "https://api.zeffy.com/api/v1").replace(/\/$/, "");
+  const paymentsPath = env("ZEFFY_PAYMENTS_PATH", "/payments");
   const campaignId = env("ZEFFY_RAFFLE_CAMPAIGN_ID");
+  const campaignParam = env("ZEFFY_CAMPAIGN_PARAM", "campaignId"); // override if Zeffy names it differently
+  const amountDivisor = parseFloat(env("ZEFFY_AMOUNT_DIVISOR", "1")) || 1; // set to 100 if amounts come in cents
   const potShare = parseFloat(env("ZEFFY_POT_SHARE", "0.5"));   // 50% to the winner
   const renoShare = parseFloat(env("ZEFFY_RENO_SHARE", "0.5")); // 50% funds renovation
 
+  const listUrl = (cursor?: string) => {
+    const u = new URL(`${base}${paymentsPath}`);
+    u.searchParams.set("limit", "100");
+    if (campaignId) u.searchParams.set(campaignParam, campaignId);
+    if (cursor) u.searchParams.set("starting_after", cursor);
+    return u.toString();
+  };
+
   try {
-    // 1) Page through Zeffy payments (cursor/next style, defensive).
-    let url: string | null = `${base}${paymentsPath}?limit=100${campaignId ? `&campaignId=${encodeURIComponent(campaignId)}` : ""}`;
+    // 1) Page through Zeffy payments (Zeffy cursor style: has_more + next_cursor).
+    let url: string | null = listUrl();
     const payments: Record<string, unknown>[] = [];
     let guard = 0;
-    while (url && guard++ < 50) {
+    while (url && guard++ < 100) {
       const res = await fetch(url, { headers: zeffyHeaders() });
       if (!res.ok) {
         const body = await res.text();
@@ -91,15 +104,16 @@ Deno.serve(async (req: Request) => {
       const data = await res.json();
       const batch: Record<string, unknown>[] = Array.isArray(data) ? data : (data.data ?? data.payments ?? data.results ?? []);
       payments.push(...batch);
-      const next = (data && (data.next ?? data.nextCursor ?? data.paging?.next)) as string | undefined;
-      url = next ? (next.startsWith("http") ? next : `${base}${next}`) : null;
+      const hasMore = Boolean(data && (data.has_more ?? data.hasMore ?? false));
+      const cursor = (data && (data.next_cursor ?? data.nextCursor ?? null)) as string | null;
+      url = (hasMore && cursor) ? listUrl(cursor) : null;
     }
 
     // 2) Upsert each payment (idempotent on zeffy_id).
     if (payments.length) {
       const rows = payments.map((p) => ({
         zeffy_id: extractId(p),
-        amount: extractAmount(p),
+        amount: extractAmount(p, amountDivisor),
         currency: (p.currency ?? "USD") as string,
         campaign_id: (p.campaignId ?? campaignId ?? null) as string | null,
         buyer_email: (p.email ?? (p.contact as Record<string, unknown>)?.email ?? null) as string | null,
