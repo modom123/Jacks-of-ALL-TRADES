@@ -4,6 +4,7 @@
    Generated: 2026-09-03 16:32 UTC · Expanded 2026-09-03 17:10 UTC
    Updated: 2026-09-14 00:42 UTC · Project cards show live fundraising tied to their linked campaign (renovation 50% + gross)
    Updated: 2026-09-14 11:40 UTC · Added Merch Orders view (shop order fulfillment queue)
+   Updated: 2026-09-14 13:10 UTC · Click project/campaign cards to view & edit; edit-mode modal saves changes
 
    A nonprofit operations hub: projects, fundraising campaigns, donor CRM,
    outreach, board/team, inbound leads, and three AI agents. Role-based access
@@ -381,35 +382,42 @@
       const camps = await fetchTable("campaigns");
       camps.forEach((c) => { if (c.project_id != null) campByProject[String(c.project_id)] = c; });
     }
+    const hasBudgets = name === "projects" && !!pluginViews["project_budgets"];
     view.innerHTML = `
-      <div class="view-head"><div><h2 style="margin:0">${def.label}</h2><p>${rows.length} ${rows.length === 1 ? def.singular.toLowerCase() : def.label.toLowerCase()} · ${DEMO ? "sample data" : "live"}</p></div>
+      <div class="view-head"><div><h2 style="margin:0">${def.label}</h2><p>${rows.length} ${rows.length === 1 ? def.singular.toLowerCase() : def.label.toLowerCase()} · ${DEMO ? "sample data" : "live"} · <span class="text-soft">click a card to view &amp; edit</span></p></div>
         <div class="toolbar"><button class="btn btn-primary btn-sm" id="add-btn">${ICO("plus")} New ${def.singular}</button></div></div>
-      <div class="card-grid">${rows.map((r) => name === "projects" ? projectCard(r, campByProject[String(r.id)]) : campaignCard(r)).join("") || emptyPanel(def)}</div>`;
+      <div class="card-grid">${rows.map((r) => name === "projects" ? projectCard(r, campByProject[String(r.id)], hasBudgets) : campaignCard(r)).join("") || emptyPanel(def)}</div>`;
     $("#add-btn").onclick = () => openModal(name);
-    if (name === "projects" && pluginViews["project_budgets"]) {
-      $$(".ncard[data-project]", view).forEach((c) => { c.style.cursor = "pointer"; c.onclick = () => go("project_budgets#" + c.dataset.project); });
-    }
+    const byId = {}; rows.forEach((r) => { byId[String(r.id)] = r; });
+    $$(".ncard[data-id]", view).forEach((c) => {
+      c.style.cursor = "pointer"; c.title = "Click to view & edit";
+      c.onclick = () => { const r = byId[c.dataset.id]; if (r) openModal(name, r); };
+    });
+    $$(".proj-budgets", view).forEach((b) => { b.onclick = (e) => { e.stopPropagation(); go("project_budgets#" + b.dataset.project); }; });
   }
   function campaignCard(c) {
     const pct = c.goal ? Math.min(100, Math.round((c.raised / c.goal) * 100)) : 0;
     const gross = (c.gross_raised != null && Number(c.gross_raised) > 0)
       ? `<div class="text-soft" style="font-size:.82rem;margin-top:.3rem">Gross raised: ${money(c.gross_raised)}</div>` : "";
-    return `<div class="ncard"><div class="ncard-top"><span class="tag ${statusClass(c.status)}">${esc(c.status)}</span><span class="tag">${esc(c.type)}</span></div>
+    return `<div class="ncard" data-id="${esc(c.id)}"><div class="ncard-top"><span class="tag ${statusClass(c.status)}">${esc(c.status)}</span><span class="tag">${esc(c.type)}</span></div>
       <h4>${esc(c.name)}</h4><p class="text-soft">${esc(c.description || "")}</p>
       <div class="progress-bar" style="margin:.7rem 0 .5rem"><div class="progress-fill" style="width:${pct}%"></div></div>
       <div class="ncard-foot"><b>${money(c.raised)}</b> <span class="text-soft">of ${money(c.goal)} · ${pct}%</span></div>${gross}</div>`;
   }
-  function projectCard(p, camp) {
+  function projectCard(p, camp, hasBudgets) {
     // Fundraising tied to the project via its linked campaign (renovation 50% + gross).
     const fund = camp
       ? `<div class="ncard-foot" style="margin-top:.35rem;border-top:1px solid var(--line,#e6e8ee);padding-top:.5rem">
            <b>${money(camp.raised)}</b> <span class="text-soft">raised for renovation · ${money(camp.gross_raised)} gross · goal ${money(camp.goal || p.budget)}</span></div>`
       : "";
-    return `<div class="ncard" data-project="${esc(p.id)}"><div class="ncard-top"><span class="tag ${statusClass(p.status)}">${esc((p.status || "").replace("_", " "))}</span><span class="tag">${esc(p.type)}</span></div>
+    const budgets = hasBudgets
+      ? `<div style="margin-top:.7rem"><button class="btn btn-ghost btn-sm proj-budgets" type="button" data-project="${esc(p.id)}">Budgets &amp; expenses &rarr;</button></div>`
+      : "";
+    return `<div class="ncard" data-id="${esc(p.id)}"><div class="ncard-top"><span class="tag ${statusClass(p.status)}">${esc((p.status || "").replace("_", " "))}</span><span class="tag">${esc(p.type)}</span></div>
       <h4>${esc(p.name)}</h4><p class="text-soft">${esc(p.description || "")}</p>
       <div class="progress-bar" style="margin:.7rem 0 .5rem"><div class="progress-fill" style="width:${Number(p.progress) || 0}%"></div></div>
       <div class="ncard-foot"><span>${Number(p.progress) || 0}% complete</span><span class="text-soft">${money(p.spent)} / ${money(p.budget)} budget</span></div>${fund}
-      <div class="ncard-meta text-soft">${p.location ? esc(p.location) + " · " : ""}${p.lead_name ? "Lead: " + esc(p.lead_name) : ""}${p.target_date ? " · Target " + fmtDate(p.target_date) : ""}</div></div>`;
+      <div class="ncard-meta text-soft">${p.location ? esc(p.location) + " · " : ""}${p.lead_name ? "Lead: " + esc(p.lead_name) : ""}${p.target_date ? " · Target " + fmtDate(p.target_date) : ""}</div>${budgets}</div>`;
   }
 
   /* =====================================================================
@@ -470,7 +478,8 @@
      ==================================================================== */
   function openModal(name, preset) {
     const def = T[name]; const wrap = $("#modal");
-    $("#modal-title").textContent = "New " + def.singular;
+    const editing = !!(preset && preset.id != null);
+    $("#modal-title").textContent = (editing ? "Edit " : "New ") + def.singular;
     $("#modal-fields").innerHTML = def.form.map((f) => {
       const id = "m-" + f.k;
       const pv = preset && preset[f.k] != null ? String(preset[f.k]) : "";
@@ -487,7 +496,7 @@
       e.preventDefault();
       const data = Object.fromEntries(new FormData(e.target).entries());
       def.form.forEach((f) => { if (f.type === "number" && data[f.k] !== "") data[f.k] = Number(data[f.k]); if (data[f.k] === "") delete data[f.k]; });
-      await insertRow(name, data);
+      if (editing) await updateField(name, preset.id, data); else await insertRow(name, data);
       wrap.hidden = true;
       route();
     };
