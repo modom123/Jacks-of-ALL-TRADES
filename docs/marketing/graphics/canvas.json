@@ -1,0 +1,9 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1080, "h": 1080, "title": "Raffle hero (IG square)" },
+    { "file": "Countdown.dc.html", "x": 1180, "y": 0, "w": 1080, "h": 1080, "title": "Countdown (IG square)" },
+    { "file": "Give.dc.html", "x": 2360, "y": 0, "w": 1080, "h": 1080, "title": "Donate / sponsor (IG square)" },
+    { "file": "Flyer.dc.html", "x": 3540, "y": 0, "w": 816, "h": 1056, "title": "Print flyer (Letter)", "print": "fixed" }
+  ],
+  "launch": { "view": "canvas" }
+}
