@@ -5,6 +5,7 @@
   Generated: 2026-09-09 09:11 UTC  |  Project updates, raffle winners & live stream
   Updated: 2026-09-14 12:40 UTC  |  Embedded 30-second donor story video (video.html)
   Updated: 2026-09-14 12:53 UTC  |  Updated project-update photos (team hero + Ford Field booth)
+  Updated: 2026-09-14 12:58 UTC  |  Show finished-house (3:4) and worker (10:9) photos uncropped
 -->
 <html lang="en">
 <head>
@@ -22,6 +23,8 @@
 <style>
   /* Responsive 16:9 media embed (video iframes & <video>) */
   .media-embed{position:relative;width:100%;aspect-ratio:16/9;background:#0b1b28;border-radius:14px;overflow:hidden}
+  .media-embed.portrait{aspect-ratio:3/4}
+  .media-embed.squareish{aspect-ratio:10/9}
   .media-embed iframe,.media-embed video,.media-embed img{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover;display:block}
   /* Live banner */
   .live-wrap{background:linear-gradient(160deg,#062a40,#0a3a58);border-radius:var(--r-lg,16px);padding:clamp(1.4rem,3vw,2.2rem);color:#fff}
@@ -141,7 +144,7 @@
       <div class="grid grid-3" data-updates>
         <!-- Hydrated from Supabase (project_updates). Static fallback below: -->
         <article class="update-card" data-reveal>
-          <div class="media-embed"><img src="assets/img/home-exterior-after.jpg" alt="Restored brick exterior"></div>
+          <div class="media-embed portrait"><img src="assets/img/home-exterior-after.jpg" alt="Restored brick exterior"></div>
           <div class="u-body">
             <div class="u-meta"><span class="u-tag">Renovation</span><span>Sep 6, 2026</span></div>
             <h3>Exterior restoration complete</h3>
@@ -149,7 +152,7 @@
           </div>
         </article>
         <article class="update-card" data-reveal data-delay="1">
-          <div class="media-embed"><img src="assets/img/joat-hero_2026-09-14_1253.jpg" alt="A Jacks of All Trades tradesperson ready to rebuild Detroit"></div>
+          <div class="media-embed squareish"><img src="assets/img/joat-hero_2026-09-14_1253.jpg" alt="A Jacks of All Trades tradesperson ready to rebuild Detroit"></div>
           <div class="u-body">
             <div class="u-meta"><span class="u-tag">Team</span><span>Aug 28, 2026</span></div>
             <h3>The everyday heroes rebuilding Detroit</h3>
