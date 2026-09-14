@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <!--
   Jacks of All Trades Community Development
-  File: shop.html
-  Generated: 2026-09-03 16:32 UTC  |  joatamp.org redesign
-  Updated: 2026-09-14 11:40 UTC  |  Added branded apparel storefront + order form (merch_orders)
-  Updated: 2026-09-14 12:05 UTC  |  Buy now buttons wired to per-item Stripe Payment Links
+  File: mission.html
+  Generated: 2026-09-14 12:18 UTC  |  Mission & Executive Summary
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 48 48%27%3E%3Crect width=%2748%27 height=%2748%27 rx=%2712%27 fill=%27%23062a40%27/%3E%3Cpath d=%27M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z%27 fill=%27%23fff%27/%3E%3Cpath d=%27M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z%27 fill=%27%230076b6%27/%3E%3C/svg%3E">
-<title>Shop the Collection | Jacks of All Trades</title>
-<meta name="description" content="Shop the Jack of All Trades branded collection — hoodies, tees, caps, sweatsuits, jackets and coats. Every purchase funds trades training and Detroit home renovation.">
+<title>Our Mission | Jacks of All Trades</title>
+<meta name="description" content="The mission of Jacks of All Trades Apprenticeship and Mentoring Program: empowering Detroit youth through skilled-trades training while restoring homes and revitalizing neighborhoods.">
 <meta name="theme-color" content="#062a40">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Jacks of All Trades Community Development">
-<meta property="og:title" content="Shop the Jack of All Trades Collection">
-<meta property="og:description" content="Branded hoodies, tees, caps, sweatsuits, jackets and coats. Every purchase rebuilds a Detroit neighborhood.">
-<meta property="og:url" content="https://joatamp.org/shop.html">
-<meta property="og:image" content="https://joatamp.org/assets/img/merch-collection_2026-09-14_1140.jpg">
+<meta property="og:title" content="Our Mission | Jacks of All Trades">
+<meta property="og:description" content="Empowering Detroit youth through skilled-trades training while restoring homes, reducing homelessness, and strengthening the city's economic foundation.">
+<meta property="og:url" content="https://joatamp.org/mission.html">
+<meta property="og:image" content="https://joatamp.org/assets/img/renovation-crew-joat_2026-09-13_1601.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,13 +42,13 @@
     </button>
     <nav class="nav-links" id="menu">
       <a href="home.html">Home</a>
-      <a href="mission.html">Mission</a>
+      <a href="mission.html" class="active">Mission</a>
       <a href="raffle.html">50/50 Raffle</a>
       <a href="impact.html">Our Impact</a>
       <a href="updates.html">Updates</a>
       <a href="programs.html">Programs</a>
       <a href="get-involved.html">Get Involved</a>
-      <a href="shop.html" class="active">Shop</a>
+      <a href="shop.html">Shop</a>
       <a href="contact.html">Contact</a>
       <a class="btn btn-primary nav-cta" href="raffle.html">Buy Raffle Tickets</a>
     </nav>
@@ -60,71 +58,48 @@
 <main>
   <section class="section-tight bg-ink" style="padding-top:clamp(56px,8vw,96px)">
     <div class="container">
-      <div class="section-head" style="margin-bottom:0;max-width:820px" data-reveal>
-        <span class="eyebrow">Shop the Collection</span>
-        <h1 style="font-size:var(--fs-h1)">Wear the mission.<br>Rebuild the block.</h1>
-        <p class="lead">The Jack of All Trades collection &mdash; hoodies, tees, caps, sweatsuits, jackets and coats, each carrying the crest. Every purchase funds trades training and the renovation of a Detroit home.</p>
-        <div class="hero-cta" style="margin-top:1.4rem"><a class="btn btn-primary btn-lg" href="#order">Order now</a><a class="btn btn-ghost btn-lg" href="#collection">View the collection</a></div>
+      <div class="section-head" style="margin-bottom:0;max-width:860px" data-reveal>
+        <span class="eyebrow">Our Mission</span>
+        <h1 style="font-size:var(--fs-h1)">Building futures. Rebuilding Detroit.</h1>
+        <p class="lead">One coordinated, self-sustaining model where training, housing, and neighborhood renewal reinforce one another.</p>
       </div>
     </div>
   </section>
 
-  <!-- Collection lookbook -->
-  <section class="section" id="collection">
+  <section class="section">
     <div class="container">
-      <div class="grid grid-2" style="gap:clamp(20px,3vw,36px);align-items:start">
-        <figure class="card" style="padding:0;overflow:hidden" data-reveal><img src="assets/img/merch-collection_2026-09-14_1140.jpg" alt="Jack of All Trades apparel collection — hoodies, tees, crewneck, sweatsuit, caps and beanies" style="width:100%;height:auto;display:block"><figcaption style="padding:1rem 1.3rem"><h4 style="margin:0">Apparel &amp; headwear</h4></figcaption></figure>
-        <figure class="card" style="padding:0;overflow:hidden" data-reveal data-delay="1"><img src="assets/img/merch-outerwear_2026-09-14_1140.jpg" alt="Jack of All Trades outerwear — leather jacket, bomber, trench coat and puffer" style="width:100%;height:auto;display:block"><figcaption style="padding:1rem 1.3rem"><h4 style="margin:0">Outerwear</h4></figcaption></figure>
+      <div class="section-head center" style="max-width:900px;margin-inline:auto" data-reveal>
+        <span class="eyebrow" style="justify-content:center">Mission Statement</span>
+        <h2>Why we exist</h2>
       </div>
+      <p class="lead" style="max-width:900px;margin:1.2rem auto 0;text-align:center" data-reveal>Jacks of All Trades Apprenticeship and Mentoring Program empowers disadvantaged youth with hands-on training in carpentry, electrical, plumbing, landscaping, drywalling, and roofing &mdash; while restoring dilapidated homes and revitalizing Detroit neighborhoods. Our mission is to reduce minority homelessness, support low-income families, and strengthen the city&rsquo;s economic foundation by increasing tax revenue, utility revenue, and habitable housing inventory through strategic partnerships with the Detroit Land Bank, City Council, Section&nbsp;8 Housing, and local tradesmen.</p>
     </div>
   </section>
 
-  <!-- Product grid (rendered from config.js -> JOAT.MERCH by main.js) -->
   <section class="section bg-alt">
     <div class="container">
-      <div class="section-head center" style="margin-inline:auto" data-reveal>
-        <span class="eyebrow" style="justify-content:center">The pieces</span>
-        <h2>Shop by item</h2>
-        <p class="lead">Tap <strong>Buy now</strong> for instant, secure checkout with Stripe &mdash; or use the order form below. 100% of proceeds fund the mission.</p>
-      </div>
-      <div class="grid grid-4" id="merch-grid" data-reveal>
-        <p class="text-soft">Loading the collection&hellip;</p>
+      <div style="max-width:760px;margin-inline:auto" data-reveal>
+        <span class="eyebrow">Executive Summary</span>
+        <h2 style="margin-bottom:1.2rem">A coordinated, self-sustaining model</h2>
+        <div style="display:flex;flex-direction:column;gap:1.1rem;font-size:1.05rem;line-height:1.75;color:var(--text-soft,#3b4c57)">
+          <p>Jacks of All Trades Apprenticeship and Mentoring Program (JOATAMP) is a Detroit-rooted nonprofit workforce-development and community-revitalization initiative designed to address multiple systemic challenges through one coordinated, self-sustaining model.</p>
+          <p>JOATAMP empowers disadvantaged youth through hands-on training and mentorship in carpentry, electrical, plumbing, landscaping, drywalling, and roofing &mdash; while simultaneously restoring dilapidated and abandoned homes throughout Detroit. These homes serve as live training environments, allowing students to gain real-world experience while directly contributing to neighborhood stabilization.</p>
+          <p>Like a well-balanced system in motion, each component of the program reinforces the next. As students learn skilled trades, vacant properties are transformed into safe, livable housing. As housing inventory increases, opportunities expand for Section&nbsp;8 programs, low-income families, and individuals experiencing homelessness. As homes return to productive use, the city benefits through new tax revenue, utility revenue, and reduced blight &mdash; strengthening Detroit&rsquo;s economic foundation.</p>
+          <p>Through strategic partnerships with the Detroit Land Bank Authority, City Council, Section&nbsp;8 housing providers, local contractors, and experienced tradesmen, JOATAMP helps clear land-bank inventory while developing the next generation of skilled workers. These partnerships build credibility, trust, and long-term collaboration, ensuring that revitalization efforts are community-driven and locally formed.</p>
+          <p>JOATAMP is uniquely positioned to succeed because it is built from lived experience and local knowledge. With a deep understanding of Detroit&rsquo;s neighborhoods, its housing challenges, and its people, this is not a single-issue program &mdash; it is a comprehensive model where education, housing, workforce development, and economic growth move together toward lasting impact.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Order form -->
-  <section class="section" id="order">
+  <section class="section bg-ink">
     <div class="container">
-      <div class="split" style="align-items:start">
-        <div data-reveal>
-          <img src="assets/img/logo-jack.png" alt="Jack of All Trades" style="width:120px;height:auto;display:block;margin-bottom:1.2rem">
-          <span class="eyebrow">Place an order</span>
-          <h2>Order your gear</h2>
-          <p class="lead">Tell us what you'd like and we'll confirm price, sizes, and pickup or shipping. Paying by card? We'll send a secure Zeffy checkout link.</p>
-          <ul class="checklist" style="margin-top:1rem">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>100% of proceeds fund training &amp; renovation</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Local pickup in Detroit or ship to you</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Secure card checkout via Zeffy</li>
-          </ul>
-        </div>
-        <div class="card" data-reveal data-delay="1">
-          <h4>Order form</h4>
-          <form data-collection="merch_orders" data-success="Thanks! We'll confirm your order, sizes, and payment by email.">
-            <div class="field-row"><div class="field"><label for="o-name">Full name</label><input id="o-name" name="full_name" required></div><div class="field"><label for="o-email">Email</label><input id="o-email" name="email" type="email" required></div></div>
-            <div class="field-row"><div class="field"><label for="o-phone">Phone (optional)</label><input id="o-phone" name="phone" type="tel"></div><div class="field"><label for="merch-product">Item</label><select id="merch-product" name="product" required><option value="">Select an item&hellip;</option></select></div></div>
-            <div class="field-row"><div class="field"><label for="o-size">Size</label><select id="o-size" name="size"><option value="">Select&hellip;</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>One size</option></select></div><div class="field"><label for="o-qty">Quantity</label><input id="o-qty" name="quantity" type="number" min="1" value="1"></div></div>
-            <div class="field"><label for="o-note">Color / notes (optional)</label><textarea id="o-note" name="message" placeholder="Preferred colorway, second item, shipping vs. pickup&hellip;"></textarea></div>
-            <button class="btn btn-primary btn-block" type="submit">Submit order</button>
-          </form>
-        </div>
+      <div class="section-head center" style="margin-inline:auto" data-reveal>
+        <span class="eyebrow" style="justify-content:center">Be part of it</span>
+        <h2>Help us rebuild Detroit's future</h2>
+        <p class="lead">Enroll, volunteer, donate, or partner &mdash; every kind of support moves the mission forward.</p>
+        <div class="hero-cta" style="justify-content:center;margin-top:1.4rem"><a class="btn btn-white btn-lg" href="get-involved.html">Get involved</a><a class="btn btn-ghost btn-lg" href="programs.html">Explore programs</a></div>
       </div>
-    </div>
-  </section>
-
-  <section class="section-tight bg-alt">
-    <div class="container center">
-      <p class="lead maxw-640 mx-auto" data-reveal>Your purchase makes a tangible difference &mdash; directly funding our students and the neighborhoods we serve. Thank you for helping rebuild Detroit's future, one piece at a time.</p>
     </div>
   </section>
 </main>
@@ -152,7 +127,6 @@
           <li><a href="mission.html">Our Mission</a></li>
           <li><a href="raffle.html">50/50 Raffle</a></li>
           <li><a href="impact.html">Our Impact</a></li>
-          <li><a href="updates.html">Updates</a></li>
           <li><a href="programs.html">Programs</a></li>
           <li><a href="shop.html">Shop to Support</a></li>
         </ul>
