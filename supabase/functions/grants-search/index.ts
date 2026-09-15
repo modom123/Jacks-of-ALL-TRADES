@@ -20,7 +20,9 @@
 //   -> { "leads": [ ... normalized grant_leads shape ... ], "count": N, "source": "grants.gov" }
 // ============================================================================
 
-const GG = "https://api.grants.gov/v1/api";
+// Try the current grants.gov base first, then the documented api.grants.gov
+// mirror. Both expose the same search2 / fetchOpportunity service.
+const GG_BASES = ["https://grants.gov/api/common", "https://api.grants.gov/v1/api"];
 const DETAIL = "https://www.grants.gov/search-results-detail/";
 
 const CORS = {
@@ -46,13 +48,19 @@ function awardRange(syn: Record<string, unknown>): string {
 }
 
 async function ggPost(path: string, body: unknown): Promise<any> {
-  const res = await fetch(`${GG}/${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`Grants.gov ${path} HTTP ${res.status}`);
-  return await res.json();
+  let lastErr: unknown = null;
+  for (const base of GG_BASES) {
+    try {
+      const res = await fetch(`${base}/${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) { lastErr = new Error(`${base}/${path} HTTP ${res.status}`); continue; }
+      return await res.json();
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error(`Grants.gov ${path} unreachable`);
 }
 
 Deno.serve(async (req: Request) => {
