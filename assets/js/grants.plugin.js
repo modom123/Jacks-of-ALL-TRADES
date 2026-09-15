@@ -81,6 +81,7 @@
     const prompt = [
       `Find ${count} grant opportunities that fit us.` + (focus ? ` Focus: ${focus}.` : ""),
       `Funder types to include: ${types.map((t) => TY_LABEL[t]).join(", ")}.`,
+      "Include a MIX ACROSS LEVELS — federal, Michigan state agencies (MSHDA, MEDC, LEO/Michigan Works!), and LOCAL/CITY (City of Detroit CDBG/HRD/ARPA/Detroit at Work, Wayne County, Detroit Land Bank Authority) — plus Detroit regional funders. Flag any that are contracts/RFPs (earned revenue) rather than grants.",
       "Return ONLY a JSON array (no prose/markdown). Each element:",
       '{ "funder": string, "funder_type": one of ["foundation","corporate","government","community"],',
       '  "focus_area": string, "fit_reason": one sentence, "est_amount": range string with "(verify)",',
@@ -275,6 +276,7 @@
           <button class="btn btn-ghost btn-sm" data-draft="${field}">${has ? "Redraft" : "Draft"} with ${d.who}</button>
           <button class="btn btn-ghost btn-sm" data-copy="${field}">Copy</button>
           ${EMAILABLE[field] ? `<button class="btn btn-primary btn-sm" data-send="${field}">Send email</button>` : ""}
+          ${field === "call_script_draft" ? `<button class="btn btn-primary btn-sm" data-call="${field}">Call funder</button>` : ""}
         </div>
       </div></details>`;
   }
@@ -358,6 +360,21 @@
         if (field === "intro_email_draft" && (lead.status === "identified" || lead.status === "qualified")) { patch.status = "contacted"; lead.status = "contacted"; const st = el.querySelector('[data-field="status"]'); if (st) st.value = "contacted"; }
         try { await updateOne(hub, id, patch); } catch (e) {}
       } else { hub.toast("Send failed: " + (r.error || "unknown")); }
+      b.disabled = false; b.textContent = orig;
+    });
+    el.querySelectorAll("[data-call]").forEach((b) => b.onclick = async () => {
+      if (!A.phone || !A.phone.call) { hub.toast("Phone module not loaded"); return; }
+      const to = (get("contact_phone") || "").trim();
+      if (!to) { hub.toast("Add the funder's contact phone first, then Save"); return; }
+      const script = (get("call_script_draft") || "").trim();
+      if (!script) { hub.toast("Draft the call script first"); return; }
+      if (!confirm(`Place an automated call to ${to}?\nIt will read the script aloud. This is business-to-business funder outreach.`)) return;
+      const orig = b.textContent; b.disabled = true; b.textContent = "Calling…";
+      const r = await A.phone.call({ to, script });
+      if (r.ok) {
+        hub.toast("Call placed");
+        if (lead.status === "identified" || lead.status === "qualified") { lead.status = "contacted"; const st = el.querySelector('[data-field="status"]'); if (st) st.value = "contacted"; try { await updateOne(hub, id, { status: "contacted" }); } catch (e) {} }
+      } else { hub.toast("Call failed: " + (r.error || "unknown")); }
       b.disabled = false; b.textContent = orig;
     });
     el.querySelector("[data-save]").onclick = async () => {

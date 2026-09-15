@@ -55,4 +55,26 @@
   }
 
   A.email = { send, splitSubject };
+
+  /* ---- Phone (Twilio place-call) ----------------------------------------- */
+  async function call({ to, script }) {
+    const cfg = A.SUPABASE || {};
+    if (!A.configured || !cfg.url) return { ok: false, error: "Supabase not configured" };
+    const tok = await token();
+    if (!tok) return { ok: false, error: "Sign in to the Command Center to place a call" };
+    try {
+      const res = await fetch(cfg.url.replace(/\/$/, "") + "/functions/v1/place-call", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok, apikey: cfg.anonKey },
+        body: JSON.stringify({ to, script }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) return { ok: false, error: data.error || ("HTTP " + res.status) };
+      return { ok: true, sid: data.sid, status: data.status };
+    } catch (e) {
+      return { ok: false, error: "Deploy the place-call function, or check your connection" };
+    }
+  }
+
+  A.phone = { call };
 })();
