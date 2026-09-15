@@ -20,10 +20,13 @@
   const A = (window.JOAT = window.JOAT || {});
   if (!A.registerPlugin) { console.warn("[grants] Command Center core not loaded"); return; }
 
+  const EIN = (A.ORG && A.ORG.ein) || "";
   const ORG_FACTS =
     "Jacks of All Trades Community Development — a Detroit nonprofit that (1) trains residents in six skilled trades, " +
     "(2) renovates vacant Detroit homes into quality housing, and (3) runs youth apprenticeship & mentoring with job placement. " +
-    "A 50/50 raffle funds a home renovation. Mission: revitalize Detroit neighborhoods and build futures through skilled-trades training.";
+    "A 50/50 raffle funds a home renovation. Mission: revitalize Detroit neighborhoods and build futures through skilled-trades training. " +
+    (EIN ? "Federal EIN (use verbatim; do not use a placeholder for it): " + EIN + ". " : "") +
+    "Legal applicant name — confirm which registered entity holds the EIN before filing (the site brand is 'Jacks of All Trades Community Development').";
 
   const TYPES = [["foundation", "Foundation"], ["corporate", "Corporate"], ["government", "Government"], ["community", "Community"]];
   const TY_LABEL = Object.fromEntries(TYPES);

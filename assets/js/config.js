@@ -31,6 +31,7 @@ window.JOAT.ORG = {
   email: "info@joatamp.org",
   phone: "(313) 639-9373",           // update with the real number
   domain: "joatamp.org",
+  ein: "41-2680557",                 // federal tax ID (for grants & tax receipts)
   zeffyUrl: "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development",
   social: {
     facebook: "#",
