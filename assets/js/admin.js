@@ -156,7 +156,7 @@
     { group: "Overview", items: [["dashboard", "Dashboard", ICO("grid")]] },
     { group: "Fundraising", items: [["campaigns", "Campaigns", ICO("mega")], ["donors", "Donors (CRM)", ICO("heart")], ["outreach", "Outreach", ICO("send")], ["raffle", "50/50 Raffle", ICO("ticket")]] },
     { group: "Programs & Projects", items: [["projects", "Projects", ICO("build")], ["renovation", "Renovation Tracker", ICO("home")]] },
-    { group: "Inbound Leads", items: [["contact_messages", "Contact", ICO("mail")], ["enrollment_applications", "Enrollment", ICO("cap")], ["volunteer_signups", "Volunteers", ICO("users")], ["partnership_inquiries", "Partnerships", ICO("brief")], ["newsletter_signups", "Newsletter", ICO("mail")]] },
+    { group: "Inbox", items: [["inbox", "Inbox", ICO("mail")]] },
     { group: "Shop", items: [["merch_orders", "Merch Orders", ICO("ticket")]] },
     { group: "Organization", items: [["team", "Board & Team", ICO("users")], ["agents", "AI Agents", ICO("spark")]] },
     { group: "System", items: [["settings", "Setup & Connection", ICO("gear")]] },
@@ -164,7 +164,7 @@
   const ROLE_VIEWS = {
     admin: "*",
     board: ["dashboard", "campaigns", "donors", "outreach", "raffle", "projects", "renovation", "team", "agents"],
-    staff: ["dashboard", "campaigns", "donors", "outreach", "raffle", "projects", "renovation", "contact_messages", "enrollment_applications", "volunteer_signups", "partnership_inquiries", "newsletter_signups", "merch_orders", "agents"],
+    staff: ["dashboard", "campaigns", "donors", "outreach", "raffle", "projects", "renovation", "inbox", "merch_orders", "agents"],
   };
   const allowed = (view) => role === "admin" || ROLE_VIEWS[role] === "*" || (ROLE_VIEWS[role] || []).includes(view);
 
@@ -278,10 +278,13 @@
   }
 
   async function refreshCounts() {
+    let inboxTotal = 0;
     for (const name of ["contact_messages", "enrollment_applications", "volunteer_signups", "partnership_inquiries", "newsletter_signups", "donors", "outreach"]) {
-      const el = $(`[data-count-for="${name}"]`); if (!el) continue;
-      const rows = await fetchTable(name); el.textContent = rows.length; el.hidden = rows.length === 0;
+      const rows = await fetchTable(name);
+      if (["contact_messages", "enrollment_applications", "volunteer_signups", "partnership_inquiries", "newsletter_signups"].includes(name)) inboxTotal += rows.length;
+      const el = $(`[data-count-for="${name}"]`); if (el) { el.textContent = rows.length; el.hidden = rows.length === 0; }
     }
+    const ibx = $('[data-count-for="inbox"]'); if (ibx) { ibx.textContent = inboxTotal; ibx.hidden = inboxTotal === 0; }
   }
 
   /* =====================================================================
@@ -323,11 +326,26 @@
     if (name === "agents") return renderAgents();
     if (name === "settings") return renderSettings();
     if (name === "team") return renderTable("team_members");
+    if (name === "inbox") return renderInbox(location.hash.slice(1).split("#")[1]);
     if (pluginViews[name]) return pluginViews[name](A.hub);
     if (T[name]) return T[name].kind === "cards" ? renderCards(name) : renderTable(name);
     renderDashboard();
   }
-  const VIEW_TITLES = { dashboard: "Dashboard", raffle: "50/50 Raffle", renovation: "Renovation Tracker", agents: "AI Agents", settings: "Setup & Connection", team: "Board & Team" };
+  const VIEW_TITLES = { dashboard: "Dashboard", raffle: "50/50 Raffle", renovation: "Renovation Tracker", agents: "AI Agents", settings: "Setup & Connection", team: "Board & Team", inbox: "Inbox" };
+
+  /* =====================================================================
+     INBOX — one tab for all inbound-lead tables (was 5 separate tabs)
+     ==================================================================== */
+  const INBOX_TABLES = ["contact_messages", "enrollment_applications", "volunteer_signups", "partnership_inquiries", "newsletter_signups"];
+  async function renderInbox(sub) {
+    const sel = INBOX_TABLES.includes(sub) ? sub : INBOX_TABLES[0];
+    await renderTable(sel); // fills #view with the selected table
+    const pills = INBOX_TABLES.map((t) =>
+      `<button class="inbox-pill${t === sel ? " active" : ""}" data-inbox="${t}" style="border:1px solid var(--line,#e6e8ec);background:${t === sel ? "var(--navy-900,#062a40)" : "#fff"};color:${t === sel ? "#fff" : "inherit"};border-radius:999px;padding:.35rem .8rem;font-weight:700;font-size:.85rem;cursor:pointer">${T[t].label}</button>`
+    ).join("");
+    view.insertAdjacentHTML("afterbegin", `<div class="inbox-tabs" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">${pills}</div>`);
+    view.querySelectorAll("[data-inbox]").forEach((b) => b.onclick = () => { location.hash = "inbox#" + b.getAttribute("data-inbox"); });
+  }
 
   /* =====================================================================
      DASHBOARD
