@@ -84,6 +84,19 @@ window.JOAT.ORG.shopUrl = "";
 /* ---- Grants daily goals -------------------------------------------------- */
 // Targets the Grants engine tracks each day in the Command Center.
 window.JOAT.GRANTS_GOALS = { findPerDay: 10, proposalsPerDay: 5 };
+
+/* ---- Annual revenue goal (the "grow to $2M" north star) ------------------ */
+// Tracked by the Growth view. Per-stream targets are a diversified plan to $2M;
+// adjust them as your mix firms up. They are targets, not projections.
+window.JOAT.ANNUAL_GOAL = 2000000;
+window.JOAT.REVENUE_TARGETS = {
+  gov_grants:   800000,   // federal/state workforce & housing grants (biggest lever)
+  foundations:  400000,   // private foundation grants
+  corporate:    350000,   // corporate sponsorships & partnerships
+  earned:       250000,   // earned revenue (renovated-home sales/rent, contract work)
+  individual:   150000,   // individual donors & major gifts
+  events_raffle: 50000,   // events + the 50/50 raffle net
+};
 // STRIPE CHECKOUT: create a Stripe Payment Link per product in your Stripe
 // dashboard (Products -> Payment Links; set price, quantity, shipping) and
 // paste each URL into `buyUrl` below. The button then becomes "Buy now" and
