@@ -32,6 +32,7 @@ window.JOAT.ORG = {
   phone: "(313) 639-9373",           // update with the real number
   domain: "joatamp.org",
   ein: "41-2680557",                 // federal tax ID (for grants & tax receipts)
+  grantLegalName: "Jacks of All Trades", // registered nonprofit that owns the EIN (grant applicant name)
   zeffyUrl: "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development",
   social: {
     facebook: "#",
@@ -79,6 +80,10 @@ window.JOAT.STATS = [
 /* ---- Shop merchandise ---------------------------------------------------- */
 // Optional site-wide store URL (used when an item has no its own buyUrl).
 window.JOAT.ORG.shopUrl = "";
+
+/* ---- Grants daily goals -------------------------------------------------- */
+// Targets the Grants engine tracks each day in the Command Center.
+window.JOAT.GRANTS_GOALS = { findPerDay: 10, proposalsPerDay: 5 };
 // STRIPE CHECKOUT: create a Stripe Payment Link per product in your Stripe
 // dashboard (Products -> Payment Links; set price, quantity, shipping) and
 // paste each URL into `buyUrl` below. The button then becomes "Buy now" and

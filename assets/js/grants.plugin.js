@@ -21,12 +21,25 @@
   if (!A.registerPlugin) { console.warn("[grants] Command Center core not loaded"); return; }
 
   const EIN = (A.ORG && A.ORG.ein) || "";
+  const LEGAL = (A.ORG && A.ORG.grantLegalName) || "Jacks of All Trades";
+  const GOALS = A.GRANTS_GOALS || { findPerDay: 10, proposalsPerDay: 5 };
   const ORG_FACTS =
     "Jacks of All Trades Community Development — a Detroit nonprofit that (1) trains residents in six skilled trades, " +
     "(2) renovates vacant Detroit homes into quality housing, and (3) runs youth apprenticeship & mentoring with job placement. " +
     "A 50/50 raffle funds a home renovation. Mission: revitalize Detroit neighborhoods and build futures through skilled-trades training. " +
-    (EIN ? "Federal EIN (use verbatim; do not use a placeholder for it): " + EIN + ". " : "") +
-    "Legal applicant name — confirm which registered entity holds the EIN before filing (the site brand is 'Jacks of All Trades Community Development').";
+    "Grant applicant legal name (use verbatim): " + LEGAL + ". " +
+    (EIN ? "Federal EIN (use verbatim; do not use a placeholder for it): " + EIN + ". " : "");
+
+  const todayStr = () => new Date().toISOString().slice(0, 10);
+  const isToday = (ts) => { try { return new Date(ts).toDateString() === new Date().toDateString(); } catch (e) { return false; } };
+  function bar(done, goal, color) {
+    const pct = goal ? Math.min(100, Math.round((done / goal) * 100)) : 0;
+    const hit = done >= goal;
+    return `<div style="margin-top:.5rem"><div style="display:flex;justify-content:space-between;font-size:.85rem;font-weight:700">
+      <span>${done} / ${goal}${hit ? " ✓" : ""}</span><span class="text-soft">${pct}%</span></div>
+      <div style="height:8px;border-radius:6px;background:#e6e8ec;overflow:hidden;margin-top:.2rem">
+        <div style="height:100%;width:${pct}%;background:${hit ? "#12805c" : (color || "#062a40")}"></div></div></div>`;
+  }
 
   const TYPES = [["foundation", "Foundation"], ["corporate", "Corporate"], ["government", "Government"], ["community", "Community"]];
   const TY_LABEL = Object.fromEntries(TYPES);
@@ -43,7 +56,9 @@
   async function fetchLeads(hub) {
     if (!hub.db()) return localMem.slice();
     try {
-      const { data } = await hub.db().from("grant_leads").select("*").order("created_at", { ascending: false });
+      // Bounded to the 300 most-recent so the view stays fast as leads accrue
+      // (10/day). Today's counts and active pipeline are always within this set.
+      const { data } = await hub.db().from("grant_leads").select("*").order("created_at", { ascending: false }).limit(300);
       return data || [];
     } catch (e) { hub.toast("Load failed — run the grants schema"); return []; }
   }
@@ -153,11 +168,21 @@
     const c = leads.reduce((a, x) => { a[x.status] = (a[x.status] || 0) + 1; return a; }, {});
     const inPipe = leads.filter((x) => IN_PIPE[x.status]).length;
     const awardedSum = leads.filter((x) => x.status === "awarded").reduce((s, x) => s + (Number(x.amount_requested) || 0), 0);
+    const foundToday = leads.filter((x) => isToday(x.created_at)).length;
+    const sentToday = leads.filter((x) => x.submitted_at === todayStr()).length;
     const shown = leads.filter((x) => filterStatus === "all" || x.status === filterStatus);
 
     view.innerHTML = `
       <div class="view-head"><div><h2 style="margin:0">Grants</h2>
         <p>Gwen finds leads &middot; Rex opens the door &middot; Wes writes the proposal. You approve every send.</p></div></div>
+
+      <div class="panel"><div class="panel-head"><h3>Today's goals</h3>
+        <button class="btn btn-primary btn-sm" id="find-today">Find today's ${GOALS.findPerDay}</button></div>
+        <div class="panel-body dash-2">
+          <div><div style="font-weight:800">Grants found today</div>${bar(foundToday, GOALS.findPerDay, "#0f766e")}</div>
+          <div><div style="font-weight:800">Proposals sent today</div>${bar(sentToday, GOALS.proposalsPerDay, "#b45309")}</div>
+        </div>
+      </div>
 
       <div class="kpis">
         ${kpi("Leads identified", c.identified || 0, "target", "")}
@@ -227,6 +252,15 @@
       btn.disabled = false; btn.textContent = orig; render(hub);
     };
     view.querySelector("#f-st").onchange = (e) => { filterStatus = e.target.value; render(hub); };
+    const findToday = view.querySelector("#find-today");
+    if (findToday) findToday.onclick = async () => {
+      const remaining = Math.max(1, GOALS.findPerDay - foundToday);
+      const kw = (findForm.focus.value.trim()) || "workforce apprenticeship housing Detroit";
+      findToday.disabled = true; const o = findToday.textContent; findToday.textContent = "Searching Grants.gov…";
+      try { const n = await searchGrantsGov(hub, kw, remaining); if (n) hub.toast(`Added ${n} toward today's goal`); }
+      catch (e) { hub.toast("Search failed"); }
+      findToday.disabled = false; findToday.textContent = o; render(hub);
+    };
     view.querySelectorAll("[data-lead]").forEach((el) => wireCard(hub, el, leads.find((l) => String(l.id) === el.getAttribute("data-id"))));
   }
 
@@ -255,6 +289,7 @@
         </div>
         <select data-field="status">${STATUS.map((s) => `<option value="${s}" ${l.status === s ? "selected" : ""}>${s}</option>`).join("")}</select>
       </div>
+      ${stageLine(l)}
       ${l.fit_reason ? `<p class="text-soft" style="margin:.5rem 0 0">${esc(l.fit_reason)}</p>` : ""}
       <div class="field-row" style="margin-top:.5rem">
         <div class="field"><label>Focus area</label><input data-field="focus_area" value="${esc(l.focus_area || "")}"></div>
@@ -280,9 +315,20 @@
       ${draftBlock(l, "followup_draft")}
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem">
         <button class="btn btn-primary btn-sm" data-save>Save</button>
+        <button class="btn btn-ghost btn-sm" data-submitted>Mark submitted today</button>
         <button class="btn btn-ghost btn-sm" data-del style="color:#b42318">Delete</button>
       </div>
     </div>`;
+  }
+
+  const STAGES = ["identified", "qualified", "contacted", "drafting", "submitted", "follow_up"];
+  function stageLine(l) {
+    if (l.status === "awarded") return `<div style="font-size:.82rem;margin-top:.35rem;color:#12805c;font-weight:800">● Awarded</div>`;
+    if (l.status === "declined") return `<div style="font-size:.82rem;margin-top:.35rem;color:#b42318;font-weight:800">● Declined</div>`;
+    if (l.status === "archived") return `<div class="text-soft" style="font-size:.82rem;margin-top:.35rem">Archived</div>`;
+    const i = STAGES.indexOf(l.status), step = i < 0 ? 1 : i + 1, pct = Math.round((step / STAGES.length) * 100);
+    return `<div style="font-size:.8rem;margin-top:.35rem"><b>Stage ${step}/${STAGES.length}</b> <span class="text-soft">· ${esc(l.status)}${l.submitted_at ? " · submitted " + esc(l.submitted_at) : ""}</span></div>
+      <div style="height:6px;border-radius:6px;background:#e6e8ec;overflow:hidden;margin-top:.25rem"><div style="height:100%;width:${pct}%;background:#062a40"></div></div>`;
   }
 
   function wireCard(hub, el, lead) {
@@ -322,6 +368,10 @@
       ["submitted_at", "decision_at"].forEach((f) => { const v = get(f); patch[f] = v || null; });
       try { await updateOne(hub, id, patch); hub.toast("Saved"); } catch (e) { hub.toast("Save failed"); }
     };
+    el.querySelector("[data-submitted]").onclick = async () => {
+      try { await updateOne(hub, id, { status: "submitted", submitted_at: todayStr() }); hub.toast("Marked submitted — counts toward today's goal"); render(hub); }
+      catch (e) { hub.toast("Update failed"); }
+    };
     el.querySelector("[data-del]").onclick = async () => {
       if (!confirm("Delete this grant lead?")) return;
       try { await deleteOne(hub, id); hub.toast("Deleted"); render(hub); } catch (e) { hub.toast("Delete failed"); }
@@ -330,12 +380,18 @@
 
   async function dashboardMount(slot, hub) {
     const leads = await fetchLeads(hub);
+    const foundToday = leads.filter((x) => isToday(x.created_at)).length;
+    const sentToday = leads.filter((x) => x.submitted_at === todayStr()).length;
     slot.insertAdjacentHTML("beforeend", `
-      <div class="panel"><div class="panel-head"><h3>Grants</h3>
+      <div class="panel"><div class="panel-head"><h3>Grants — today's goals</h3>
         <button class="btn btn-ghost btn-sm" data-goto="grants">Open</button></div>
-        <div class="kpis" style="padding:1rem">
-          ${hub.kpi("Leads", leads.length, "target", "")}
-          ${hub.kpi("Submitted", leads.filter((x) => x.status === "submitted").length, "home", "")}
+        <div class="panel-body dash-2">
+          <div><div style="font-weight:800">Found today</div>${bar(foundToday, GOALS.findPerDay, "#0f766e")}</div>
+          <div><div style="font-weight:800">Proposals sent today</div>${bar(sentToday, GOALS.proposalsPerDay, "#b45309")}</div>
+        </div>
+        <div class="kpis" style="padding:0 1rem 1rem">
+          ${hub.kpi("Total leads", leads.length, "target", "")}
+          ${hub.kpi("In pipeline", leads.filter((x) => IN_PIPE[x.status]).length, "mega", "")}
           ${hub.kpi("Awarded", leads.filter((x) => x.status === "awarded").length, "ticket", "")}
         </div></div>`);
   }
