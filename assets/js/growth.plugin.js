@@ -53,18 +53,20 @@
     const pipeline = sum(grants.filter((x) => x.status === "submitted" || x.status === "follow_up"), (x) => x.amount_requested);
     const donationsTotal = sum(donations, (x) => x.amount);
     const raffleGross = num(raffle.gross_raised);
-    // Non-grant, non-raffle campaigns, to avoid double-counting those already summed above.
-    const otherCampaigns = sum(campaigns.filter((c) => c.type !== "raffle" && c.type !== "grant"), (c) => c.raised);
-    const realized = grantsAwarded + donationsTotal + raffleGross + otherCampaigns;
+    // Campaigns by type -> exactly one revenue stream (raffle/grant excluded here,
+    // counted via raffle_stats / grant_leads to avoid double counting).
+    const campByType = (types) => sum(campaigns.filter((c) => types.includes(c.type)), (c) => c.raised);
+    // Each source maps to a single bucket, so realized = sum(actuals) never double-counts.
     const actuals = {
       gov_grants: awardedByType("government"),
       foundations: awardedByType("foundation"),
-      corporate: awardedByType("corporate"),
-      earned: 0,
-      individual: donationsTotal,
-      events_raffle: raffleGross,
+      corporate: awardedByType("corporate") + campByType(["corporate"]),
+      earned: campByType(["earned"]),
+      individual: donationsTotal + campByType(["annual", "major_gift", "capital"]),
+      events_raffle: raffleGross + campByType(["event"]),
     };
-    return { realized, pipeline, grantsAwarded, donationsTotal, raffleGross, otherCampaigns, actuals };
+    const realized = Object.values(actuals).reduce((s, v) => s + num(v), 0);
+    return { realized, pipeline, grantsAwarded, donationsTotal, raffleGross, actuals };
   }
 
   async function render(hub) {
@@ -117,7 +119,12 @@
       </div>
 
       <div class="panel"><div class="panel-body" style="font-size:.86rem" class="text-soft">
-        <b>How the Command Center feeds this:</b> Grants engine (Gwen/Rex/Wes + daily auto-find) drives the government & foundation lines · Donors/Campaigns track corporate, individual & major gifts · the Raffle + events line is the 50/50. Log corporate sponsorships as Campaigns (type <i>event/capital</i>) or Donors (type <i>corporate</i>) so they roll up here.
+        <b>How to log revenue so it rolls up here (each maps to one stream — no double counting):</b>
+        <br>• <b>Corporate sponsorships</b> → a <b>Campaign</b> with type <i>corporate</i> (or an awarded corporate grant).
+        <br>• <b>Earned revenue</b> (home sales/rent, trainee contract work) → a <b>Campaign</b> with type <i>earned</i>.
+        <br>• <b>Individual & major gifts</b> → the <b>Donations</b> table, or Campaigns of type <i>annual / major_gift / capital</i>.
+        <br>• <b>Government / foundation grants</b> → the <b>Grants</b> pipeline (counts when status = <i>awarded</i>).
+        <br>• <b>Events & raffle</b> → the 50/50 <b>Raffle</b> stats, or Campaigns of type <i>event</i>.
       </div></div>`;
   }
 

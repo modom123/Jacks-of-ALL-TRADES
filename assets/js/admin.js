@@ -58,7 +58,7 @@
       label: "Campaigns", singular: "Campaign", kind: "cards",
       form: [
         { k: "name", label: "Campaign name", req: true },
-        { k: "type", label: "Type", type: "select", opts: ["annual", "raffle", "grant", "major_gift", "event", "capital"] },
+        { k: "type", label: "Type", type: "select", opts: ["annual", "raffle", "grant", "major_gift", "event", "capital", "corporate", "earned"] },
         { k: "goal", label: "Goal ($)", type: "number" },
         { k: "raised", label: "Raised ($)", type: "number" },
         { k: "status", label: "Status", type: "select", opts: ["planning", "active", "paused", "complete"] },
