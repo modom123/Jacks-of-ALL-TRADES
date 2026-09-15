@@ -46,6 +46,39 @@
         "Write a press release for our fall trades cohort.",
       ],
     },
+    {
+      key: "grant_scout", name: "Gwen", title: "Grant Prospector",
+      focus: "Grant research · Prospecting · Fit scoring",
+      blurb: "Finds and qualifies foundation, corporate, and government grants that fit our mission — with fit notes and verify-flagged amounts.",
+      accent: "#0f766e",
+      starters: [
+        "Find 5 grants that fit our trades-training and home-renovation work.",
+        "Which government workforce programs should we pursue?",
+        "Qualify this funder: are we a fit and what's the first step?",
+      ],
+    },
+    {
+      key: "grant_outreach", name: "Rex", title: "Grant Outreach",
+      focus: "Funder intro emails · Call scripts · Cultivation",
+      blurb: "Opens the door with funders — drafts and sends intro emails and call scripts to program officers (human-approved).",
+      accent: "#0369a1",
+      starters: [
+        "Draft an intro email to a foundation program officer about our apprenticeship program.",
+        "Write a 30-second call script to request grant guidelines from a funder.",
+        "Draft a short note requesting a 15-minute intro call.",
+      ],
+    },
+    {
+      key: "grant_writer", name: "Wes", title: "Grant Writer",
+      focus: "Proposals · LOIs · Budgets · Follow-up",
+      blurb: "Drafts letters of inquiry, full proposals, and budgets tailored to a funder — then follows up after submission.",
+      accent: "#b45309",
+      starters: [
+        "Draft a letter of inquiry for a workforce-development grant.",
+        "Write a full proposal for a $50,000 tools-and-equipment grant.",
+        "Draft a follow-up email two weeks after our submission.",
+      ],
+    },
   ];
   const byKey = Object.fromEntries(AGENTS.map((a) => [a.key, a]));
 
@@ -83,6 +116,9 @@
     let body;
     if (agentKey === "ada") body = adaSim(p);
     else if (agentKey === "max") body = maxSim(p);
+    else if (agentKey === "grant_scout") body = grantScoutSim(p);
+    else if (agentKey === "grant_outreach") body = grantOutreachSim(p);
+    else if (agentKey === "grant_writer") body = grantWriterSim(p);
     else body = novaSim(p);
     return note + body;
   }
@@ -247,6 +283,94 @@
       "- Volunteer & enrollment recruitment",
       "",
       "Tell me the audience and the message.",
+    ].join("\n");
+  }
+
+  function grantScoutSim(p) {
+    if (p.includes("json")) {
+      // Generic, verify-flagged templates (offline fallback — deploy ai-agent for real prospecting).
+      return JSON.stringify([
+        { funder: "Detroit-area community foundation", funder_type: "foundation", focus_area: "Workforce & neighborhood revitalization", fit_reason: "Funds Detroit workforce and housing — direct match to our trades + renovation model.", est_amount: "$10,000–$50,000 (verify)", deadline_note: "Rolling / verify", url: "[funder website — verify]", first_step: "Submit a brief LOI or request a call" },
+        { funder: "Regional corporate giving program (skilled trades / building supply)", funder_type: "corporate", focus_area: "Skilled-trades workforce pipeline", fit_reason: "Corporate trades funders back apprenticeship pipelines like ours.", est_amount: "$5,000–$25,000 (verify)", deadline_note: "Quarterly / verify", url: "[corporate giving page — verify]", first_step: "Apply online + send intro email" },
+        { funder: "State/city workforce or housing agency (e.g., DOL/HUD pass-through)", funder_type: "government", focus_area: "Apprenticeship & affordable housing", fit_reason: "Public workforce/housing dollars fund training + home rehab.", est_amount: "$25,000–$150,000 (verify)", deadline_note: "Annual NOFO / verify", url: "[grants.gov / state portal — verify]", first_step: "Register on the portal; watch for the NOFO" },
+      ], null, 2);
+    }
+    return [
+      "I find and qualify grants that fit our mission:",
+      "",
+      "- Build a shortlist of foundation, corporate, and government grants (with fit notes — amounts/deadlines flagged **verify**)",
+      "- Score fit against our trades-training, home-renovation, and apprenticeship work",
+      "- Hand qualified leads to Rex (outreach) and Wes (proposals)",
+      "",
+      "Tell me a focus (e.g., “apprenticeship” or “Detroit housing”) and I’ll build a list.",
+    ].join("\n");
+  }
+
+  function grantOutreachSim(p) {
+    if (p.includes("call") || p.includes("script") || p.includes("phone")) {
+      return [
+        "**Call script — funder introduction (~30 sec)**",
+        "",
+        "“Hi [Program Officer], this is [Your name] with Jacks of All Trades Community Development in Detroit. We train residents in six skilled trades while renovating vacant homes into housing, with youth apprenticeship and job placement. I’m reaching out because our work looks like a strong fit for [Funder]’s [focus] priorities. Do you have a few minutes this week to confirm eligibility and the best way to apply? Thank you — you can reach me at [phone/email].”",
+        "",
+        "_Business-to-business inquiry. Keep it brief, follow their stated process, and log the outcome._",
+      ].join("\n");
+    }
+    return [
+      "**Subject:** Introduction — Detroit trades training + home renovation (grant fit?)",
+      "",
+      "Dear [Program Officer],",
+      "",
+      "I’m [Your name] with Jacks of All Trades Community Development, a Detroit nonprofit that trains residents in six skilled trades while renovating vacant homes into quality housing — pairing workforce development with neighborhood revitalization, plus youth apprenticeship and job placement.",
+      "",
+      "Your support for [funder focus area] looks like a strong match for our work. Would you be open to a brief call to confirm fit and the best way to apply? I’d be glad to send a one-page overview in advance.",
+      "",
+      "With appreciation,",
+      "[Your name] · [title] · Jacks of All Trades Community Development · [phone] · [email]",
+    ].join("\n");
+  }
+
+  function grantWriterSim(p) {
+    if (p.includes("follow")) {
+      return [
+        "**Subject:** Following up on our [Funder] application",
+        "",
+        "Dear [Program Officer],",
+        "",
+        "I wanted to follow up on the proposal we submitted on [date] for [program]. We’re excited about the potential to [specific outcome], and I’m happy to provide any additional materials — budget detail, outcomes data, or a site visit to our renovation.",
+        "",
+        "Is there a good time in the next week to connect? Thank you for your consideration.",
+        "",
+        "Warm regards,",
+        "[Your name] · Jacks of All Trades Community Development",
+      ].join("\n");
+    }
+    if (p.includes("loi") || p.includes("letter of inquiry")) {
+      return [
+        "**Letter of Inquiry — [Funder]**",
+        "",
+        "Dear [Program Officer],",
+        "",
+        "Jacks of All Trades Community Development respectfully requests [amount — verify] to support [program]. In Detroit, we train residents in six skilled trades while renovating vacant homes into quality housing, with youth apprenticeship and job placement.",
+        "",
+        "**Need:** [local need + data placeholder]. **Our model:** hands-on training that rebuilds homes and careers at once. **Outcomes:** [# trained], [# placed], [# homes]. **Budget:** [total]; this request funds [use].",
+        "",
+        "We’d welcome the chance to submit a full proposal. Thank you for your consideration.",
+        "",
+        "_Fill in: [EIN], [501(c)(3) date], [amount], [outcome metrics], [budget]._",
+      ].join("\n");
+    }
+    return [
+      "**Proposal outline — [Funder] / [Program]**",
+      "",
+      "1. **Summary & request** — [amount] for [purpose]",
+      "2. **Statement of need** — [Detroit workforce/housing data]",
+      "3. **Our solution & model** — trades training + home renovation + apprenticeship",
+      "4. **Measurable outcomes** — [# trained/placed/homes] with targets",
+      "5. **Organizational capacity** — team, track record, partners",
+      "6. **Budget** — [line items]; **Sustainability** — raffle + diversified revenue",
+      "",
+      "_Fill in the [bracketed] items — I never invent financials or metrics. Tell me the funder and amount and I’ll draft the full narrative._",
     ].join("\n");
   }
 
