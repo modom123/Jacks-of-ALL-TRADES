@@ -227,6 +227,8 @@
     view.querySelectorAll("[data-lead]").forEach((el) => wireCard(hub, el, leads.find((l) => String(l.id) === el.getAttribute("data-id"))));
   }
 
+  const EMAILABLE = { intro_email_draft: 1, followup_draft: 1 };
+
   function draftBlock(l, field) {
     const d = DRAFTS[field]; const has = l[field];
     return `<details ${has ? "" : ""} style="margin-top:.5rem"><summary style="cursor:pointer;font-weight:700;color:var(--navy-900,#062a40)">${d.label} <span class="text-soft" style="font-weight:500">— ${d.who}${has ? " ✓" : ""}</span></summary>
@@ -235,6 +237,7 @@
         <div style="display:flex;gap:.5rem;margin-top:.3rem">
           <button class="btn btn-ghost btn-sm" data-draft="${field}">${has ? "Redraft" : "Draft"} with ${d.who}</button>
           <button class="btn btn-ghost btn-sm" data-copy="${field}">Copy</button>
+          ${EMAILABLE[field] ? `<button class="btn btn-primary btn-sm" data-send="${field}">Send email</button>` : ""}
         </div>
       </div></details>`;
   }
@@ -287,6 +290,26 @@
     el.querySelectorAll("[data-copy]").forEach((b) => b.onclick = () => {
       const f = b.getAttribute("data-copy"); const n = el.querySelector(`[data-field="${f}"]`);
       try { navigator.clipboard.writeText(n ? n.value : ""); hub.toast("Copied"); } catch (e) { hub.toast("Copy failed"); }
+    });
+    el.querySelectorAll("[data-send]").forEach((b) => b.onclick = async () => {
+      if (!A.email || !A.email.send) { hub.toast("Email module not loaded"); return; }
+      const field = b.getAttribute("data-send");
+      const to = (get("contact_email") || "").trim();
+      if (!to) { hub.toast("Add the funder's contact email first, then Save"); return; }
+      const raw = get(field) || "";
+      if (!raw.trim()) { hub.toast("Draft the email first"); return; }
+      const fallbackSubj = (field === "followup_draft" ? "Following up — " : "Introduction — ") + (lead.funder || "grant inquiry");
+      const { subject, body } = A.email.splitSubject(raw, fallbackSubj);
+      if (!confirm(`Send this email to ${to}?\n\nSubject: ${subject}`)) return;
+      const orig = b.textContent; b.disabled = true; b.textContent = "Sending…";
+      const r = await A.email.send({ to, subject, text: body });
+      if (r.ok) {
+        hub.toast("Email sent");
+        const patch = { [field]: raw };
+        if (field === "intro_email_draft" && (lead.status === "identified" || lead.status === "qualified")) { patch.status = "contacted"; lead.status = "contacted"; const st = el.querySelector('[data-field="status"]'); if (st) st.value = "contacted"; }
+        try { await updateOne(hub, id, patch); } catch (e) {}
+      } else { hub.toast("Send failed: " + (r.error || "unknown")); }
+      b.disabled = false; b.textContent = orig;
     });
     el.querySelector("[data-save]").onclick = async () => {
       const patch = {};
