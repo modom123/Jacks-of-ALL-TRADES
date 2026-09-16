@@ -3,6 +3,13 @@
   Jacks of All Trades Community Development
   File: video.html  (30-second donor story, self-playing; embedded on updates.html)
   Generated: 2026-09-14 12:40 UTC
+  Updated:   2026-09-16 22:06 UTC  |  Added synced background-music track with a
+             10-second clip loop + tap-to-unmute control (autoplay-with-sound is
+             browser-blocked, so audio starts muted until the visitor taps).
+             IMPORTANT — use only music you are licensed to use (a track you have
+             a sync license for, or royalty-free/cleared music). Drop the cleared
+             file at the AUDIO_SRC path in the script below; do NOT use audio
+             ripped from a streaming service (copyright).
 -->
 <html lang="en">
 <head>
@@ -30,6 +37,12 @@
   .bar { position:absolute; left:0; bottom:0; height:5px; background:var(--gold); width:0; z-index:5; }
   .replay { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px; background:rgba(4,18,28,.72); z-index:6; text-align:center; }
   .replay button { background:var(--gold); color:var(--navy); border:0; font-weight:900; font-size:18px; padding:.7em 1.4em; border-radius:999px; cursor:pointer; }
+  .sound { position:absolute; top:14px; right:14px; z-index:7; display:none; align-items:center; gap:.5em;
+           background:rgba(4,18,28,.62); color:#fff; border:1px solid rgba(235,181,60,.6); border-radius:999px;
+           font-family:inherit; font-weight:800; font-size:13px; letter-spacing:.02em; padding:.5em .9em; cursor:pointer;
+           -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+  .sound:hover { border-color:var(--gold); }
+  .sound .ic { font-size:15px; line-height:1; }
   @keyframes fade { 0%{opacity:0} 8%{opacity:1} 86%{opacity:1} 100%{opacity:0} }
   @keyframes fade5 { 0%{opacity:0} 10%{opacity:1} 100%{opacity:1} }
   @keyframes zoom { from{transform:scale(1.02)} to{transform:scale(1.12)} }
@@ -56,15 +69,61 @@
     <div class="scene s4"><img class="bg" src="assets/img/volunteer-heroes_2026-09-13_1548.jpg" alt=""><div class="cap"><div class="eyebrow">The impact</div><div class="line">Careers. Housing. Neighborhoods reborn.</div></div></div>
     <div class="scene s5"><img class="bg" src="assets/img/home-exterior-after.jpg" alt=""><div class="cap" style="text-align:center;display:flex;flex-direction:column;align-items:center"><img class="logo" src="assets/img/logo-jack.png" alt="Jack of All Trades"><div class="line">Your gift funds the next home.</div><div class="cta-sub">Donate at <b>joatamp.org</b></div><div class="pill">One Call. Every Solution.</div></div></div>
     <div class="bar"></div>
+    <button class="sound" id="soundBtn" type="button" aria-label="Turn sound on"><span class="ic">&#128264;</span><span id="soundTxt">Tap for sound</span></button>
+    <audio id="track" preload="auto" playsinline></audio>
     <div class="replay" id="replay"><div style="font-weight:800">Thanks for watching</div><button id="replayBtn">&#9654; Replay</button></div>
   </div>
 <script>
 (function(){
-  var stage=document.getElementById('stage'), replay=document.getElementById('replay'), t;
+  /* ---- Background music ---------------------------------------------------
+     Point AUDIO_SRC at a track you are LICENSED to use (sync-licensed, or
+     royalty-free/cleared music). Do not use audio ripped from a streaming
+     service. CLIP loops a short window of the file across the 30s story:
+     set START (seconds into the file) and SECONDS (clip length, e.g. 10). */
+  var AUDIO_SRC = "assets/audio/story-track_2026-09-16_2206.m4a";
+  var CLIP = { start: 0, seconds: 10 };   // 10-second clip, looped
+
+  var stage=document.getElementById('stage'), replay=document.getElementById('replay'),
+      audio=document.getElementById('track'), soundBtn=document.getElementById('soundBtn'),
+      soundTxt=document.getElementById('soundTxt'), t, audioReady=false;
+
+  // Load the track; if it is missing/unsupported, the story just plays silently.
+  // Start muted so it can autoplay in sync with the visuals; the tap unmutes it.
+  audio.src = AUDIO_SRC;
+  audio.muted = true;
+  audio.addEventListener('canplay', function(){ audioReady=true; soundBtn.style.display='flex'; }, { once:true });
+  audio.addEventListener('error', function(){ audioReady=false; soundBtn.style.display='none'; });
+
+  function seekClipStart(){ try { audio.currentTime = CLIP.start; } catch(e){} }
+  // Loop only the CLIP window instead of the whole file.
+  audio.addEventListener('timeupdate', function(){
+    if (CLIP.seconds && audio.currentTime >= CLIP.start + CLIP.seconds) seekClipStart();
+  });
+
+  function startAudio(){
+    if(!audioReady) return;
+    seekClipStart();
+    var p = audio.play();
+    if (p && p.catch) p.catch(function(){ /* autoplay blocked; wait for tap */ });
+  }
+  function setSoundUI(){
+    var on = !audio.muted && !audio.paused;
+    soundBtn.querySelector('.ic').innerHTML = on ? '&#128266;' : '&#128264;';
+    soundTxt.textContent = on ? 'Sound on' : 'Tap for sound';
+  }
+  soundBtn.addEventListener('click', function(){
+    if(!audioReady) return;
+    if (audio.muted || audio.paused){ audio.muted=false; seekClipStart(); audio.play().catch(function(){}); }
+    else { audio.muted=true; }
+    setSoundUI();
+  });
+
   function run(){
     clearTimeout(t); replay.style.display='none';
     stage.classList.remove('play'); void stage.offsetWidth; stage.classList.add('play');
-    t=setTimeout(function(){ replay.style.display='flex'; }, 30000);
+    // Restart the clip in step with the visuals (stays muted until the visitor taps).
+    startAudio(); setSoundUI();
+    t=setTimeout(function(){ replay.style.display='flex'; try{ audio.pause(); }catch(e){} setSoundUI(); }, 30000);
   }
   document.getElementById('replayBtn').onclick=run;
   run();
