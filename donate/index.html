@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--
+  Jacks of All Trades Community Development
+  File: donate/index.html  (short link: joatamp.org/donate -> Zeffy donation page)
+  Generated: 2026-09-16 22:17 UTC
+  Why: a memorable, tappable link to share with the QR-code image. On Vercel the
+  /donate redirect in vercel.json fires first; this page is the universal fallback
+  (GitHub Pages, Netlify, etc.). Update the URL in ONE place — the two consts below.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redirecting to donate — Jacks of All Trades</title>
+<meta name="robots" content="noindex">
+<!-- Instant redirect for browsers with JS disabled -->
+<meta http-equiv="refresh" content="0; url=https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development">
+<link rel="canonical" href="https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development">
+<style>
+  :root{ --navy:#062a40; --gold:#ebb53c; }
+  html,body{height:100%;margin:0;}
+  body{background:var(--navy);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;}
+  .box{max-width:420px;}
+  .spin{width:34px;height:34px;border:3px solid rgba(255,255,255,.25);border-top-color:var(--gold);
+    border-radius:50%;margin:0 auto 18px;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  h1{font-size:1.15rem;font-weight:800;margin:0 0 .4rem;}
+  p{color:#cfe0ea;font-size:.95rem;margin:0 0 1.2rem;}
+  a.btn{display:inline-block;background:var(--gold);color:var(--navy);font-weight:900;text-decoration:none;
+    padding:.8em 1.6em;border-radius:999px;font-size:1rem;}
+  @media (prefers-reduced-motion: reduce){ .spin{animation:none} }
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="spin" aria-hidden="true"></div>
+    <h1>Taking you to the secure donation page&hellip;</h1>
+    <p>If it doesn&rsquo;t open automatically, tap the button below.</p>
+    <a class="btn" id="go" href="https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development">Donate now &rarr;</a>
+  </div>
+<script>
+  // Single source of truth for the destination.
+  var DONATE_URL = "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development";
+  document.getElementById('go').href = DONATE_URL;
+  // Replace history entry so Back doesn't loop through this redirect page.
+  try { location.replace(DONATE_URL); } catch (e) { location.href = DONATE_URL; }
+</script>
+</body>
+</html>
