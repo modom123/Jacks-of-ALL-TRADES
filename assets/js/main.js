@@ -205,21 +205,28 @@
 
   function mediaEmbed(mediaType, videoUrl, imageUrl, alt) {
     if (mediaType === "video" && videoUrl) {
-      // Direct video files → a click-to-play poster that opens the on-page
-      // modal (see [data-video-modal] in updates.html). This keeps the grid
-      // as posters/photos and plays the film on the Updates screen on click,
-      // instead of embedding an always-on inline player in a card slot.
+      // Direct video files → a click-to-play poster that swaps to an inline
+      // player in the same window (see the delegated handler in updates.html).
+      // Note: loadUpdates() keeps video rows OUT of the photo grid — the film
+      // plays in the main "Watch" window — so this mainly guards other callers.
       if (/\.(mp4|webm|ogg)(\?|$)/i.test(videoUrl)) {
         const poster = imageUrl || "detroit-story-poster_2026-09-17.jpg";
-        return `<button type="button" class="media-embed media-play" data-video-src="${esc(videoUrl)}" data-video-poster="${esc(poster)}" aria-haspopup="dialog" aria-label="Play video${alt ? ": " + esc(alt) : ""}">`
+        return `<div class="media-embed">`
+          + `<button type="button" class="media-play" data-video-src="${esc(videoUrl)}" data-video-poster="${esc(poster)}" aria-label="Play video${alt ? ": " + esc(alt) : ""}">`
           + `<img src="${esc(poster)}" alt="${esc(alt || "")}">`
           + `<span class="video-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>`
-          + `</button>`;
+          + `</button></div>`;
       }
       // Hosted embeds (YouTube/Vimeo) have their own play UI — keep inline.
       return `<div class="media-embed"><iframe src="${esc(videoUrl)}" title="${esc(alt || "Video")}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
     }
     return `<div class="media-embed"><img src="${esc(imageUrl || "assets/img/logo-jack.png")}" alt="${esc(alt || "")}"></div>`;
+  }
+
+  // A project_updates row that is a direct-file video (plays in the main
+  // "Watch" window, not the photo grid).
+  function isGridVideo(u) {
+    return u && (u.media_type === "video" || (u.video_url && /\.(mp4|webm|ogg)(\?|$)/i.test(u.video_url)));
   }
 
   async function loadLiveStream() {
@@ -247,7 +254,11 @@
     try {
       const { data, error } = await db.from("project_updates").select("*").eq("status", "published").order("posted_on", { ascending: false }).limit(24);
       if (error || !data || !data.length) return;
-      wrap.innerHTML = data.map((u, i) => `
+      // Photos only — the film plays in the main "Watch" window above, so we
+      // keep direct-file video updates out of this grid.
+      const photos = data.filter((u) => !isGridVideo(u));
+      if (!photos.length) return;
+      wrap.innerHTML = photos.map((u, i) => `
         <article class="update-card" data-reveal ${i % 3 ? `data-delay="${i % 3}"` : ""}>
           ${mediaEmbed(u.media_type, u.video_url, u.image_url, u.title)}
           <div class="u-body">

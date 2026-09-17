@@ -10,6 +10,7 @@
   Updated: 2026-09-17 10:06 UTC  |  Added "Detroit: Our City, Our Mission" video to Project Updates
   Updated: 2026-09-17 14:20 UTC  |  Video is now a click-to-play featured poster (opens a modal); restored the 3 image cards
   Updated: 2026-09-17 14:38 UTC  |  Video plays via a shared modal for ANY poster (static + Supabase-hydrated); grid keeps images, video is a click-to-play poster card
+  Updated: 2026-09-17 15:05 UTC  |  Film now plays IN PLACE in the main "Watch" window (no popup); video rows kept out of the photo grid
 -->
 <html lang="en">
 <head>
@@ -52,27 +53,16 @@
   .winner-card h4{margin:0 0 .15rem;font-size:1.05rem}
   .winner-card .prize{color:#a2822f;font-weight:850;font-size:1.15rem}
   .winner-card .w-meta{color:var(--muted,#66707e);font-size:.8rem;margin-top:.2rem}
-  /* Click-to-play video poster (a card whose thumbnail opens the modal) */
-  .media-play{padding:0;border:0;cursor:pointer;color:inherit}
+  /* Click-to-play video poster — fills its window and swaps to an inline
+     <video> in place (no popup). Used in the main "Watch" window. */
+  .media-embed .media-play{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;cursor:pointer;color:inherit;background:#0b1b28}
   .media-play img{transition:transform .5s ease}
   .media-play::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,42,64,0) 45%,rgba(6,42,64,.45));z-index:1}
   .media-play:hover img,.media-play:focus-visible img{transform:scale(1.05)}
-  .media-play:focus-visible{outline:3px solid #ffd98a;outline-offset:2px}
-  .video-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.94);color:#062a40;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 26px rgba(0,0,0,.34);transition:transform .25s ease,background .25s ease}
+  .media-play:focus-visible{outline:3px solid #ffd98a;outline-offset:-3px}
+  .video-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;width:clamp(64px,8vw,84px);height:clamp(64px,8vw,84px);border-radius:50%;background:rgba(255,255,255,.94);color:#062a40;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.34);transition:transform .25s ease,background .25s ease}
   .video-play svg{width:38%;height:38%;margin-left:8%}
   .media-play:hover .video-play,.media-play:focus-visible .video-play{transform:translate(-50%,-50%) scale(1.09);background:#fff}
-  /* Video modal / lightbox */
-  .video-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:clamp(1rem,4vw,3rem)}
-  .video-modal[hidden]{display:none}
-  .video-modal-backdrop{position:absolute;inset:0;background:rgba(4,18,28,.86);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
-  .video-modal-inner{position:relative;z-index:1;width:min(1100px,100%);opacity:0;transform:translateY(12px) scale(.985);transition:opacity .28s ease,transform .28s ease}
-  .video-modal.open .video-modal-inner{opacity:1;transform:none}
-  .video-modal-inner .media-embed{border-radius:14px;box-shadow:0 32px 90px rgba(0,0,0,.55)}
-  .video-modal-inner .media-embed video{object-fit:contain;background:#000}
-  .video-modal-close{position:absolute;top:-16px;right:-12px;z-index:3;width:46px;height:46px;border:0;border-radius:50%;background:#fff;color:#062a40;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 22px rgba(0,0,0,.42);transition:transform .2s ease}
-  .video-modal-close:hover{transform:scale(1.07)}
-  .video-modal-close svg{width:22px;height:22px}
-  @media(max-width:600px){.video-modal-close{top:-52px;right:0}}
 </style>
 </head>
 <body>
@@ -120,22 +110,23 @@
   <section class="section">
     <div class="container">
       <div class="section-head center" style="margin-inline:auto" data-reveal>
-        <span class="eyebrow" style="justify-content:center">Live</span>
-        <h2>Watch live</h2>
-        <p class="lead">We go live for build days and the raffle drawing. Tune in below.</p>
+        <span class="eyebrow" style="justify-content:center">Watch</span>
+        <h2>Watch our film</h2>
+        <p class="lead">Press play on the story of the city we're rebuilding. We also go live in this window on build days and for the 50/50 drawing.</p>
       </div>
       <div class="live-wrap" data-reveal data-livestream>
-        <!-- Hydrated from Supabase (live_stream). Static fallback: -->
+        <!-- Default: our featured film plays right here in the main window.
+             loadLiveStream() (assets/js/main.js) replaces this with the live
+             stream only when we're actually broadcasting. -->
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;margin-bottom:1rem">
           <span class="live-badge off"><span class="dot"></span> Offline</span>
           <span style="color:#cfe3f2;font-size:.86rem">Next live: the 50/50 draw &mdash; Mon, Dec 28, 2026 &middot; MNF Halftime</span>
         </div>
         <div class="media-embed">
-          <div class="live-off">
-            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#9fd0ef" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m23 7-7 5 7 5V7zM14 5H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/></svg>
-            <b style="color:#fff">We're not live right now</b>
-            <span>Follow us so you don't miss the drawing at Ford Field.</span>
-          </div>
+          <button type="button" class="media-play" data-video-src="Detroit_City_Video_RealMusic_2026-09-17_1000.mp4" data-video-poster="detroit-story-poster_2026-09-17.jpg" aria-label="Play video: Detroit: our city, our mission">
+            <img src="detroit-story-poster_2026-09-17.jpg" alt="Aerial view of the Detroit skyline &mdash; the Motor City">
+            <span class="video-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
         </div>
       </div>
     </div>
@@ -151,21 +142,10 @@
       </div>
 
       <div class="grid grid-3" data-updates>
-        <!-- Hydrated live from Supabase (project_updates). Video rows render as a
-             click-to-play poster (see assets/js/main.js -> mediaEmbed). Static
-             fallback below shows the same layout when the DB is unreachable. -->
+        <!-- Hydrated live from Supabase (project_updates); photos only. The film
+             plays in the main "Watch" window above, so video rows are kept out
+             of this grid (see assets/js/main.js -> loadUpdates). Static fallback: -->
         <article class="update-card" data-reveal>
-          <button type="button" class="media-embed media-play" data-video-src="Detroit_City_Video_RealMusic_2026-09-17_1000.mp4" data-video-poster="detroit-story-poster_2026-09-17.jpg" aria-haspopup="dialog" aria-label="Play video: Detroit: our city, our mission">
-            <img src="detroit-story-poster_2026-09-17.jpg" alt="Aerial view of the Detroit skyline &mdash; the Motor City">
-            <span class="video-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
-          </button>
-          <div class="u-body">
-            <div class="u-meta"><span class="u-tag">Community</span><span>Sep 17, 2026</span></div>
-            <h3>Detroit: our city, our mission</h3>
-            <p>A quick look at the city we're rebuilding in &mdash; its history, its landmarks, and the new development shaping its future. Click to watch.</p>
-          </div>
-        </article>
-        <article class="update-card" data-reveal data-delay="1">
           <div class="media-embed portrait"><img src="assets/img/home-exterior-after.jpg" alt="Restored brick exterior"></div>
           <div class="u-body">
             <div class="u-meta"><span class="u-tag">Renovation</span><span>Sep 6, 2026</span></div>
@@ -234,19 +214,6 @@
     </div>
   </section>
 
-  <!-- ===== VIDEO MODAL (plays on the Updates screen when a video poster is clicked) ===== -->
-  <div class="video-modal" data-video-modal hidden>
-    <div class="video-modal-backdrop" data-video-close></div>
-    <div class="video-modal-inner" role="dialog" aria-modal="true" aria-label="Video player">
-      <button type="button" class="video-modal-close" data-video-close aria-label="Close video">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-      </button>
-      <div class="media-embed">
-        <!-- src is set from the clicked poster's data-video-src -->
-        <video data-video-el controls playsinline preload="auto"></video>
-      </div>
-    </div>
-  </div>
 </main>
 
 <footer class="site-footer">
@@ -309,50 +276,32 @@
 <script src="assets/js/main.js"></script>
 <script src="assets/js/forms.js"></script>
 <script>
-/* Click any video poster (static or Supabase-hydrated) to play it in a modal
-   on the Updates screen. Uses event delegation so cards rendered later by
-   main.js -> loadUpdates() work without re-binding. */
+/* Click a video poster to play it IN PLACE, inside its own window (no popup).
+   The poster is swapped for a <video> in the same .media-embed box, so the film
+   plays right in the main "Watch" window. Delegated so it also works for any
+   poster rendered later by main.js. */
 (function () {
-  var modal = document.querySelector('[data-video-modal]');
-  if (!modal) return;
-  var video = modal.querySelector('[data-video-el]');
-  var lastOpener = null;
-
-  function openWith(src, poster) {
-    if (!video || !src) return;
-    if (poster) video.setAttribute('poster', poster);
-    if (video.currentSrc.indexOf(src) === -1 && video.getAttribute('src') !== src) {
-      video.setAttribute('src', src);
-      video.load();
-    }
-    modal.hidden = false;
-    document.body.style.overflow = 'hidden';
-    requestAnimationFrame(function () { modal.classList.add('open'); });
-    try { video.currentTime = 0; } catch (e) {}
-    var p = video.play();
-    if (p && typeof p.catch === 'function') p.catch(function () { /* user can press play */ });
-  }
-  function close() {
-    if (video) { try { video.pause(); } catch (e) {} }
-    modal.classList.remove('open');
-    modal.hidden = true;
-    document.body.style.overflow = '';
-    if (lastOpener) { try { lastOpener.focus(); } catch (e) {} }
-  }
-
-  // Open when a poster with [data-video-src] is clicked (delegated).
   document.addEventListener('click', function (e) {
     var trigger = e.target.closest('[data-video-src]');
     if (!trigger) return;
     e.preventDefault();
-    lastOpener = trigger;
-    openWith(trigger.getAttribute('data-video-src'), trigger.getAttribute('data-video-poster'));
+    var box = trigger.closest('.media-embed');
+    if (!box) return;
+    var src = trigger.getAttribute('data-video-src');
+    var poster = trigger.getAttribute('data-video-poster') || '';
+    if (!src) return;
+    var v = document.createElement('video');
+    v.setAttribute('controls', '');
+    v.setAttribute('playsinline', '');
+    v.setAttribute('autoplay', '');
+    v.setAttribute('preload', 'auto');
+    if (poster) v.setAttribute('poster', poster);
+    v.src = src;
+    box.innerHTML = '';
+    box.appendChild(v);
+    var p = v.play();
+    if (p && typeof p.catch === 'function') p.catch(function () { /* controls are shown; user can press play */ });
   });
-  // Close via the X or the backdrop.
-  modal.addEventListener('click', function (e) {
-    if (e.target.closest('[data-video-close]')) close();
-  });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) close(); });
 })();
 </script>
 </body>
