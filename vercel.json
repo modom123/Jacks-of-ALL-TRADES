@@ -5,6 +5,11 @@
   "outputDirectory": ".",
   "cleanUrls": false,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/donate", "destination": "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development", "permanent": false },
+    { "source": "/give", "destination": "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development", "permanent": false },
+    { "source": "/raffle-tickets", "destination": "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development", "permanent": false }
+  ],
   "headers": [
     {
       "source": "/(.*)",

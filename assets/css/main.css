@@ -261,6 +261,9 @@ p { margin: 0 0 1em; }
 .qr-card h4 { color: #fff; margin-bottom: .3rem; }
 .qr-card p { color: var(--text-invert-soft); font-size: .92rem; margin-bottom: 1rem; }
 @media (max-width: 520px) { .qr-card { grid-template-columns: 1fr; text-align: center; justify-items: center; } }
+/* Added 2026-09-16 — tappable QR: touch/click the code to open the giving page */
+.qr-link { display: inline-block; line-height: 0; cursor: pointer; border-radius: var(--r-md); transition: transform .15s ease, box-shadow .15s ease; }
+.qr-link:hover, .qr-link:focus-visible { transform: scale(1.03); box-shadow: 0 6px 20px rgba(0,0,0,.18); outline: none; }
 
 /* ---- Pills / tags -------------------------------------------------------- */
 .pill { display: inline-flex; align-items: center; gap: .4em; font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: .38em .9em; border-radius: var(--r-pill); background: var(--blue-050); color: var(--accent); }
