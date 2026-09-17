@@ -8,6 +8,7 @@
   Updated: 2026-09-14 12:53 UTC  |  Updated project-update photos (team hero + Ford Field booth)
   Updated: 2026-09-14 12:58 UTC  |  Show finished-house (3:4) and worker (10:9) photos uncropped
   Updated: 2026-09-17 10:06 UTC  |  Added "Detroit: Our City, Our Mission" video to Project Updates
+  Updated: 2026-09-17 14:20 UTC  |  Video is now a click-to-play featured poster (opens a modal); restored the 3 image cards
 -->
 <html lang="en">
 <head>
@@ -50,6 +51,31 @@
   .winner-card h4{margin:0 0 .15rem;font-size:1.05rem}
   .winner-card .prize{color:#a2822f;font-weight:850;font-size:1.15rem}
   .winner-card .w-meta{color:var(--muted,#66707e);font-size:.8rem;margin-top:.2rem}
+  /* Featured click-to-play video (opens in a modal, keeps image cards intact) */
+  .video-feature{position:relative;display:block;width:100%;aspect-ratio:16/9;margin:0 0 1.6rem;padding:0;border:0;border-radius:16px;overflow:hidden;cursor:pointer;background:#0b1b28;box-shadow:0 18px 46px rgba(6,42,64,.22);color:inherit}
+  .video-feature img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .55s ease}
+  .video-feature:hover img,.video-feature:focus-visible img{transform:scale(1.04)}
+  .video-feature::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,42,64,0) 38%,rgba(6,42,64,.28) 66%,rgba(6,42,64,.82));z-index:1}
+  .video-feature:focus-visible{outline:3px solid #ffd98a;outline-offset:3px}
+  .video-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;width:clamp(64px,9vw,86px);height:clamp(64px,9vw,86px);border-radius:50%;background:rgba(255,255,255,.94);color:#062a40;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 34px rgba(0,0,0,.34);transition:transform .25s ease,background .25s ease}
+  .video-play svg{width:38%;height:38%;margin-left:8%}
+  .video-feature:hover .video-play,.video-feature:focus-visible .video-play{transform:translate(-50%,-50%) scale(1.09);background:#fff}
+  .video-feature-cap{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;text-align:left;padding:clamp(1rem,2.6vw,1.5rem)}
+  .video-feature-cap .u-tag{background:#c8322b;color:#fff}
+  .video-feature-cap b{color:#fff;font-size:clamp(1.12rem,2.6vw,1.55rem);font-weight:800;line-height:1.18;text-shadow:0 1px 12px rgba(0,0,0,.4)}
+  .video-feature-cap small{color:#e4eef6;font-weight:650;letter-spacing:.02em;display:inline-flex;align-items:center;gap:.4rem}
+  /* Video modal / lightbox */
+  .video-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:clamp(1rem,4vw,3rem)}
+  .video-modal[hidden]{display:none}
+  .video-modal-backdrop{position:absolute;inset:0;background:rgba(4,18,28,.86);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+  .video-modal-inner{position:relative;z-index:1;width:min(1100px,100%);opacity:0;transform:translateY(12px) scale(.985);transition:opacity .28s ease,transform .28s ease}
+  .video-modal.open .video-modal-inner{opacity:1;transform:none}
+  .video-modal-inner .media-embed{border-radius:14px;box-shadow:0 32px 90px rgba(0,0,0,.55)}
+  .video-modal-inner .media-embed video{object-fit:contain;background:#000}
+  .video-modal-close{position:absolute;top:-16px;right:-12px;z-index:3;width:46px;height:46px;border:0;border-radius:50%;background:#fff;color:#062a40;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 22px rgba(0,0,0,.42);transition:transform .2s ease}
+  .video-modal-close:hover{transform:scale(1.07)}
+  .video-modal-close svg{width:22px;height:22px}
+  @media(max-width:600px){.video-modal-close{top:-52px;right:0}}
 </style>
 </head>
 <body>
@@ -126,16 +152,20 @@
         <h2>Project updates</h2>
         <p class="lead">Progress from the renovation and our training cohort &mdash; in photos and video.</p>
       </div>
+
+      <!-- Featured video: click the poster to play it right here (opens the modal below). -->
+      <button type="button" class="video-feature" data-video-open data-reveal aria-label="Play video &mdash; Detroit: our city, our mission" aria-haspopup="dialog">
+        <img src="detroit-story-poster_2026-09-17.jpg" alt="Aerial view of the Detroit skyline &mdash; the Motor City">
+        <span class="video-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+        <span class="video-feature-cap">
+          <span class="u-tag">Community</span>
+          <b>Detroit: our city, our mission</b>
+          <small><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg> Watch the film</small>
+        </span>
+      </button>
+
       <div class="grid grid-3" data-updates>
         <!-- Hydrated from Supabase (project_updates). Static fallback below: -->
-        <article class="update-card" data-reveal>
-          <div class="media-embed"><video controls preload="metadata" poster="detroit-story-poster_2026-09-17.jpg"><source src="Detroit_City_Video_RealMusic_2026-09-17_1000.mp4" type="video/mp4"></video></div>
-          <div class="u-body">
-            <div class="u-meta"><span class="u-tag">Community</span><span>Sep 17, 2026</span></div>
-            <h3>Detroit: our city, our mission</h3>
-            <p>A quick look at the city we're rebuilding in &mdash; its history, its landmarks, and the new development shaping its future.</p>
-          </div>
-        </article>
         <article class="update-card" data-reveal>
           <div class="media-embed portrait"><img src="assets/img/home-exterior-after.jpg" alt="Restored brick exterior"></div>
           <div class="u-body">
@@ -204,6 +234,21 @@
       <div class="hero-cta" style="justify-content:center" data-reveal data-delay="1"><a class="btn btn-white btn-lg" href="raffle.html">Buy Raffle Tickets</a><a class="btn btn-ghost btn-lg" href="get-involved.html">Get Involved</a></div>
     </div>
   </section>
+
+  <!-- ===== VIDEO MODAL (plays on the Updates screen when the featured poster is clicked) ===== -->
+  <div class="video-modal" data-video-modal hidden>
+    <div class="video-modal-backdrop" data-video-close></div>
+    <div class="video-modal-inner" role="dialog" aria-modal="true" aria-label="Detroit: our city, our mission">
+      <button type="button" class="video-modal-close" data-video-close aria-label="Close video">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="media-embed">
+        <video data-video-el controls playsinline preload="none" poster="detroit-story-poster_2026-09-17.jpg">
+          <source src="Detroit_City_Video_RealMusic_2026-09-17_1000.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
 </main>
 
 <footer class="site-footer">
@@ -265,5 +310,36 @@
 <script type="module" src="assets/js/supabase-client.js"></script>
 <script src="assets/js/main.js"></script>
 <script src="assets/js/forms.js"></script>
+<script>
+/* Featured video: click-to-play in a modal on the Updates screen. */
+(function () {
+  var modal = document.querySelector('[data-video-modal]');
+  var opener = document.querySelector('[data-video-open]');
+  if (!modal || !opener) return;
+  var video = modal.querySelector('[data-video-el]');
+
+  function open() {
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(function () { modal.classList.add('open'); });
+    if (video) {
+      try { video.currentTime = 0; } catch (e) {}
+      var p = video.play();
+      if (p && typeof p.catch === 'function') p.catch(function () { /* user can press play */ });
+    }
+  }
+  function close() {
+    if (video) { try { video.pause(); } catch (e) {} }
+    modal.classList.remove('open');
+    modal.hidden = true;
+    document.body.style.overflow = '';
+    opener.focus();
+  }
+
+  opener.addEventListener('click', open);
+  modal.querySelectorAll('[data-video-close]').forEach(function (el) { el.addEventListener('click', close); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) close(); });
+})();
+</script>
 </body>
 </html>
