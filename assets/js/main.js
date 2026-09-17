@@ -205,8 +205,18 @@
 
   function mediaEmbed(mediaType, videoUrl, imageUrl, alt) {
     if (mediaType === "video" && videoUrl) {
-      if (/\.(mp4|webm|ogg)(\?|$)/i.test(videoUrl))
-        return `<div class="media-embed"><video controls preload="metadata" ${imageUrl ? `poster="${esc(imageUrl)}"` : ""}><source src="${esc(videoUrl)}"></video></div>`;
+      // Direct video files → a click-to-play poster that opens the on-page
+      // modal (see [data-video-modal] in updates.html). This keeps the grid
+      // as posters/photos and plays the film on the Updates screen on click,
+      // instead of embedding an always-on inline player in a card slot.
+      if (/\.(mp4|webm|ogg)(\?|$)/i.test(videoUrl)) {
+        const poster = imageUrl || "detroit-story-poster_2026-09-17.jpg";
+        return `<button type="button" class="media-embed media-play" data-video-src="${esc(videoUrl)}" data-video-poster="${esc(poster)}" aria-haspopup="dialog" aria-label="Play video${alt ? ": " + esc(alt) : ""}">`
+          + `<img src="${esc(poster)}" alt="${esc(alt || "")}">`
+          + `<span class="video-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>`
+          + `</button>`;
+      }
+      // Hosted embeds (YouTube/Vimeo) have their own play UI — keep inline.
       return `<div class="media-embed"><iframe src="${esc(videoUrl)}" title="${esc(alt || "Video")}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
     }
     return `<div class="media-embed"><img src="${esc(imageUrl || "assets/img/logo-jack.png")}" alt="${esc(alt || "")}"></div>`;

@@ -9,6 +9,7 @@
   Updated: 2026-09-14 12:58 UTC  |  Show finished-house (3:4) and worker (10:9) photos uncropped
   Updated: 2026-09-17 10:06 UTC  |  Added "Detroit: Our City, Our Mission" video to Project Updates
   Updated: 2026-09-17 14:20 UTC  |  Video is now a click-to-play featured poster (opens a modal); restored the 3 image cards
+  Updated: 2026-09-17 14:38 UTC  |  Video plays via a shared modal for ANY poster (static + Supabase-hydrated); grid keeps images, video is a click-to-play poster card
 -->
 <html lang="en">
 <head>
@@ -51,19 +52,15 @@
   .winner-card h4{margin:0 0 .15rem;font-size:1.05rem}
   .winner-card .prize{color:#a2822f;font-weight:850;font-size:1.15rem}
   .winner-card .w-meta{color:var(--muted,#66707e);font-size:.8rem;margin-top:.2rem}
-  /* Featured click-to-play video (opens in a modal, keeps image cards intact) */
-  .video-feature{position:relative;display:block;width:100%;aspect-ratio:16/9;margin:0 0 1.6rem;padding:0;border:0;border-radius:16px;overflow:hidden;cursor:pointer;background:#0b1b28;box-shadow:0 18px 46px rgba(6,42,64,.22);color:inherit}
-  .video-feature img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .55s ease}
-  .video-feature:hover img,.video-feature:focus-visible img{transform:scale(1.04)}
-  .video-feature::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,42,64,0) 38%,rgba(6,42,64,.28) 66%,rgba(6,42,64,.82));z-index:1}
-  .video-feature:focus-visible{outline:3px solid #ffd98a;outline-offset:3px}
-  .video-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;width:clamp(64px,9vw,86px);height:clamp(64px,9vw,86px);border-radius:50%;background:rgba(255,255,255,.94);color:#062a40;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 34px rgba(0,0,0,.34);transition:transform .25s ease,background .25s ease}
+  /* Click-to-play video poster (a card whose thumbnail opens the modal) */
+  .media-play{padding:0;border:0;cursor:pointer;color:inherit}
+  .media-play img{transition:transform .5s ease}
+  .media-play::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,42,64,0) 45%,rgba(6,42,64,.45));z-index:1}
+  .media-play:hover img,.media-play:focus-visible img{transform:scale(1.05)}
+  .media-play:focus-visible{outline:3px solid #ffd98a;outline-offset:2px}
+  .video-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.94);color:#062a40;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 26px rgba(0,0,0,.34);transition:transform .25s ease,background .25s ease}
   .video-play svg{width:38%;height:38%;margin-left:8%}
-  .video-feature:hover .video-play,.video-feature:focus-visible .video-play{transform:translate(-50%,-50%) scale(1.09);background:#fff}
-  .video-feature-cap{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;text-align:left;padding:clamp(1rem,2.6vw,1.5rem)}
-  .video-feature-cap .u-tag{background:#c8322b;color:#fff}
-  .video-feature-cap b{color:#fff;font-size:clamp(1.12rem,2.6vw,1.55rem);font-weight:800;line-height:1.18;text-shadow:0 1px 12px rgba(0,0,0,.4)}
-  .video-feature-cap small{color:#e4eef6;font-weight:650;letter-spacing:.02em;display:inline-flex;align-items:center;gap:.4rem}
+  .media-play:hover .video-play,.media-play:focus-visible .video-play{transform:translate(-50%,-50%) scale(1.09);background:#fff}
   /* Video modal / lightbox */
   .video-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:clamp(1rem,4vw,3rem)}
   .video-modal[hidden]{display:none}
@@ -153,20 +150,22 @@
         <p class="lead">Progress from the renovation and our training cohort &mdash; in photos and video.</p>
       </div>
 
-      <!-- Featured video: click the poster to play it right here (opens the modal below). -->
-      <button type="button" class="video-feature" data-video-open data-reveal aria-label="Play video &mdash; Detroit: our city, our mission" aria-haspopup="dialog">
-        <img src="detroit-story-poster_2026-09-17.jpg" alt="Aerial view of the Detroit skyline &mdash; the Motor City">
-        <span class="video-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
-        <span class="video-feature-cap">
-          <span class="u-tag">Community</span>
-          <b>Detroit: our city, our mission</b>
-          <small><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg> Watch the film</small>
-        </span>
-      </button>
-
       <div class="grid grid-3" data-updates>
-        <!-- Hydrated from Supabase (project_updates). Static fallback below: -->
+        <!-- Hydrated live from Supabase (project_updates). Video rows render as a
+             click-to-play poster (see assets/js/main.js -> mediaEmbed). Static
+             fallback below shows the same layout when the DB is unreachable. -->
         <article class="update-card" data-reveal>
+          <button type="button" class="media-embed media-play" data-video-src="Detroit_City_Video_RealMusic_2026-09-17_1000.mp4" data-video-poster="detroit-story-poster_2026-09-17.jpg" aria-haspopup="dialog" aria-label="Play video: Detroit: our city, our mission">
+            <img src="detroit-story-poster_2026-09-17.jpg" alt="Aerial view of the Detroit skyline &mdash; the Motor City">
+            <span class="video-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <div class="u-body">
+            <div class="u-meta"><span class="u-tag">Community</span><span>Sep 17, 2026</span></div>
+            <h3>Detroit: our city, our mission</h3>
+            <p>A quick look at the city we're rebuilding in &mdash; its history, its landmarks, and the new development shaping its future. Click to watch.</p>
+          </div>
+        </article>
+        <article class="update-card" data-reveal data-delay="1">
           <div class="media-embed portrait"><img src="assets/img/home-exterior-after.jpg" alt="Restored brick exterior"></div>
           <div class="u-body">
             <div class="u-meta"><span class="u-tag">Renovation</span><span>Sep 6, 2026</span></div>
@@ -235,17 +234,16 @@
     </div>
   </section>
 
-  <!-- ===== VIDEO MODAL (plays on the Updates screen when the featured poster is clicked) ===== -->
+  <!-- ===== VIDEO MODAL (plays on the Updates screen when a video poster is clicked) ===== -->
   <div class="video-modal" data-video-modal hidden>
     <div class="video-modal-backdrop" data-video-close></div>
-    <div class="video-modal-inner" role="dialog" aria-modal="true" aria-label="Detroit: our city, our mission">
+    <div class="video-modal-inner" role="dialog" aria-modal="true" aria-label="Video player">
       <button type="button" class="video-modal-close" data-video-close aria-label="Close video">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
       <div class="media-embed">
-        <video data-video-el controls playsinline preload="none" poster="detroit-story-poster_2026-09-17.jpg">
-          <source src="Detroit_City_Video_RealMusic_2026-09-17_1000.mp4" type="video/mp4">
-        </video>
+        <!-- src is set from the clicked poster's data-video-src -->
+        <video data-video-el controls playsinline preload="auto"></video>
       </div>
     </div>
   </div>
@@ -311,33 +309,49 @@
 <script src="assets/js/main.js"></script>
 <script src="assets/js/forms.js"></script>
 <script>
-/* Featured video: click-to-play in a modal on the Updates screen. */
+/* Click any video poster (static or Supabase-hydrated) to play it in a modal
+   on the Updates screen. Uses event delegation so cards rendered later by
+   main.js -> loadUpdates() work without re-binding. */
 (function () {
   var modal = document.querySelector('[data-video-modal]');
-  var opener = document.querySelector('[data-video-open]');
-  if (!modal || !opener) return;
+  if (!modal) return;
   var video = modal.querySelector('[data-video-el]');
+  var lastOpener = null;
 
-  function open() {
+  function openWith(src, poster) {
+    if (!video || !src) return;
+    if (poster) video.setAttribute('poster', poster);
+    if (video.currentSrc.indexOf(src) === -1 && video.getAttribute('src') !== src) {
+      video.setAttribute('src', src);
+      video.load();
+    }
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
     requestAnimationFrame(function () { modal.classList.add('open'); });
-    if (video) {
-      try { video.currentTime = 0; } catch (e) {}
-      var p = video.play();
-      if (p && typeof p.catch === 'function') p.catch(function () { /* user can press play */ });
-    }
+    try { video.currentTime = 0; } catch (e) {}
+    var p = video.play();
+    if (p && typeof p.catch === 'function') p.catch(function () { /* user can press play */ });
   }
   function close() {
     if (video) { try { video.pause(); } catch (e) {} }
     modal.classList.remove('open');
     modal.hidden = true;
     document.body.style.overflow = '';
-    opener.focus();
+    if (lastOpener) { try { lastOpener.focus(); } catch (e) {} }
   }
 
-  opener.addEventListener('click', open);
-  modal.querySelectorAll('[data-video-close]').forEach(function (el) { el.addEventListener('click', close); });
+  // Open when a poster with [data-video-src] is clicked (delegated).
+  document.addEventListener('click', function (e) {
+    var trigger = e.target.closest('[data-video-src]');
+    if (!trigger) return;
+    e.preventDefault();
+    lastOpener = trigger;
+    openWith(trigger.getAttribute('data-video-src'), trigger.getAttribute('data-video-poster'));
+  });
+  // Close via the X or the backdrop.
+  modal.addEventListener('click', function (e) {
+    if (e.target.closest('[data-video-close]')) close();
+  });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) close(); });
 })();
 </script>
