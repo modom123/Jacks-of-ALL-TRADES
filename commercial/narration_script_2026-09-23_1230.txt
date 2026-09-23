@@ -1,0 +1,41 @@
+# ============================================================
+# File: narration_script_2026-09-23_1230.txt
+# Project: Jacks of All Trades Community Development
+# Purpose: 30-second voiceover script for the 50/50 Raffle commercial
+#          (matches JOAT_5050_Raffle_Commercial_*_2026-09-23_1230.mp4)
+# Generated: 2026-09-23 12:30
+# ============================================================
+
+VOICE DIRECTION
+Deep, commanding, larger-than-life. Slow and heavy on the setup, then
+punchy and fast on the payoff. Lean hard on the CAPITALIZED words.
+(~75 words — reads in about 27 seconds at a confident pace.)
+
+NOTE: Do not imitate Samuel L. Jackson (or any real person) or use AI
+voice cloning of him without his written permission — that violates his
+right of publicity and can get the ad pulled. Hire a voice actor with a
+similar bold delivery, or license the celebrity officially.
+
+------------------------------------------------------------
+TIME      ON SCREEN                        NARRATION
+------------------------------------------------------------
+0:00-0:07 Detroit aerial ->                "Detroit. This city built the WORLD...
+          Michigan Central Station          and let me tell you something —
+                                            we are NOT done building."
+
+0:07-0:13 Crew restoring a brick home       "Jacks of All Trades Community Development
+          "RESTORING DETROIT —              is out here bringing homes back to life.
+           ONE HOME AT A TIME"              Block. By. Block."
+
+0:13-0:21 50-50 RAFFLE graphic              "Now it's YOUR move. The 50/50 Raffle.
+          "ONE WINNER TAKES HALF THE POT"   One winner takes HALF the pot.
+                                            The other half? Straight back into
+                                            this community."
+
+0:21-0:30 Jack of All Trades logo           "Win big. Give back. Get your tickets
+          "GET YOUR TICKETS NOW"            NOW. Jacks of All Trades —
+          zeffy.com link                    One call. Every solution."
+------------------------------------------------------------
+
+Ticket link:
+https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
