@@ -1,0 +1,43 @@
+# ============================================================
+# File: narration_script_v2_2026-09-23_1330.txt
+# Project: Jacks of All Trades Community Development
+# Purpose: 30-second voiceover script for commercial #2
+#          (matches JOAT_5050_Raffle_Commercial2_*_2026-09-23_1330.mp4)
+# Generated: 2026-09-23 13:30
+# ============================================================
+
+VOICE DIRECTION
+Deep, commanding, larger-than-life. Slow and heavy on the setup, then
+punchy and fast on the payoff. Lean hard on the CAPITALIZED words.
+(~80 words, about 28 seconds at a confident pace.)
+
+NOTE: Do not imitate Samuel L. Jackson (or any real person) or use AI
+voice cloning of him without his written permission. Hire a voice actor
+with a similar bold delivery, or license the celebrity officially.
+
+------------------------------------------------------------
+TIME      ON SCREEN                         NARRATION
+------------------------------------------------------------
+0:00-0:04 Detroit aerial                    "Detroit. You KNOW what this city
+          "DETROIT / THE MOTOR CITY"         is made of."
+
+0:04-0:09 Crews: building, roofing,         "Jacks of All Trades. Building.
+          plumbing, yard work                Roofing. Plumbing. Yard work.
+          "ONE CALL. EVERY SOLUTION."        One call — EVERY solution."
+
+0:09-0:14 Community booth + QR code         "And we don't just work in this
+          "OUT HERE FOR DETROIT"             community — we SHOW UP for it."
+
+0:14-0:21 50-50 RAFFLE graphic + QR code    "So here's the deal. The 50/50 Raffle.
+          "ONE WINNER TAKES HALF THE POT"    One winner takes HALF the pot.
+                                             The other half builds Detroit."
+
+0:21-0:30 Logo + large QR code              "Scan that code. Hit joatamp.org.
+          "GET YOUR TICKETS NOW"             Get your tickets — NOW.
+          joatamp.org                        Jacks of All Trades."
+------------------------------------------------------------
+
+On screen the whole time: joatamp.org (in every caption)
+QR code (opens the ticket page): 0:09 to the end
+Website: https://joatamp.org
+Ticket link: https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
