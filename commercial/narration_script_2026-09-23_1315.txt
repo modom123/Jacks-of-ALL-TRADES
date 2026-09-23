@@ -1,15 +1,15 @@
 # ============================================================
-# File: narration_script_2026-09-23_1230.txt
+# File: narration_script_2026-09-23_1315.txt
 # Project: Jacks of All Trades Community Development
 # Purpose: 30-second voiceover script for the 50/50 Raffle commercial
-#          (matches JOAT_5050_Raffle_Commercial_*_2026-09-23_1230.mp4)
-# Generated: 2026-09-23 12:30
+#          (matches JOAT_5050_Raffle_Commercial_*_2026-09-23_1315.mp4)
+# Generated: 2026-09-23 13:15
 # ============================================================
 
 VOICE DIRECTION
 Deep, commanding, larger-than-life. Slow and heavy on the setup, then
 punchy and fast on the payoff. Lean hard on the CAPITALIZED words.
-(~75 words — reads in about 27 seconds at a confident pace.)
+(~80 words — reads in about 27 seconds at a confident pace.)
 
 NOTE: Do not imitate Samuel L. Jackson (or any real person) or use AI
 voice cloning of him without his written permission — that violates his
@@ -32,10 +32,12 @@ TIME      ON SCREEN                        NARRATION
                                             The other half? Straight back into
                                             this community."
 
-0:21-0:30 Jack of All Trades logo           "Win big. Give back. Get your tickets
-          "GET YOUR TICKETS NOW"            NOW. Jacks of All Trades —
-          zeffy.com link                    One call. Every solution."
+0:21-0:30 Jack of All Trades logo +         "Win big. Give back. Scan that code
+          big ticket QR code                or hit joatamp.org — and get your
+          "GET YOUR TICKETS NOW"            tickets NOW. Jacks of All Trades —
+          joatamp.org                       One call. Every solution."
 ------------------------------------------------------------
 
-Ticket link:
+Website: https://joatamp.org
+Ticket link (QR code on screen from 0:07 (small) and 0:21 (large) to the end):
 https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
