@@ -1,0 +1,18 @@
+# ============================================================
+# File: raffle_sms_2026-09-23_1200.txt
+# Project: Jacks of All Trades Community Development
+# Purpose: SMS / text-message copy for the 50/50 Raffle
+# Generated: 2026-09-23 12:00
+# ============================================================
+
+--- OPTION 1 (standard, ~150 chars) ---
+🎟️ 50/50 RAFFLE! Win half the pot & support Jacks of All Trades Community Development. Get your tickets: https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
+
+--- OPTION 2 (short) ---
+50/50 RAFFLE 💰 Half the pot could be yours! Tickets: https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
+
+--- OPTION 3 (with image / MMS) ---
+[Attach the 50-50 Raffle image]
+💰 50/50 RAFFLE 💰
+One winner takes HALF the pot — the other half helps our community. Tap to buy tickets 👉 https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
+Reply STOP to opt out.

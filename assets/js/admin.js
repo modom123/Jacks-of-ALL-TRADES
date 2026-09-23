@@ -6,6 +6,8 @@
    Updated: 2026-09-14 11:40 UTC · Added Merch Orders view (shop order fulfillment queue)
    Updated: 2026-09-14 13:10 UTC · Click project/campaign cards to view & edit; edit-mode modal saves changes
    Updated: 2026-09-14 13:41 UTC · Removed front-end demo/sample data (hub shows only real data)
+   Updated: 2026-09-23 13:45 UTC · 50/50 Raffle view: "Sync from Zeffy now" button (runs the zeffy-sync
+                                   Edge Function so new Zeffy ticket sales update the site + hub)
 
    A nonprofit operations hub: projects, fundraising campaigns, donor CRM,
    outreach, board/team, inbound leads, and three AI agents. Role-based access
@@ -532,12 +534,29 @@
   async function renderRaffle() {
     const r = await fetchRaffle();
     view.innerHTML = `
-      <div class="view-head"><div><h2 style="margin:0">50/50 Raffle</h2><p>A community-project fundraiser. Update the live figures shown on the site.</p></div></div>
+      <div class="view-head"><div><h2 style="margin:0">50/50 Raffle</h2><p>A community-project fundraiser. Update the live figures shown on the site.</p></div>
+        <div><button class="btn btn-primary" id="zeffy-sync-btn" type="button">Sync from Zeffy now</button>
+        <p style="margin:6px 0 0;font-size:12px">Last updated: ${r.updated_at ? new Date(r.updated_at).toLocaleString() : "never"}${r.payment_count != null ? ` · ${Number(r.payment_count).toLocaleString()} Zeffy payments` : ""}</p></div></div>
       <div class="kpis">${kpi("Winner takes home", money(r.pot_total), "ticket", "")}${kpi("Renovation raised", money(r.renovation_raised), "home", "")}${kpi("Gross raised", money(r.gross_raised || ((Number(r.pot_total)||0)+(Number(r.renovation_raised)||0))), "mega", "")}${kpi("Tickets sold", (r.tickets_sold || 0).toLocaleString(), "mega", "")}${kpi("Goal", money(r.goal || 100000), "target", "")}</div>
       <div class="panel"><div class="panel-head"><h3>Edit live figures</h3></div><div class="panel-body">
         <form id="raffle-form"><div class="field-row"><div class="field"><label>Winner takes home ($) &mdash; the 50% share</label><input name="pot_total" type="number" value="${r.pot_total}"></div><div class="field"><label>Renovation raised ($)</label><input name="renovation_raised" type="number" value="${r.renovation_raised}"></div></div>
         <div class="field-row"><div class="field"><label>Tickets sold</label><input name="tickets_sold" type="number" value="${r.tickets_sold || 0}"></div><div class="field"><label>Goal ($)</label><input name="goal" type="number" value="${r.goal || 100000}"></div></div>
         <button class="btn btn-primary" type="submit">Save figures</button></form></div></div>`;
+    $("#zeffy-sync-btn").onclick = async (e) => {
+      const cfg = A.SUPABASE || {};
+      if (DEMO || !cfg.url) return toast("Connect Supabase first to sync Zeffy");
+      const btn = e.currentTarget; btn.disabled = true; btn.textContent = "Syncing…";
+      try {
+        // zeffy-sync pulls payments from the Zeffy API server-side (key never reaches the browser),
+        // then recomputes raffle_stats, which the public site and this hub both read.
+        const res = await fetch(`${cfg.url.replace(/\/$/, "")}/functions/v1/zeffy-sync`, {
+          method: "POST", headers: { "Content-Type": "application/json", apikey: cfg.anonKey || "" } });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || !out.ok) { toast("Zeffy sync failed: " + (out.error || res.status)); console.error("zeffy-sync", out); }
+        else toast(`Synced ${out.synced} Zeffy payments · pot ${money(out.pot_total)} — live on site`);
+      } catch (err) { toast("Zeffy sync failed: network error"); console.error(err); }
+      renderRaffle();
+    };
     $("#raffle-form").onsubmit = async (e) => {
       e.preventDefault();
       const p = Object.fromEntries([...new FormData(e.target).entries()].map(([k, v]) => [k, Number(v)])); p.updated_at = new Date().toISOString();
