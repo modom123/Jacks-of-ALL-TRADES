@@ -1,31 +1,33 @@
 # ============================================================
-# File: raffle_social_2026-09-23_1215.txt
+# File: raffle_social_2026-09-23_1430.txt
 # Project: Jacks of All Trades Community Development
 # Purpose: Social media copy for the 50/50 Raffle
-#          (TikTok, Instagram, Facebook, Twitch)
-# Generated: 2026-09-23 12:15
+#          (TikTok, Instagram, Facebook, Twitch) - now with joatamp.org
+# Generated: 2026-09-23 14:30  (replaces raffle_social_2026-09-23_1215.txt)
+# Website: https://joatamp.org
 # Ticket link: https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
 # ============================================================
 
 ============================== TIKTOK ==============================
 NOTE: Links in TikTok captions are NOT clickable. Put the ticket link
-in your bio and say "link in bio".
+in your bio. joatamp.org is included as text people can type in.
 
 --- Caption ---
-💰 50/50 RAFFLE 💰 Half the pot could be YOURS 👀 The other half helps our community 🙌 Tickets = link in bio 🎟️
+💰 50/50 RAFFLE 💰 Half the pot could be YOURS 👀 The other half helps our community 🙌 Tickets = link in bio 🎟️ Learn more: joatamp.org
 #5050raffle #raffle #win #giveback #community #fundraiser #nonprofit #jacksofalltrades #fyp
 
 --- On-screen text / video idea (15 sec) ---
 [0-3s]  Money-background image on screen, text: "What if half the pot was YOURS? 💰"
 [3-8s]  Text: "50/50 RAFFLE — one winner takes HALF"
 [8-12s] Text: "The other half helps our community ❤️"
-[12-15s] Text: "Tickets 👉 link in bio"
+[12-15s] Text: "Tickets 👉 link in bio  •  joatamp.org"
 Voiceover: "This is your sign to grab a 50/50 raffle ticket. One winner takes
-half the pot, the other half goes right back into our community. Link in bio!"
+half the pot, the other half goes right back into our community. Link in
+bio, or visit joatamp.org!"
 
 ============================== INSTAGRAM ==============================
 NOTE: Links in Instagram captions are NOT clickable. Put the link in your
-bio, or in a Story with a Link sticker.
+bio, or in a Story with a Link sticker. joatamp.org is included as text.
 
 --- Feed post caption ---
 💰 50/50 RAFFLE 💰
@@ -36,6 +38,7 @@ The other half supports Jacks of All Trades Community Development ❤️
 Every ticket = a chance to win + a hand up for our community 🙌
 
 🎟️ Get your tickets — LINK IN BIO
+🌐 Learn more at joatamp.org
 Tag someone who's feeling lucky 👇
 
 #5050raffle #raffle #fundraiser #giveback #community #nonprofit #win #supportlocal #jacksofalltrades
@@ -45,6 +48,8 @@ Slide 1: Raffle image + text "50/50 RAFFLE 💰"
 Slide 2: "Half the pot could be YOURS" + Link sticker labeled "GET TICKETS"
          (sticker link: https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development)
 Slide 3: Poll sticker — "Feeling lucky? 🍀  YES / ALWAYS"
+Slide 4: Logo + Link sticker labeled "JOATAMP.ORG"
+         (sticker link: https://joatamp.org)
 
 ============================== FACEBOOK ==============================
 NOTE: Links ARE clickable on Facebook.
@@ -58,26 +63,27 @@ Jacks of All Trades Community Development to support our community. ❤️
 The more tickets sold, the bigger the prize! 🏆
 
 🎟️ Get your tickets here 👉 https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
+🌐 Learn more about our work 👉 https://joatamp.org
 
 Please SHARE this post to help grow the pot! 🙏
 
 #5050Raffle #Fundraiser #GiveBack #Community
 
 --- Short version (for groups / events) ---
-🎟️ 50/50 RAFFLE is LIVE! Win half the pot & support our community. Tickets: https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
+🎟️ 50/50 RAFFLE is LIVE! Win half the pot & support our community. Tickets: https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development • joatamp.org
 
 ============================== TWITCH ==============================
 NOTE: Links in Twitch chat and panels ARE clickable. Twitch chat allows
 500 characters per message.
 
 --- Stream title (max 140 chars) ---
-💰 50/50 RAFFLE LIVE — Win HALF the pot & support our community! !raffle for tickets 🎟️
+💰 50/50 RAFFLE LIVE — Win HALF the pot & support our community! !raffle for tickets 🎟️ joatamp.org
 
 --- Chat command (!raffle) response ---
-🎟️ 50/50 RAFFLE! One winner takes HALF the pot, the other half supports Jacks of All Trades Community Development ❤️ Get tickets: https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development
+🎟️ 50/50 RAFFLE! One winner takes HALF the pot, the other half supports Jacks of All Trades Community Development ❤️ Get tickets: https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development • More: https://joatamp.org
 
 --- Timed chat message (every 15 min) ---
-💰 Reminder: our 50/50 RAFFLE is live! The pot grows with every ticket. Type !raffle for the link 🎟️
+💰 Reminder: our 50/50 RAFFLE is live! The pot grows with every ticket. Type !raffle for the link 🎟️ • joatamp.org
 
 --- Panel (under the stream) ---
 Panel image: 50/50 Raffle graphic
@@ -86,7 +92,9 @@ Panel description:
 **50/50 RAFFLE** 💰
 One winner takes half the pot. The other half supports Jacks of All Trades
 Community Development. Click the image to get your tickets!
+Learn more: https://joatamp.org
 
 --- Streamer shout-out script ---
 "Hey chat — we're running a 50/50 raffle! One of you could win half the pot,
-and the other half goes back into our community. Type !raffle in chat for the link."
+and the other half goes back into our community. Type !raffle in chat for the
+link, and check out joatamp.org to see what we're building."
