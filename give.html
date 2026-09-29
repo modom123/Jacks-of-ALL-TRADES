@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<!--
+  Jacks of All Trades Community Development
+  File: give.html  (social-media giving page)
+  Generated: 2026-09-29 22:30 UTC
+
+  The one link used in every social bio, post, story and video:
+    give.html?src=instagram&c=house            ← platform + campaign (tracked)
+    give.html?ref=jane-smith-4k2               ← a supporter's own fundraiser
+  Logs a "view" and each "donate" tap to public.give_clicks (platform, campaign,
+  fundraiser) so the Command Center → Social Fundraising screen shows which
+  platforms raise money. Gifts go through Zeffy (0% fees), Cash App, Zelle, or
+  GoFundMe (shown when ORG.gofundmeUrl is set in config.js).
+  Supporters can start their own fundraiser here (approved by staff).
+  Setup: supabase/setup_social_fundraising_2026-09-29_2230.sql
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 48 48%27%3E%3Crect width=%2748%27 height=%2748%27 rx=%2712%27 fill=%27%23062a40%27/%3E%3Cpath d=%27M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z%27 fill=%27%23fff%27/%3E%3Cpath d=%27M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z%27 fill=%27%230076b6%27/%3E%3C/svg%3E">
+<title>Give — Rebuild a Detroit Home | Jacks of All Trades</title>
+<meta name="description" content="Help Detroit residents learn the trades while rebuilding a vacant home into a family's home. Give in 30 seconds — or start your own fundraiser.">
+<meta name="theme-color" content="#062a40">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jacks of All Trades Community Development">
+<meta property="og:title" content="Help rebuild a Detroit home — and the people who build it">
+<meta property="og:description" content="Residents in our skilled-trades program are renovating a vacant 4-bed, 2-bath Detroit home. Every gift buys materials and training. Give in 30 seconds.">
+<meta property="og:url" content="https://joatamp.org/give.html">
+<meta property="og:image" content="https://joatamp.org/assets/img/project-before-after.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;650;750;800;850&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/theme.css">
+<link rel="stylesheet" href="assets/css/main.css">
+<style>
+  .give-wrap { max-width: 760px; margin: 0 auto; }
+  .amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin: 1.2rem 0 .6rem; }
+  .amounts button { font: inherit; font-weight: 800; font-size: 1.15rem; padding: 1rem .5rem; border-radius: 14px; border: 2px solid var(--border, #d9dee5);
+    background: #fff; color: var(--ink-900, #0b1b2b); cursor: pointer; }
+  .amounts button:hover, .amounts button:focus-visible { border-color: var(--accent, #0076b6); }
+  .give-card { background: #fff; border-radius: 20px; padding: clamp(18px, 4vw, 32px); box-shadow: var(--shadow-md, 0 8px 30px rgba(0,0,0,.08)); }
+  .progress { height: 14px; border-radius: 10px; background: #e6e8ec; overflow: hidden; margin: .5rem 0; }
+  .progress > div { height: 100%; background: #0f766e; }
+  .alt-ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .8rem; margin-top: 1rem; }
+  .alt-ways a { display: flex; gap: .8rem; align-items: center; padding: .8rem; border-radius: 14px; border: 1px solid var(--border, #d9dee5); text-decoration: none; color: inherit; background: #fff; }
+  .alt-ways img { width: 64px; height: 64px; border-radius: 10px; background: #fff; }
+  .share-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+  .share-row a, .share-row button { font: inherit; font-weight: 700; font-size: .9rem; padding: .55rem .9rem; border-radius: 999px; border: 1px solid var(--border, #d9dee5);
+    background: #fff; color: inherit; text-decoration: none; cursor: pointer; }
+  .hide { display: none !important; }
+  .field input, .field textarea { width: 100%; }
+  @media (max-width: 480px) { .amounts { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<header class="site-nav" id="nav">
+  <div class="container">
+    <a class="brand" href="home.html" aria-label="Jacks of All Trades home">
+      <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="#062a40"/>
+        <path d="M24 9.5 38 21.2V39H29.4V28.6H18.6V39H10V21.2Z" fill="#fff"/>
+        <path d="M25.6 15.5 19 25.9h4.6l-1.4 6.9 7.2-11.1h-4.8z" fill="#0076b6"/>
+      </svg>
+      <span class="brand-name"><b>Jacks of All Trades</b><span>Community Development</span></span>
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav-links" id="menu">
+      <a href="home.html">Home</a>
+      <a href="mission.html">Mission</a>
+      <a href="raffle.html">50/50 Raffle</a>
+      <a href="impact.html">Our Impact</a>
+      <a href="programs.html">Programs</a>
+      <a href="get-involved.html">Get Involved</a>
+      <a href="contact.html">Contact</a>
+      <a class="btn btn-primary nav-cta" href="#give">Give now</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="section-tight bg-ink" style="padding-top:clamp(48px,7vw,88px)">
+    <div class="container give-wrap">
+      <span class="eyebrow" id="g-eyebrow">Detroit home renovation</span>
+      <h1 style="font-size:var(--fs-h1)" id="g-title">Help rebuild a Detroit home &mdash; and the people who build it.</h1>
+      <p class="lead" id="g-lead">Residents in our skilled-trades program are turning a vacant 4-bed, 2-bath brick home into a family's home, working alongside licensed pros. Your gift buys the materials and the training.</p>
+    </div>
+  </section>
+
+  <section class="section" id="give">
+    <div class="container give-wrap">
+      <!-- Supporter fundraiser (shown when ?ref= is an active fundraiser) -->
+      <div class="give-card hide" id="g-fundraiser" style="margin-bottom:1rem">
+        <b id="g-fr-name"></b>
+        <p class="text-soft" id="g-fr-story" style="margin:.4rem 0"></p>
+        <div class="progress"><div id="g-fr-bar" style="width:0%"></div></div>
+        <div id="g-fr-amounts" style="font-weight:700"></div>
+      </div>
+
+      <div class="give-card">
+        <h2 style="margin:0">Give in 30 seconds</h2>
+        <p class="text-soft" style="margin:.3rem 0 0">Pick an amount &mdash; you'll finish on our secure Zeffy page (Apple&nbsp;Pay, Google&nbsp;Pay, card). 100% reaches the mission, and your tax receipt is emailed automatically.</p>
+        <div class="amounts">
+          <button type="button" data-amt="25">$25</button>
+          <button type="button" data-amt="50">$50</button>
+          <button type="button" data-amt="100">$100</button>
+          <button type="button" data-amt="250">$250</button>
+          <button type="button" data-amt="500">$500</button>
+          <button type="button" data-amt="other">Other</button>
+        </div>
+        <p class="text-soft" style="font-size:.85rem;margin:0" id="g-what">$25 buys a box of tile &middot; $50 a bundle of shingles &middot; $100 a day of trades training &middot; $250 a replacement window &middot; $500 a new water heater (approximate).</p>
+
+        <div class="alt-ways">
+          <a href="https://cash.app/$JacksAllTrades" target="_blank" rel="noopener" data-method="cashapp">
+            <img src="assets/img/cashapp-qr_2026-09-14_1906.png" alt="Cash App QR code — $JacksAllTrades"><span><b>Cash App</b><br><span class="text-soft">$JacksAllTrades</span></span></a>
+          <a href="get-involved.html#donate" data-method="zelle">
+            <img src="assets/img/zelle-qr_2026-09-14_1906.png" alt="Zelle QR code"><span><b>Zelle</b><br><span class="text-soft">Scan in your bank app</span></span></a>
+          <!-- Shown only when window.JOAT.ORG.gofundmeUrl is set in config.js -->
+          <a href="#" target="_blank" rel="noopener" data-method="gofundme" id="g-gofundme" class="hide">
+            <span style="width:64px;height:64px;border-radius:10px;background:#02a95c;color:#fff;display:grid;place-items:center;font-weight:900;flex:none">GFM</span>
+            <span><b>GoFundMe</b><br><span class="text-soft">Give on our GoFundMe page</span></span></a>
+        </div>
+        <p class="text-soft center" style="margin:1rem 0 0;font-size:.9rem" id="g-social-total"></p>
+      </div>
+
+      <div class="give-card" style="margin-top:1rem">
+        <h3 style="margin:0">Share it &mdash; every share reaches new neighbors</h3>
+        <div class="share-row" id="g-share"></div>
+      </div>
+
+      <div class="give-card" style="margin-top:1rem" id="start">
+        <h3 style="margin:0">Start your own fundraiser</h3>
+        <p class="text-soft" style="margin:.3rem 0 .8rem">Birthday, memorial, team challenge, or just because &mdash; get your own page and share it on your Facebook, Instagram, TikTok or anywhere. We'll approve it within a day.</p>
+        <form id="g-start">
+          <div class="field-row">
+            <div class="field"><label>Your name</label><input name="name" required maxlength="80"></div>
+            <div class="field"><label>Email</label><input name="email" type="email" required maxlength="160"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Your goal ($)</label><input name="goal" type="number" min="50" max="100000" value="500" required></div>
+            <div class="field"><label>Phone (optional)</label><input name="phone" maxlength="40"></div>
+          </div>
+          <div class="field"><label>Why you're raising money (shown on your page)</label><textarea name="story" rows="3" maxlength="600" placeholder="I'm raising $500 so Detroit residents can learn a trade while rebuilding a family home."></textarea></div>
+          <button class="btn btn-primary" type="submit">Create my fundraiser</button>
+          <div class="form-status" id="g-start-status" style="margin-top:.6rem"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>&copy; <span data-year>2026</span> Jacks of All Trades Community Development &middot; Detroit nonprofit &middot; EIN 41-2680557</span>
+      <span><a href="mailto:info@joatamp.org">info@joatamp.org</a> &middot; <a href="tel:+13136399373">(313) 639-9373</a> &middot; <a href="get-involved.html">More ways to help</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/config.js"></script>
+<script type="module" src="assets/js/supabase-client.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+(function () {
+  "use strict";
+  const A = window.JOAT || {};
+  const ZEFFY = (A.ORG && A.ORG.zeffyUrl) || "https://www.zeffy.com/en-US/ticketing/jacks-of-all-trades-community-development";
+  const qs = new URLSearchParams(location.search);
+  const clean = (v, n) => (v || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, n);
+  const src = clean(qs.get("src") || qs.get("utm_source"), 40) || (document.referrer ? "referral" : "direct");
+  const campaign = clean(qs.get("c") || qs.get("utm_campaign"), 40) || "house";
+  const ref = clean(qs.get("ref"), 60);
+  const $ = (s) => document.querySelector(s);
+  const usd = (n) => "$" + Math.round(Number(n) || 0).toLocaleString();
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+
+  // Campaign-specific headline
+  if (campaign === "raffle") {
+    $("#g-eyebrow").textContent = "50/50 raffle";
+    $("#g-title").textContent = "Win half the pot. The other half rebuilds a Detroit home.";
+    $("#g-lead").innerHTML = 'Prefer a raffle ticket? <a href="raffle.html" style="color:#fff;text-decoration:underline">Get tickets here</a>. Or give directly below &mdash; 100% goes to the renovation.';
+  } else if (campaign === "general") {
+    $("#g-eyebrow").textContent = "Jacks of All Trades";
+    $("#g-title").textContent = "Train Detroiters in the trades. Rebuild Detroit neighborhoods.";
+  }
+
+  // Tracking (best effort — never blocks giving)
+  function track(event, method) {
+    const db = A.db;
+    if (!db) return;
+    try { db.from("give_clicks").insert({ event, src, ref: ref || null, campaign, method: method || null }).then(() => {}, () => {}); } catch (e) {}
+  }
+  function whenDb(fn) { if (A.db !== undefined && (A.db || A.configured === false)) fn(); else document.addEventListener("joat:db-ready", fn, { once: true }); }
+
+  whenDb(async () => {
+    track("view");
+    const db = A.db; if (!db) return;
+    try {
+      const { data } = await db.from("public_give_stats").select("*").limit(1);
+      const s = data && data[0];
+      if (s && Number(s.raised_social) > 0) $("#g-social-total").textContent = `${usd(s.raised_social)} raised so far through social media — thank you!`;
+    } catch (e) {}
+    if (ref) {
+      try {
+        const { data } = await db.from("public_fundraisers").select("*").eq("slug", ref).limit(1);
+        const f = data && data[0];
+        if (f) {
+          $("#g-fundraiser").classList.remove("hide");
+          $("#g-fr-name").textContent = `You're supporting ${f.name}'s fundraiser`;
+          $("#g-fr-story").textContent = f.story || "";
+          $("#g-fr-bar").style.width = Math.min(100, (Number(f.raised) / Math.max(1, Number(f.goal))) * 100) + "%";
+          $("#g-fr-amounts").textContent = `${usd(f.raised)} raised of ${usd(f.goal)}`;
+        }
+      } catch (e) {}
+    }
+  });
+
+  // Give buttons → Zeffy (amount is entered on Zeffy's secure page)
+  document.querySelectorAll("[data-amt]").forEach((b) => b.addEventListener("click", () => {
+    track("donate", "zeffy-" + b.dataset.amt);
+    window.open(ZEFFY, "_blank", "noopener");
+  }));
+  const gfm = A.ORG && A.ORG.gofundmeUrl;
+  if (gfm) { const g = $("#g-gofundme"); g.href = gfm; g.classList.remove("hide"); }
+  document.querySelectorAll("[data-method]").forEach((a) => a.addEventListener("click", () => track("donate", a.dataset.method)));
+
+  // Share onward (keeps the fundraiser ref; marks the source as a share)
+  const shareUrl = location.origin + location.pathname + "?src=share&c=" + encodeURIComponent(campaign) + (ref ? "&ref=" + encodeURIComponent(ref) : "");
+  const text = "Help rebuild a Detroit home — and train the neighbors who build it. Give or share:";
+  const e = encodeURIComponent;
+  const links = [
+    ["Facebook", "https://www.facebook.com/sharer/sharer.php?u=" + e(shareUrl)],
+    ["X", "https://twitter.com/intent/tweet?text=" + e(text) + "&url=" + e(shareUrl)],
+    ["LinkedIn", "https://www.linkedin.com/sharing/share-offsite/?url=" + e(shareUrl)],
+    ["Threads", "https://www.threads.net/intent/post?text=" + e(text + " " + shareUrl)],
+    ["WhatsApp", "https://wa.me/?text=" + e(text + " " + shareUrl)],
+    ["Text", "sms:?&body=" + e(text + " " + shareUrl)],
+    ["Email", "mailto:?subject=" + e("Help rebuild a Detroit home") + "&body=" + e(text + "\n\n" + shareUrl)],
+  ];
+  $("#g-share").innerHTML = links.map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n}</a>`).join("") +
+    `<button type="button" id="g-copy">Copy link</button>` + (navigator.share ? `<button type="button" id="g-native">More…</button>` : "");
+  $("#g-copy").onclick = async () => { try { await navigator.clipboard.writeText(shareUrl); $("#g-copy").textContent = "Copied ✓"; } catch (err) { prompt("Copy this link:", shareUrl); } };
+  const nat = $("#g-native"); if (nat) nat.onclick = () => navigator.share({ title: document.title, text, url: shareUrl }).catch(() => {});
+
+  // Start a fundraiser (arrives as "pending" for staff approval)
+  $("#g-start").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const f = ev.target, st = $("#g-start-status"), btn = f.querySelector("[type=submit]");
+    const name = f.name.value.trim();
+    const slug = (name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "friend") + "-" + Math.random().toString(36).slice(2, 5);
+    const row = { slug, name, email: f.email.value.trim(), phone: f.phone.value.trim() || null, goal: Number(f.goal.value) || 500,
+      story: f.story.value.trim() || null, campaign, status: "pending" };
+    if (!A.db) { st.className = "form-status err"; st.textContent = "Please email info@joatamp.org to start a fundraiser."; return; }
+    btn.disabled = true; st.className = "form-status info"; st.textContent = "Creating…";
+    const { error } = await A.db.from("fundraisers").insert(row);
+    btn.disabled = false;
+    if (error) { st.className = "form-status err"; st.textContent = "Couldn't create it right now — please email info@joatamp.org."; return; }
+    const link = location.origin + location.pathname + "?ref=" + slug;
+    f.reset();
+    st.className = "form-status ok";
+    st.innerHTML = `Thank you, ${esc(name)}! We'll approve your page within a day. Your link will be:<br><b>${esc(link)}</b><br>Share it on your social media once it's live.`;
+  });
+})();
+</script>
+</body>
+</html>

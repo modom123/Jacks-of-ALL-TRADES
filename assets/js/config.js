@@ -80,6 +80,10 @@ window.JOAT.STATS = [
 /* ---- Shop merchandise ---------------------------------------------------- */
 // Optional site-wide store URL (used when an item has no its own buyUrl).
 window.JOAT.ORG.shopUrl = "";
+// GoFundMe page (added 2026-09-29 22:30 UTC). Paste the full link to show a
+// GoFundMe option on give.html; leave "" to hide it. Totals are entered in
+// Command Center → Social Fundraising → Record a gift (source: GoFundMe).
+window.JOAT.ORG.gofundmeUrl = "https://gofund.me/3034e976f";
 
 /* ---- Grants daily goals -------------------------------------------------- */
 // Targets the Grants engine tracks each day in the Command Center.

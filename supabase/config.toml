@@ -34,3 +34,7 @@ verify_jwt = false
 # checks auth itself. (added 2026-09-29 19:45 UTC)
 [functions.donors-agents]
 verify_jwt = false
+
+# Nova social posts — called by signed-in hub users; checks auth itself. (added 2026-09-29 22:30 UTC)
+[functions.social-agent]
+verify_jwt = false

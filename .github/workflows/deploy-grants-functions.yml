@@ -24,6 +24,7 @@ on:
       - "supabase/functions/grants-daily/**"
       - "supabase/functions/grants-agents/**"
       - "supabase/functions/donors-agents/**"
+      - "supabase/functions/social-agent/**"
       - "supabase/functions/ai-agent/**"
       - "supabase/functions/_shared/**"
       - "supabase/config.toml"
@@ -65,6 +66,9 @@ jobs:
 
       - name: Deploy donors-agents (Paige + Cole)
         run: supabase functions deploy donors-agents --project-ref "$PROJECT_REF" --no-verify-jwt
+
+      - name: Deploy social-agent (Nova social posts)
+        run: supabase functions deploy social-agent --project-ref "$PROJECT_REF" --no-verify-jwt
 
       - name: Deploy ai-agent (agent chat)
         run: supabase functions deploy ai-agent --project-ref "$PROJECT_REF"
