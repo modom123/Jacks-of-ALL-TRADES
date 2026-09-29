@@ -128,8 +128,8 @@
           <button class="btn btn-ghost" data-goto-view="grants">Open Grants →</button>
         </div>
         <div style="font-size:.88rem;margin-top:.6rem">
-          <div><b>Grants team</b> (every 2 hours, 8:30am–6:30pm ET): ${d.gRun ? esc(new Date(d.gRun.created_at).toLocaleString()) + " — " + esc(d.gRun.summary || "") : "no runs yet"}</div>
-          <div><b>Donor team</b> (weekdays 9:15am ET): ${d.dRun ? esc(new Date(d.dRun.created_at).toLocaleString()) + " — " + esc(d.dRun.summary || "") : "no runs yet"}</div>
+          <div><b>Grants team</b> (8:30am, 12:30pm, 4:30pm ET): ${d.gRun ? esc(new Date(d.gRun.created_at).toLocaleString()) + " — " + esc(d.gRun.summary || "") : "no runs yet"}</div>
+          <div><b>Donor team</b> (Mon/Wed/Fri 9:15am ET): ${d.dRun ? esc(new Date(d.dRun.created_at).toLocaleString()) + " — " + esc(d.dRun.summary || "") : "no runs yet"}</div>
           ${d.grants.awaiting ? `<div style="margin-top:.3rem">📝 <b>${d.grants.awaiting}</b> grant proposal${d.grants.awaiting === 1 ? "" : "s"} from Wes waiting for you in <a href="#grants">Grants → Applying</a>.</div>` : ""}
         </div></div></div>
 

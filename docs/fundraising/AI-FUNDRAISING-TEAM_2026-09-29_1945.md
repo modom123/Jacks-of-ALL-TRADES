@@ -23,8 +23,10 @@ Donors tagged `do not contact` or `dnc` are always skipped. A donor contacted in
 
 ## When they work
 - **8:00am ET:** the grant finder adds about 10 new leads.
-- **Every 2 hours, 8:30am–6:30pm ET:** the grants team (Gwen, then Rex, then Wes) works a batch.
-- **Weekdays at 9:15am ET:** the donor team (Paige and Cole) works a batch.
+- **8:30am, 12:30pm and 4:30pm ET:** the grants team (Gwen, then Rex, then Wes) works a batch.
+- **Monday, Wednesday and Friday at 9:15am ET:** the donor team (Paige and Cole) works a batch.
+
+**Quality over quantity** (2026-09-29 20:30 UTC): half the runs of the original schedule, Gwen qualifies only leads scoring 70 or more, and Wes thinks harder on each proposal.
 - **Any time:** the **Run grants team** and **Run donor team** buttons on the Fundraising Team screen start a run immediately.
 
 ## One-time setup
@@ -62,7 +64,7 @@ The older `GRANTS_AI_MODEL` / `DONOR_AI_MODEL` secrets, if set, override the sma
 
 ## Tuning (optional Supabase secrets)
 - **Grants batch size per run:** `GRANTS_AI_SCORE_PER_RUN` (12), `GRANTS_AI_OUTREACH_PER_RUN` (4), `GRANTS_AI_PROPOSALS_PER_RUN` (2), `GRANTS_AI_FOLLOWUPS_PER_RUN` (3).
-- **Gwen's score thresholds:** `GRANTS_AI_QUALIFY_SCORE` (65) and `GRANTS_AI_DISMISS_SCORE` (30).
+- **Gwen's score thresholds:** `GRANTS_AI_QUALIFY_SCORE` (70) and `GRANTS_AI_DISMISS_SCORE` (30).
 - **Donor batch size per run:** `DONOR_AI_THANKS_PER_RUN` (6), `DONOR_AI_RENEWALS_PER_RUN` (4), `DONOR_AI_CULTIVATION_PER_RUN` (4), `DONOR_AI_PITCHES_PER_RUN` (4), `DONOR_AI_NEW_PROSPECTS` (5).
 - **Cole's pipeline size:** `DONOR_AI_CORP_PIPELINE_MIN` (15).
 - **Pausing a team:** in the SQL Editor, run `select cron.unschedule('joat-grants-ai-team');` or `select cron.unschedule('joat-donor-team');`.

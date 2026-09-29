@@ -10,7 +10,7 @@
 --  WHAT IT ADDS
 --   1. AI columns on grant_leads: fit score, priority, next step, last AI touch
 --   2. grant_agent_runs: a log of every AI-team run (what each agent did)
---   3. Schedules the AI team to work the pipeline every 2 hours, 8:30am–6:30pm ET
+--   3. Schedules the AI team to work the pipeline 3 times a day: 8:30am, 12:30pm, 4:30pm ET
 --      (after the 8am grant finder). Each run handles a batch; nothing is ever
 --      sent to a funder automatically — a person reviews and clicks Send.
 -- ============================================================================
@@ -44,12 +44,13 @@ create policy "staff read" on public.grant_agent_runs for select to authenticate
 
 notify pgrst, 'reload schema';
 
--- 3) Schedule: every 2 hours 12:30–22:30 UTC (8:30am–6:30pm EDT) ------------
+-- 3) Schedule: 12:30, 16:30, 20:30 UTC (8:30am, 12:30pm, 4:30pm EDT) --------
+--    (quality over quantity, updated 2026-09-29 20:30 UTC — was every 2 hours)
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
 select cron.schedule(
   'joat-grants-ai-team',
-  '30 12-22/2 * * *',
+  '30 12,16,20 * * *',
   $$ select net.http_post(
        url := 'https://gecnvzjuppmqcfcpmugq.supabase.co/functions/v1/grants-agents',
        headers := '{"Content-Type":"application/json"}'::jsonb,

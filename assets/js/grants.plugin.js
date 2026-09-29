@@ -256,7 +256,7 @@
         <button class="btn btn-primary btn-sm" id="g-ai">Run AI team now</button></div>
         <div class="panel-body">
           <div class="text-soft" style="font-size:.88rem;margin-bottom:.6rem"><b>Gwen</b> scores &amp; qualifies new leads · <b>Rex</b> drafts intro emails &amp; call scripts ·
-            <b>Wes</b> drafts proposals &amp; follow-ups. Runs automatically every 2 hours, 8:30am–6:30pm ET. Nothing is sent until you click Send.</div>
+            <b>Wes</b> drafts proposals &amp; follow-ups. Runs automatically 3 times a day (8:30am, 12:30pm, 4:30pm ET) — quality over quantity. Nothing is sent until you click Send.</div>
           ${aiResult ? `<div style="margin-bottom:.5rem">${aiResult.ok ? "✅" : "❌"} ${esc(aiResult.text)}${(aiResult.errs || []).slice(0, 4).map((e) => `<div style="color:#b42318;font-size:.85rem">⚠ ${esc(e)}</div>`).join("")}</div>`
             : run ? `<div style="margin-bottom:.5rem;font-size:.9rem"><b>Last run</b> ${esc(new Date(run.created_at).toLocaleString())}: ${esc(run.summary || "")}</div>`
             : `<div style="margin-bottom:.5rem;font-size:.9rem" class="text-soft">No AI-team runs yet — click <b>Run AI team now</b>.</div>`}

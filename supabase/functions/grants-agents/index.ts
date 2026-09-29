@@ -34,7 +34,7 @@ const LIMITS = {
   proposals: num("GRANTS_AI_PROPOSALS_PER_RUN", 2),
   followups: num("GRANTS_AI_FOLLOWUPS_PER_RUN", 3),
 };
-const QUALIFY_AT = num("GRANTS_AI_QUALIFY_SCORE", 65);
+const QUALIFY_AT = num("GRANTS_AI_QUALIFY_SCORE", 70); // quality over quantity (2026-09-29 20:30 UTC): only strong fits
 const DISMISS_AT = num("GRANTS_AI_DISMISS_SCORE", 30);
 const GRANTS_TARGET = num("GRANTS_ANNUAL_TARGET", 1200000); // $800K gov + $400K foundations (config.js)
 const TIME_BUDGET_MS = num("GRANTS_AI_TIME_BUDGET_MS", 120000); // stop starting new work after this
@@ -247,7 +247,7 @@ Deno.serve(async (req: Request) => {
     try {
       const r = await team.ask<any>("smart", AGENTS.wes,
         "Draft the letter of inquiry / proposal for this opportunity. Size the request realistically within the award range for an early-stage organization.\n\n" + leadBrief(l),
-        PROPOSAL, "medium", 16000);
+        PROPOSAL, "high", 16000); // quality over quantity: Wes thinks harder on each proposal (16K keeps it under the SDK non-streaming limit)
       const patch: Lead = { proposal_draft: r.proposal, status: "drafting", ai_next_step: String(r.next_step || "Fill the [placeholders] in Wes's proposal, then submit").slice(0, 300) };
       if (r.request_usd > 0) patch.amount_requested = r.request_usd;
       await save(l, patch);
