@@ -13,6 +13,8 @@
      • Export CSV — the whole list with per-fundraiser columns.
    Totals are recalculated across all sources by refresh_donor_totals().
    Updated 2026-09-29 23:30 UTC · click a donor → full profile + agent actions.
+   Updated 2026-09-30 00:00 UTC · now THE "Donors" screen: All / Gave / Prospects filter
+              and Add donor, replacing the old Donors table in daily navigation.
 
    Data: donors, donations, donor_giving (view)
    Setup: supabase/setup_donor_crm_sync_2026-09-29_2300.sql
@@ -26,7 +28,7 @@
   const usd = (n) => "$" + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 });
   const ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>';
 
-  let query = "", flash = null, sortBy = "total";
+  let query = "", flash = null, sortBy = "total", show = "all";
 
   async function load(hub) {
     const db = hub.db();
@@ -47,7 +49,9 @@
     const campaigns = camp.map((c) => [c.campaign, { total: Number(c.total) || 0, donors: Number(c.donors) || 0, gifts: Number(c.gifts) || 0 }])
       .sort((a, b) => b[1].total - a[1].total);
     const q = query.toLowerCase();
-    let rows = donors.filter((d) => byDonor[d.id] || Number(d.total_given) > 0)
+    const gave = (d) => !!byDonor[d.id] || Number(d.total_given) > 0;
+    const counts = { all: donors.length, gave: donors.filter(gave).length, prospects: donors.filter((d) => !gave(d)).length };
+    let rows = donors.filter((d) => show === "all" || (show === "gave" ? gave(d) : !gave(d)))
       .filter((d) => !q || `${d.full_name} ${d.email || ""}`.toLowerCase().includes(q));
     rows.sort(sortBy === "recent" ? (a, b) => String(b.last_gift_date || "").localeCompare(String(a.last_gift_date || ""))
       : sortBy === "name" ? (a, b) => String(a.full_name).localeCompare(String(b.full_name))
@@ -56,17 +60,18 @@
     const giftCount = campaigns.reduce((s, [, c]) => s + c.gifts, 0);
 
     view.innerHTML = `
-      <div class="view-head"><div><h2 style="margin:0">Donor Giving</h2>
-        <p>Every donor's total — broken down by fundraiser. Zeffy donors sync in automatically every 15 minutes.</p></div>
+      <div class="view-head"><div><h2 style="margin:0">Donors</h2>
+        <p>Every donor and prospect, with totals by fundraiser. Click a name for their profile and one-click agent actions. Zeffy donors sync in every 15 minutes.</p></div>
         <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-          <button class="btn btn-primary" id="dg-sync">Sync from Zeffy now</button>
+          <button class="btn btn-primary" id="dg-add">+ Add donor</button>
+          <button class="btn btn-ghost" id="dg-sync">Sync from Zeffy now</button>
           <button class="btn btn-ghost" id="dg-import">Import CSV (GoFundMe…)</button>
           <button class="btn btn-ghost" id="dg-export">Export CSV</button></div></div>
       ${error ? `<div class="panel" style="border-left:4px solid #b42318"><div class="panel-body">Couldn't load giving: ${esc(error.message)}.<br>
         Run <code>supabase/setup_donor_crm_sync_2026-09-29_2300.sql</code> in the Supabase SQL Editor, then reload.</div></div>` : ""}
       ${flash ? `<div class="panel" style="border-left:4px solid ${flash.ok ? "#12805c" : "#b42318"}"><div class="panel-body">${flash.ok ? "✅" : "❌"} ${esc(flash.text)}</div></div>` : ""}
       <div class="kpis">
-        ${hub.kpi("Donors who gave", rows.length.toLocaleString(), "users", "")}
+        ${hub.kpi("Donors who gave", counts.gave.toLocaleString(), "users", "")}
         ${hub.kpi("Total given (all sources)", usd(total), "heart", "")}
         ${hub.kpi("Gifts", giftCount.toLocaleString(), "ticket", "")}
         ${hub.kpi("Fundraisers", campaigns.length, "campaigns", "")}
@@ -77,7 +82,9 @@
           : `<span class="text-soft">No gifts yet — click <b>Sync from Zeffy now</b>.</span>`}
       </div></div>
       <div class="panel"><div class="panel-head" style="gap:.5rem;flex-wrap:wrap"><h3>Donors</h3>
-        <div style="display:flex;gap:.4rem"><input id="dg-q" placeholder="Search name or email" value="${esc(query)}" style="max-width:220px">
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+        ${[["all", "All"], ["gave", "Gave"], ["prospects", "Prospects"]].map(([k, l]) => `<button class="btn btn-sm ${show === k ? "btn-primary" : "btn-ghost"}" data-show="${k}">${l} <span style="opacity:.7">${counts[k]}</span></button>`).join("")}
+        <input id="dg-q" placeholder="Search name or email" value="${esc(query)}" style="max-width:220px">
         <select id="dg-sort"><option value="total" ${sortBy === "total" ? "selected" : ""}>Top givers</option><option value="recent" ${sortBy === "recent" ? "selected" : ""}>Most recent</option><option value="name" ${sortBy === "name" ? "selected" : ""}>Name</option></select></div></div>
         <div class="table-wrap"><table class="data">
           <thead><tr><th>Donor</th><th>Total</th><th>By fundraiser</th><th>Last gift</th><th></th></tr></thead>
@@ -89,12 +96,14 @@
               <td style="max-width:420px">${parts.map((p) => `<span class="pill" style="margin:.1rem;text-transform:none;letter-spacing:0">${esc(p.campaign)}: ${usd(p.total)}${p.gifts > 1 ? ` ×${p.gifts}` : ""}</span>`).join("")}</td>
               <td style="white-space:nowrap">${esc(d.last_gift_date || "—")}${d.last_gift_amount ? `<div class="muted">${usd(d.last_gift_amount)}</div>` : ""}</td>
               <td style="white-space:nowrap"><button class="btn btn-primary btn-sm" data-prof>Profile</button></td></tr>`;
-          }).join("") || `<tr><td colspan="5" class="text-soft" style="padding:1.2rem">No donors with gifts yet.</td></tr>`}</tbody>
+          }).join("") || `<tr><td colspan="5" class="text-soft" style="padding:1.2rem">${show === "prospects" ? "No prospects." : "No donors yet — click <b>+ Add donor</b> or <b>Sync from Zeffy now</b>."}</td></tr>`}</tbody>
         </table></div>${rows.length > 500 ? `<p class="text-soft" style="padding:0 1rem">Showing the first 500 — search to narrow.</p>` : ""}</div>`;
 
     const qi = view.querySelector("#dg-q");
     qi.oninput = () => { query = qi.value; clearTimeout(qi._t); qi._t = setTimeout(() => render(hub).then(() => { const n = hub.el().querySelector("#dg-q"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }), 250); };
     view.querySelector("#dg-sort").onchange = (e) => { sortBy = e.target.value; render(hub); };
+    view.querySelectorAll("[data-show]").forEach((b) => b.onclick = () => { show = b.dataset.show; render(hub); });
+    view.querySelector("#dg-add").onclick = () => (hub.openModal ? hub.openModal("donors") : hub.go("donors"));
     view.querySelector("#dg-sync").onclick = (e) => syncZeffy(hub, e.target);
     view.querySelector("#dg-import").onclick = () => openImport(hub, donors);
     view.querySelector("#dg-export").onclick = () => exportCsv(rows, byDonor, campaigns.map(([n]) => n));
@@ -255,7 +264,7 @@
 
   A.registerPlugin({
     id: "donor-giving",
-    titles: { donor_giving: "Donor Giving" },
+    titles: { donor_giving: "Donors" },
     roles: { board: ["donor_giving"], staff: ["donor_giving"] },
     views: { donor_giving: render },
     nav: [{ group: "Fundraising", items: [["donor_giving", "Donor Giving", ICON]] }],

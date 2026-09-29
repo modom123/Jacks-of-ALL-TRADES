@@ -212,3 +212,9 @@ table.mini tr:first-child td { background: var(--silver-050); font-weight: 700; 
 #modal-fields .field:has(textarea), #modal-fields .field:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .modal-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .6rem; grid-column: 1/-1; }
 @media (max-width: 520px) { #modal-fields { grid-template-columns: 1fr; } }
+
+/* ---- Collapsible sidebar groups (added 2026-09-30 00:00 UTC) ------------- */
+.side-toggle { display: flex; align-items: center; justify-content: space-between; width: calc(100% - 1.4rem); background: none; border: 0; cursor: pointer; font-family: inherit; text-align: left; padding: 0; }
+.side-toggle:hover { color: #9fb0d4; }
+.side-toggle .chev { font-size: .8rem; letter-spacing: 0; }
+.side-sub[hidden] { display: none !important; }

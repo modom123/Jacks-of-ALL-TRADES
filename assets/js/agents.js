@@ -18,7 +18,7 @@
       focus: "Fundraising · Donor relations · Grants",
       blurb: "Drafts donor & grant outreach, researches prospects, and recommends asks based on giving history.",
       accent: "#1d4ed8",
-      actions: [{ label: "Open donor giving", goto: "donor_giving" }, { label: "Open Fundraising Team", goto: "fund_team" }],
+      actions: [{ label: "Open Donors", goto: "donor_giving" }, { label: "Open Fundraising Team", goto: "fund_team" }],
       starters: [
         "Draft a grant follow-up email to The Riverside Foundation.",
         "Suggest an ask amount and approach for Marcus & Dana Reed.",
@@ -91,7 +91,7 @@
       focus: "Private donors · Thank-yous · Renewals · Monthly giving",
       blurb: "Thanks donors fast, asks lapsing donors to renew, and cultivates new individual prospects — with a suggested ask for each.",
       accent: "#be185d",
-      actions: [{ label: "Draft thank-yous, renewals & invitations", fn: "donors-agents", after: "review them in Fundraising Team → Review & send" }, { label: "Sync Zeffy donors", fn: "zeffy-sync" }, { label: "Open Donor Giving", goto: "donor_giving" }],
+      actions: [{ label: "Draft thank-yous, renewals & invitations", fn: "donors-agents", after: "review them in Fundraising Team → Review & send" }, { label: "Sync Zeffy donors", fn: "zeffy-sync" }, { label: "Open Donors", goto: "donor_giving" }],
       starters: [
         "Draft a thank-you for a first-time $100 donor.",
         "Write a renewal ask for a donor who gave $250 last year.",

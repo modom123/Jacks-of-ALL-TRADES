@@ -12,6 +12,8 @@
    Updated: 2026-09-29 23:30 UTC · Donor names open a full profile (donor-profile.js); "Draft" opens the
                                    profile's one-click agent actions instead of the chat; AI Agents page
                                    has action buttons that run each agent's job (grants/donors/social).
+   Updated: 2026-09-30 00:00 UTC · Sidebar reorganized by importance (NAV_LAYOUT): Home → Raise money →
+                                   Projects, then collapsible Raffle & Marketing / Finances / Admin.
 
    A nonprofit operations hub: projects, fundraising campaigns, donor CRM,
    outreach, board/team, inbound leads, and three AI agents. Role-based access
@@ -167,6 +169,33 @@
     { group: "Organization", items: [["team", "Board & Team", ICO("users")], ["agents", "AI Agents", ICO("spark")]] },
     { group: "System", items: [["settings", "Setup & Connection", ICO("gear")]] },
   ];
+  // Sidebar order, most important first (added 2026-09-30 00:00 UTC). Every screen —
+  // core or plugin — is placed here; anything not listed lands in a collapsed "More".
+  // `collapsed` groups start closed (remembered per browser); the group holding the
+  // current screen always opens.
+  const NAV_LAYOUT = [
+    { group: "Home", items: ["dashboard", "fund_team", "agents", "inbox"] },
+    { group: "Raise money", items: ["grants", "donor_giving", "social", "raffle", "campaigns"] },
+    { group: "Projects", items: ["projects", "renovation", "project_updates"] },
+    { group: "Raffle & Marketing", collapsed: true, items: ["marketing", "raffle_campaign", "raffle_picker", "raffle_entries", "raffle_winners", "live_stream"] },
+    { group: "Finances", collapsed: true, items: ["finances", "project_budgets", "bills", "contractors", "budgets", "finance_reports"] },
+    { group: "Admin", collapsed: true, items: ["team", "growth", "merch_orders", "outreach", "donors", "settings"] },
+  ];
+  const NAV_LABELS = { donor_giving: "Donors", donors: "Donor records (table)", outreach: "Outreach log", growth: "Growth plan ($2M)", agents: "AI Agents" };
+  function applyNavLayout() {
+    const all = new Map();
+    NAV.forEach((sec) => sec.items.forEach((it) => { if (!all.has(it[0])) all.set(it[0], it); }));
+    const placed = new Set();
+    const out = NAV_LAYOUT.map((g) => ({ group: g.group, collapsed: !!g.collapsed,
+      items: g.items.filter((k) => all.has(k)).map((k) => { placed.add(k); const it = all.get(k); return [k, NAV_LABELS[k] || it[1], it[2]]; }) }));
+    const rest = [...all.values()].filter((it) => !placed.has(it[0]));
+    if (rest.length) out.push({ group: "More", collapsed: true, items: rest });
+    NAV.length = 0; NAV.push(...out.filter((g) => g.items.length));
+  }
+  const NAV_OPEN_KEY = "joat.nav.open";
+  const navOpen = () => { try { return new Set(JSON.parse(localStorage.getItem(NAV_OPEN_KEY) || "[]")); } catch (e) { return new Set(); } };
+  const saveNavOpen = (set) => { try { localStorage.setItem(NAV_OPEN_KEY, JSON.stringify([...set])); } catch (e) {} };
+
   const ROLE_VIEWS = {
     admin: "*",
     board: ["dashboard", "campaigns", "donors", "outreach", "raffle", "projects", "renovation", "team", "agents"],
@@ -175,14 +204,25 @@
   const allowed = (view) => role === "admin" || ROLE_VIEWS[role] === "*" || (ROLE_VIEWS[role] || []).includes(view);
 
   function buildNav() {
-    const nav = $("#side-nav");
-    nav.innerHTML = NAV.map((sec) => {
+    const nav = $("#side-nav"), open = navOpen();
+    const current = (location.hash.slice(1).split("#")[0]) || "dashboard";
+    nav.innerHTML = NAV.map((sec, gi) => {
       const items = sec.items.filter(([k]) => allowed(k));
       if (!items.length) return "";
-      return `<div class="side-group">${sec.group}</div>` + items.map(([k, label, icon]) =>
+      const links = items.map(([k, label, icon]) =>
         `<button class="side-link" data-view="${k}">${icon}${label}<span class="count" data-count-for="${k}" hidden></span></button>`).join("");
+      if (!sec.collapsed) return `<div class="side-group">${sec.group}</div>` + links;
+      const isOpen = open.has(sec.group) || items.some(([k]) => k === current);
+      return `<button class="side-group side-toggle" type="button" data-group="${esc(sec.group)}" aria-expanded="${isOpen}">${sec.group}<span class="chev">${isOpen ? "▾" : "▸"}</span></button>
+        <div class="side-sub" data-sub="${esc(sec.group)}" ${isOpen ? "" : "hidden"}>${links}</div>`;
     }).join("");
     nav.querySelectorAll(".side-link[data-view]").forEach((b) => b.addEventListener("click", () => { go(b.dataset.view); closeSidebar(); }));
+    nav.querySelectorAll(".side-toggle").forEach((b) => b.addEventListener("click", () => {
+      const g = b.dataset.group, sub = nav.querySelector(`[data-sub="${CSS.escape(g)}"]`), set = navOpen();
+      const nowOpen = sub.hidden; sub.hidden = !nowOpen;
+      b.setAttribute("aria-expanded", String(nowOpen)); b.querySelector(".chev").textContent = nowOpen ? "▾" : "▸";
+      if (nowOpen) set.add(g); else set.delete(g); saveNavOpen(set);
+    }));
   }
 
   /* =====================================================================
@@ -324,12 +364,16 @@
         });
       } catch (e) { console.error("[plugin]", p && p.id, e); }
     });
+    applyNavLayout();
   }
 
   function route() {
     let name = (location.hash.slice(1).split("#")[0]) || "dashboard";
     if (!allowed(name)) name = "dashboard";
     $$(".side-link[data-view]").forEach((b) => b.classList.toggle("active", b.dataset.view === name));
+    // Open a collapsed sidebar group if it holds the current screen.
+    const act = $(`.side-link[data-view="${name}"]`), sub = act && act.closest(".side-sub");
+    if (sub && sub.hidden) { sub.hidden = false; const t = sub.previousElementSibling; if (t) { t.setAttribute("aria-expanded", "true"); const c = t.querySelector(".chev"); if (c) c.textContent = "▾"; } }
     $("#view-title").textContent = VIEW_TITLES[name] || (T[name] && T[name].label) || "Dashboard";
     if (name === "dashboard") return renderDashboard();
     if (name === "raffle") return renderRaffle();
