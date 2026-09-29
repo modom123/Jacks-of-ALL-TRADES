@@ -34,7 +34,9 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { samConfigured, samSearch } from "../_shared/sam.ts";
 import { simplerConfigured, simplerSearch } from "../_shared/simpler.ts";
 
-const GG_BASES = ["https://grants.gov/api/common", "https://api.grants.gov/v1/api"];
+// Official endpoint first (api.grants.gov/v1/api/search2 — no key; per Grants.gov
+// API docs), then the grants.gov/api/common mirror. (reordered 2026-09-29 17:20 UTC)
+const GG_BASES = ["https://api.grants.gov/v1/api", "https://grants.gov/api/common"];
 const DETAIL = "https://www.grants.gov/search-results-detail/";
 
 // Rotating keyword pool so different opportunities surface across days.
@@ -65,7 +67,12 @@ async function ggPost(path: string, body: unknown): Promise<any> {
     try {
       const res = await fetch(`${base}/${path}`, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(body) });
       if (!res.ok) { lastErr = new Error(`${base}/${path} HTTP ${res.status}`); continue; }
-      return await res.json();
+      const out = await res.json();
+      // search2 reports failures in-body: { errorcode: <non-zero>, msg, data: { errorMsgs } }
+      if (out && out.errorcode && Number(out.errorcode) !== 0) {
+        lastErr = new Error(`Grants.gov ${path}: ${out.msg || "errorcode " + out.errorcode}`); continue;
+      }
+      return out;
     } catch (e) { lastErr = e; }
   }
   throw lastErr instanceof Error ? lastErr : new Error(`Grants.gov ${path} unreachable`);

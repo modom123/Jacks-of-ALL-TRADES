@@ -38,7 +38,9 @@ import { simplerConfigured, simplerSearch } from "../_shared/simpler.ts";
 
 // Try the current grants.gov base first, then the documented api.grants.gov
 // mirror. Both expose the same search2 / fetchOpportunity service.
-const GG_BASES = ["https://grants.gov/api/common", "https://api.grants.gov/v1/api"];
+// Official endpoint first (api.grants.gov/v1/api/search2 — no key; per Grants.gov
+// API docs), then the grants.gov/api/common mirror. (reordered 2026-09-29 17:20 UTC)
+const GG_BASES = ["https://api.grants.gov/v1/api", "https://grants.gov/api/common"];
 const DETAIL = "https://www.grants.gov/search-results-detail/";
 
 const CORS = {
@@ -73,7 +75,12 @@ async function ggPost(path: string, body: unknown): Promise<any> {
         body: JSON.stringify(body),
       });
       if (!res.ok) { lastErr = new Error(`${base}/${path} HTTP ${res.status}`); continue; }
-      return await res.json();
+      const out = await res.json();
+      // search2 reports failures in-body: { errorcode: <non-zero>, msg, data: { errorMsgs } }
+      if (out && out.errorcode && Number(out.errorcode) !== 0) {
+        lastErr = new Error(`Grants.gov ${path}: ${out.msg || "errorcode " + out.errorcode}`); continue;
+      }
+      return out;
     } catch (e) { lastErr = e; }
   }
   throw lastErr instanceof Error ? lastErr : new Error(`Grants.gov ${path} unreachable`);
