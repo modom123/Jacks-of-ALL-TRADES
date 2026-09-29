@@ -33,10 +33,15 @@ supabase functions deploy grants-daily
 ## 4. Turn on the morning schedule
 In the Supabase SQL Editor, run `supabase/schedule_grants_daily_2026-09-29_1620.sql`. It runs every day at 8:00am ET.
 
-## 5. Check it
-In the hub's Grants view, click **Run daily finder now**. The message that pops up shows how many leads each source added and names any source that failed. New leads show up in the Pipeline, and you can narrow it with the **All sources** filter.
+## 5. Using it (rebuilt 2026-09-29 18:00 UTC)
+The Grants screen is now a single view:
+- **Find grants** bar: type a keyword (or leave it blank for today's automatic search), choose where to search, and click **Find & save**. Results are saved on the server, duplicates are skipped, and the line underneath reports what was added and names any source that failed.
+- **Test connections** shows ✅/❌/⚪ for the database, Simpler.Grants.gov, Grants.gov and SAM.gov.
+- **Pipeline** tabs: New → Qualified → Applying → Submitted → Won / Closed. Triage new leads with **✓ Qualify** or **✕**, and change the stage from the dropdown.
+- **Open** a lead to edit its details, draft the intro email, call script, proposal or follow-up with Rex or Wes, and send or call.
 
 ## Troubleshooting
 - **"Unauthorized":** you set `CRON_SECRET`. Add the `x-cron-secret` header to the SQL job. The hub button still works as long as you're signed in.
 - **"issue with sam":** SAM.gov keys expire every 90 days. Regenerate the key and set the secret again.
-- **0 added:** every opportunity found today was already in the pipeline. Leads are de-duplicated by URL.
+- **0 added:** everything found was already in the pipeline. Leads are de-duplicated by URL.
+- **"Can't load grant leads" / Database ❌:** in the Supabase SQL Editor, run `supabase/schema_grants_2026-09-15_1610.sql`.
