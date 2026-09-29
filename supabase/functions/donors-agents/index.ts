@@ -46,9 +46,11 @@ const LIMITS = {
   newProspects: num("DONOR_AI_NEW_PROSPECTS", 5),
 };
 const CORP_PIPELINE_MIN = num("DONOR_AI_CORP_PIPELINE_MIN", 15); // keep at least this many corporate prospects
-const CAMPAIGN_PER_PHASE = num("DONOR_AI_CAMPAIGN_PER_PHASE", 8);  // businesses to recruit per house phase
-const CAMPAIGN_NEW_PER_RUN = num("DONOR_AI_CAMPAIGN_NEW_PER_RUN", 6); // businesses researched per run (one phase)
-const CAMPAIGN_PITCHES = num("DONOR_AI_CAMPAIGN_PITCHES_PER_RUN", 6);
+// House campaign pace (5x, updated 2026-09-29 21:30 UTC): 2 phases x 5 businesses per run, 2 runs per weekday.
+const CAMPAIGN_PER_PHASE = num("DONOR_AI_CAMPAIGN_PER_PHASE", 20);        // businesses to recruit per house phase
+const CAMPAIGN_PHASES_PER_RUN = num("DONOR_AI_CAMPAIGN_PHASES_PER_RUN", 2); // phases researched in parallel per run
+const CAMPAIGN_NEW_PER_RUN = num("DONOR_AI_CAMPAIGN_NEW_PER_RUN", 5);      // businesses researched per phase per run
+const CAMPAIGN_PITCHES = num("DONOR_AI_CAMPAIGN_PITCHES_PER_RUN", 10);
 const TARGETS = { individual: num("DONOR_INDIVIDUAL_TARGET", 250000), corporate: num("DONOR_CORPORATE_TARGET", 550000) };
 const TIME_BUDGET_MS = num("DONOR_AI_TIME_BUDGET_MS", 120000);
 const QUIET_DAYS = 45; // don't draft another touch for a donor contacted/drafted within this window
@@ -272,11 +274,14 @@ Deno.serve(async (req: Request) => {
     } catch (e) { fail("Paige", d, e); }
   });
 
-  // 4a) COLE — house campaign: research real local businesses for the least-covered phase
+  // 4a) COLE — house campaign: research real local businesses for the least-covered phases
+  //     (5x pace, 2026-09-29 21:30 UTC: several phases per run, researched in parallel)
   if (campaign && Date.now() < deadline) {
     const recruited = (n: number) => donors.filter((d) => d.partner_campaign === campaign.name && Number(d.campaign_phase) === Number(n)).length;
-    const phase = [...(campaign.phases || [])].sort((a: Row, b: Row) => recruited(a.n) - recruited(b.n))[0];
-    if (phase && recruited(phase.n) < CAMPAIGN_PER_PHASE) {
+    const phases = [...(campaign.phases || [])].filter((p: Row) => recruited(p.n) < CAMPAIGN_PER_PHASE)
+      .sort((a: Row, b: Row) => recruited(a.n) - recruited(b.n)).slice(0, CAMPAIGN_PHASES_PER_RUN);
+    const researched: string[] = [];
+    const found = await Promise.all(phases.map(async (phase: Row): Promise<Row[]> => {
       try {
         const known = donors.filter(isCorp).map((d) => d.full_name).slice(0, 300).join("; ") || "(none yet)";
         const notes = await team.research(AGENTS.cole,
@@ -306,15 +311,22 @@ Deno.serve(async (req: Request) => {
           suggested_ask: (Number(b.suggested_cash_usd) || 0) + (Number(b.in_kind_value_usd) || 0) || null,
           ai_next_step: b.email ? "Verify the contact, then review Cole's phase pitch" : "Find a contact email (see website), then review Cole's phase pitch",
         }));
-        if (rows.length) {
-          const ins = await db.from("donors").insert(rows).select();
-          if (ins.error) throw new Error(ins.error.message);
-          donors.push(...(ins.data || []));
-          counts.prospects += rows.length;
-        }
-        researchedPhase = `Phase ${phase.n} (${phase.name})`;
-      } catch (e) { fail("Cole house-campaign research", { full_name: `phase ${phase.n}` }, e); }
+        researched.push(`Phase ${phase.n} (${phase.name})`);
+        return rows;
+      } catch (e) { fail("Cole house-campaign research", { full_name: `phase ${phase.n}` }, e); return []; }
+    }));
+    // Save after all research finishes so parallel phases can't add the same business twice.
+    const taken = new Set(donors.map((d) => String(d.full_name).toLowerCase().trim()));
+    const rows = found.flat().filter((r) => { const k = String(r.full_name).toLowerCase().trim(); if (taken.has(k)) return false; taken.add(k); return true; });
+    if (rows.length) {
+      try {
+        const ins = await db.from("donors").insert(rows).select();
+        if (ins.error) throw new Error(ins.error.message);
+        donors.push(...(ins.data || []));
+        counts.prospects += rows.length;
+      } catch (e) { fail("Cole house-campaign save", { full_name: "businesses" }, e); }
     }
+    researchedPhase = researched.join(" + ");
   }
 
   // 4) COLE — keep the corporate prospect pipeline stocked (at most weekly)
@@ -349,7 +361,7 @@ Deno.serve(async (req: Request) => {
     (["prospect", "cultivating"].includes(d.stage) || (d.stage === "active" && daysAgo(d.last_gift_date) > 300) || d.stage === "lapsed"))
     .sort((a, b) => (Number(!!b.partner_campaign) - Number(!!a.partner_campaign)) || (Number(b.suggested_ask || 0) - Number(a.suggested_ask || 0)))
     .slice(0, campaign ? Math.max(LIMITS.pitches, CAMPAIGN_PITCHES) : LIMITS.pitches);
-  await pool(toPitch, 4, deadline, async (d) => {
+  await pool(toPitch, campaign ? 6 : 4, deadline, async (d) => {
     try {
       const renewal = d.stage === "active" || d.stage === "lapsed";
       const ph = campaign && d.partner_campaign === campaign.name ? phaseOf(d.campaign_phase) : null;
