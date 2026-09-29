@@ -21,6 +21,15 @@
 // the phase, and pitches a phase-specific ask: sponsor the phase in cash or
 // donate its materials (in-kind). Setup: supabase/setup_house_campaign_2026-09-29_2100.sql
 //
+// IN-KIND NEEDS (updated 2026-09-30 00:30 UTC): for each OPEN need in
+// public.inkind_needs (e.g. "48 replacement windows — or $12,000 for
+// installation") Cole researches real local businesses of the listed types,
+// tags them with the need, and drafts need-specific asks (donate some or all of
+// the items, or sponsor the cash alternative). Outreach rows carry need_id so
+// the hub tracks contacted / replied / yes per need. POST {"need_id": "<id>"}
+// works ONLY that need (the hub's "Find businesses now"). Setup:
+// supabase/setup_inkind_needs_2026-09-30_0030.sql
+//
 // Every email lands in public.outreach as status "planned" (drafted_by Paige/Cole).
 // Nothing is sent automatically: a person reviews it in Command Center → Donor
 // Team and clicks Send. Donors tagged "do not contact"/"dnc" are always skipped.
@@ -51,6 +60,7 @@ const CAMPAIGN_PER_PHASE = num("DONOR_AI_CAMPAIGN_PER_PHASE", 20);        // bus
 const CAMPAIGN_PHASES_PER_RUN = num("DONOR_AI_CAMPAIGN_PHASES_PER_RUN", 2); // phases researched in parallel per run
 const CAMPAIGN_NEW_PER_RUN = num("DONOR_AI_CAMPAIGN_NEW_PER_RUN", 5);      // businesses researched per phase per run
 const CAMPAIGN_PITCHES = num("DONOR_AI_CAMPAIGN_PITCHES_PER_RUN", 10);
+const NEEDS_PER_RUN = num("DONOR_AI_NEEDS_PER_RUN", 1);                    // in-kind needs researched per run
 const TARGETS = { individual: num("DONOR_INDIVIDUAL_TARGET", 250000), corporate: num("DONOR_CORPORATE_TARGET", 550000) };
 const TIME_BUDGET_MS = num("DONOR_AI_TIME_BUDGET_MS", 120000);
 const QUIET_DAYS = 45; // don't draft another touch for a donor contacted/drafted within this window
@@ -187,8 +197,12 @@ Deno.serve(async (req: Request) => {
   if (!apiKey) return json({ error: "ANTHROPIC_API_KEY secret not set" }, 500);
   const team = new Team(apiKey, ORG);
 
-  let trigger = "hub";
-  try { const b = await req.json(); if (b && b.trigger) trigger = String(b.trigger).slice(0, 20); } catch (_e) { /* no body */ }
+  let trigger = "hub", focusNeedId: string | null = null;
+  try {
+    const b = await req.json();
+    if (b && b.trigger) trigger = String(b.trigger).slice(0, 20);
+    if (b && b.need_id) focusNeedId = String(b.need_id).slice(0, 60);
+  } catch (_e) { /* no body */ }
 
   const [dRes, gRes, oRes, rRes] = await Promise.all([
     db.from("donors").select("*").limit(5000),
@@ -205,6 +219,12 @@ Deno.serve(async (req: Request) => {
   const cRes = await db.from("partner_campaigns").select("*").eq("active", true).order("created_at", { ascending: true }).limit(1);
   const campaign: Row | null = !cRes.error && cRes.data && cRes.data[0] ? cRes.data[0] : null;
   const phaseOf = (n: number) => (campaign?.phases || []).find((p: Row) => Number(p.n) === Number(n));
+  // Open in-kind needs (table is optional — only after setup_inkind_needs SQL).
+  const nRes = await db.from("inkind_needs").select("*").eq("status", "open").order("created_at", { ascending: true }).limit(50);
+  const needs: Row[] = (!nRes.error && nRes.data) ? nRes.data.filter((n: Row) => !focusNeedId || String(n.id) === focusNeedId) : [];
+  const needOf = (id: unknown) => needs.find((n) => String(n.id) === String(id));
+  const needAsk = (n: Row) => `${n.quantity_needed} ${n.unit} (${n.item})` + (n.unit_value ? ` — about $${Number(n.unit_value).toLocaleString()} each` : "") +
+    (n.cash_alternative ? `, OR $${Number(n.cash_alternative).toLocaleString()} cash${n.cash_label ? " for " + n.cash_label : ""}` : "");
 
   const giftsOf = (id: string) => gifts.filter((g) => g.donor_id === id);
   const lastTouch = (id: string) => touches.find((t) => t.donor_id === id);
@@ -217,14 +237,14 @@ Deno.serve(async (req: Request) => {
   const today = new Date().toISOString().slice(0, 10);
 
   // Draft one email for a donor → outreach (planned) + donor next step.
-  const draft = async (who: "paige" | "cole", d: Row, kind: keyof typeof counts, instruction: string, effort: "low" | "medium") => {
+  const draft = async (who: "paige" | "cole", d: Row, kind: keyof typeof counts, instruction: string, effort: "low" | "medium", extra: Row = {}) => {
     // Thank-yous and all of Paige's emails are routine (fast); Cole's pitches are first impressions with companies (smart).
     const tier: Tier = who === "cole" && kind !== "thank_yous" ? "smart" : "fast";
     const r = await team.ask<any>(tier, AGENTS[who], instruction + "\n\n" + donorBrief(d, giftsOf(d.id)), EMAIL, effort, 6000);
     const name = who === "paige" ? "Paige (AI)" : "Cole (AI)";
     const ins = await db.from("outreach").insert({
       donor_id: d.id, donor_name: d.full_name, channel: "email", status: "planned",
-      subject: String(r.subject).slice(0, 300), body: r.body, drafted_by: name, scheduled_date: today,
+      subject: String(r.subject).slice(0, 300), body: r.body, drafted_by: name, scheduled_date: today, ...extra,
     });
     if (ins.error) throw new Error("outreach: " + ins.error.message);
     const patch: Row = { ai_next_step: String(r.next_step || "Review and send the drafted email").slice(0, 300), ai_worked_at: new Date().toISOString() };
@@ -244,7 +264,7 @@ Deno.serve(async (req: Request) => {
     if (t && new Date(t.created_at) >= new Date(g.gift_date)) continue;
     thankIds.add(g.donor_id);
   }
-  const toThank = donors.filter((d) => thankIds.has(d.id) && !dnc(d)).slice(0, LIMITS.thanks);
+  const toThank = focusNeedId ? [] : donors.filter((d) => thankIds.has(d.id) && !dnc(d)).slice(0, LIMITS.thanks);
   await pool(toThank, 4, deadline, async (d) => {
     try {
       await draft(isCorp(d) ? "cole" : "paige", d, "thank_yous",
@@ -253,7 +273,7 @@ Deno.serve(async (req: Request) => {
   });
 
   // 2) PAIGE — renewals (active, last gift 10+ months) and reactivation (lapsed)
-  const toRenew = donors.filter((d) => isIndividual(d) && !dnc(d) && quiet(d) && !thankIds.has(d.id) &&
+  const toRenew = focusNeedId ? [] : donors.filter((d) => isIndividual(d) && !dnc(d) && quiet(d) && !thankIds.has(d.id) &&
     ((d.stage === "active" && daysAgo(d.last_gift_date) > 300) || d.stage === "lapsed"))
     .sort((a, b) => Number(b.total_given || 0) - Number(a.total_given || 0)).slice(0, LIMITS.renewals);
   await pool(toRenew, 4, deadline, async (d) => {
@@ -265,7 +285,7 @@ Deno.serve(async (req: Request) => {
   });
 
   // 3) PAIGE — cultivate individual prospects that have an email
-  const toCultivate = donors.filter((d) => isIndividual(d) && !dnc(d) && d.email && ["prospect", "cultivating"].includes(d.stage) && quiet(d) && !thankIds.has(d.id))
+  const toCultivate = focusNeedId ? [] : donors.filter((d) => isIndividual(d) && !dnc(d) && d.email && ["prospect", "cultivating"].includes(d.stage) && quiet(d) && !thankIds.has(d.id))
     .slice(0, LIMITS.cultivation);
   await pool(toCultivate, 4, deadline, async (d) => {
     try {
@@ -274,9 +294,60 @@ Deno.serve(async (req: Request) => {
     } catch (e) { fail("Paige", d, e); }
   });
 
+  // 4n) COLE — in-kind needs: research real local businesses for the least-covered open needs
+  let researchedNeeds = "";
+  if (needs.length && Date.now() < deadline) {
+    const targeted = (id: unknown) => donors.filter((d) => String(d.need_id) === String(id)).length;
+    const todo = needs.filter((n) => targeted(n.id) < (Number(n.target_businesses) || 12))
+      .sort((a, b) => targeted(a.id) - targeted(b.id)).slice(0, focusNeedId ? 1 : NEEDS_PER_RUN);
+    const done: string[] = [];
+    const found = await Promise.all(todo.map(async (n: Row): Promise<Row[]> => {
+      try {
+        const known = donors.filter(isCorp).map((d) => d.full_name).slice(0, 300).join("; ") || "(none yet)";
+        const notes = await team.research(AGENTS.cole,
+          `Use web search to find ${CAMPAIGN_NEW_PER_RUN + 1} REAL, currently operating businesses in Detroit and nearby communities (Wayne, Oakland and Macomb counties) ` +
+          `that could DONATE or SPONSOR this specific in-kind need for our house renovation:\n\n` +
+          `Need: ${n.title} — ${needAsk(n)}.\n` + (n.specs ? `Specs: ${n.specs}\n` : "") +
+          (n.campaign ? `Project: ${n.campaign}${n.campaign_phase ? ", phase " + n.campaign_phase : ""}.\n` : "") +
+          `Business types to look for: ${n.business_types || n.item + " suppliers and installers"}.\n\n` +
+          `Prefer local manufacturers, distributors, dealers and installers, and local branches of larger suppliers with community-giving programs. ` +
+          `For each, report: name, category, city, why they fit, what to ask for (how many ${n.unit}, or cash toward ${n.cash_label || "the need"}), and their PUBLIC contact ` +
+          `email, phone, website and address exactly as published, with the source URL. Leave a field blank rather than guess. Skip these (already in our CRM): ${known}.`,
+          10);
+        const r = await team.ask<any>("fast", "You convert research notes into structured records. Copy contact details exactly as written in the notes; leave a field empty if it isn't there. Never invent a business, email or phone.",
+          "Research notes:\n\n" + notes, BUSINESSES, "low", 8000);
+        const clean = (v: unknown, k: number) => { const t = String(v || "").trim(); return t && !/^(n\/a|none|unknown|not found)$/i.test(t) ? t.slice(0, k) : null; };
+        const rows = (r.businesses || []).filter((b: Row) => b.company).slice(0, CAMPAIGN_NEW_PER_RUN + 1).map((b: Row) => ({
+          full_name: String(b.company).slice(0, 200), type: "corporate", stage: "prospect", source: "Cole (AI web research) — verify",
+          email: clean(b.email, 160) && /@/.test(b.email) ? clean(b.email, 160) : null, phone: clean(b.phone, 40), address: clean(b.address, 300),
+          need_id: n.id, partner_campaign: n.campaign || null, campaign_phase: n.campaign_phase || null,
+          tags: ["corporate", "in-kind need", String(n.item).slice(0, 40), String(b.category || "").slice(0, 40)].filter(Boolean).join(", "),
+          notes: [`In-kind need: ${n.title} — ${b.category}, ${b.city}`, `Why: ${b.why_fit}`,
+            b.in_kind_items ? `Ask for: ${b.in_kind_items}` : "", b.suggested_cash_usd > 0 ? `Cash ask: $${Number(b.suggested_cash_usd).toLocaleString()}` : "",
+            b.website ? `Website: ${b.website}` : "", b.source_url ? `Source: ${b.source_url}` : "", "[verify contact before sending]"].filter(Boolean).join("\n"),
+          suggested_ask: (Number(b.suggested_cash_usd) || 0) + (Number(b.in_kind_value_usd) || 0) || null,
+          ai_next_step: b.email ? `Verify the contact, then review Cole's ${n.item} ask` : `Find a contact email (see website), then review Cole's ${n.item} ask`,
+        }));
+        done.push(n.title);
+        return rows;
+      } catch (e) { fail("Cole in-kind research", { full_name: n.title }, e); return []; }
+    }));
+    const taken = new Set(donors.map((d) => String(d.full_name).toLowerCase().trim()));
+    const fresh = found.flat().filter((r) => { const k = String(r.full_name).toLowerCase().trim(); if (taken.has(k)) return false; taken.add(k); return true; });
+    if (fresh.length) {
+      try {
+        const ins = await db.from("donors").insert(fresh).select();
+        if (ins.error) throw new Error(ins.error.message);
+        donors.push(...(ins.data || []));
+        counts.prospects += fresh.length;
+      } catch (e) { fail("Cole in-kind save", { full_name: "businesses" }, e); }
+    }
+    researchedNeeds = done.join(" + ");
+  }
+
   // 4a) COLE — house campaign: research real local businesses for the least-covered phases
   //     (5x pace, 2026-09-29 21:30 UTC: several phases per run, researched in parallel)
-  if (campaign && Date.now() < deadline) {
+  if (campaign && !focusNeedId && Date.now() < deadline) {
     const recruited = (n: number) => donors.filter((d) => d.partner_campaign === campaign.name && Number(d.campaign_phase) === Number(n)).length;
     const phases = [...(campaign.phases || [])].filter((p: Row) => recruited(p.n) < CAMPAIGN_PER_PHASE)
       .sort((a: Row, b: Row) => recruited(a.n) - recruited(b.n)).slice(0, CAMPAIGN_PHASES_PER_RUN);
@@ -332,7 +403,7 @@ Deno.serve(async (req: Request) => {
   // 4) COLE — keep the corporate prospect pipeline stocked (at most weekly)
   const corpProspects = donors.filter((d) => isCorp(d) && ["prospect", "cultivating"].includes(d.stage));
   const lastProspecting = rRes.data && rRes.data[0];
-  if (!campaign && corpProspects.length < CORP_PIPELINE_MIN && daysAgo(lastProspecting?.created_at) > 6 && Date.now() < deadline) {
+  if (!campaign && !focusNeedId && corpProspects.length < CORP_PIPELINE_MIN && daysAgo(lastProspecting?.created_at) > 6 && Date.now() < deadline) {
     try {
       const known = donors.filter(isCorp).map((d) => d.full_name).join("; ") || "(none yet)";
       const r = await team.ask<any>("smart", AGENTS.cole,
@@ -358,12 +429,25 @@ Deno.serve(async (req: Request) => {
 
   // 5) COLE — pitches to corporate prospects + renewals for corporate givers
   const toPitch = donors.filter((d) => isCorp(d) && !dnc(d) && quiet(d) && !thankIds.has(d.id) &&
+    (!focusNeedId || String(d.need_id) === focusNeedId) &&
     (["prospect", "cultivating"].includes(d.stage) || (d.stage === "active" && daysAgo(d.last_gift_date) > 300) || d.stage === "lapsed"))
-    .sort((a, b) => (Number(!!b.partner_campaign) - Number(!!a.partner_campaign)) || (Number(b.suggested_ask || 0) - Number(a.suggested_ask || 0)))
+    .sort((a, b) => (Number(!!needOf(b.need_id)) - Number(!!needOf(a.need_id))) || (Number(!!b.partner_campaign) - Number(!!a.partner_campaign)) || (Number(b.suggested_ask || 0) - Number(a.suggested_ask || 0)))
     .slice(0, campaign ? Math.max(LIMITS.pitches, CAMPAIGN_PITCHES) : LIMITS.pitches);
   await pool(toPitch, campaign ? 6 : 4, deadline, async (d) => {
     try {
       const renewal = d.stage === "active" || d.stage === "lapsed";
+      const nd = needOf(d.need_id);
+      if (nd && !renewal) {
+        await draft("cole", d, "pitches",
+          `Write a short, specific first-touch email asking this local business to help with ONE in-kind need for our Detroit house renovation.\n` +
+          `The need: ${nd.title} — ${needAsk(nd)}.` + (nd.specs ? ` Specs: ${nd.specs}.` : "") + `\n` +
+          (nd.campaign ? `Project: ${nd.campaign}${nd.campaign_phase ? " (phase " + nd.campaign_phase + ")" : ""}; residents in our trades program help build it.\n` : "") +
+          `Make ONE clear ask that fits this business (from their notes): donate some or all of the ${nd.unit}, supply them at cost, or sponsor the ` +
+          `${nd.cash_label || "cash alternative"}. Offer recognition (site signage, website, social media, a ribbon-cutting) and ask for a 15-minute call. ` +
+          `Set suggested_ask_usd to the dollar value of the ask. ` + (d.email ? "" : "We don't have a named contact — address it to [Contact name] and note that in next_step."),
+          "medium", { need_id: nd.id });
+        return;
+      }
       const ph = campaign && d.partner_campaign === campaign.name ? phaseOf(d.campaign_phase) : null;
       if (ph && !renewal) {
         await draft("cole", d, "pitches",
@@ -405,7 +489,8 @@ Deno.serve(async (req: Request) => {
     (goal as Row).campaign = campaignGoal;
   }
   const summary = `Paige & Cole drafted ${counts.thank_yous} thank-yous, ${counts.renewals} renewals, ${counts.cultivation} cultivation emails and ` +
-    `${counts.pitches} corporate pitches` + (counts.prospects ? `; Cole added ${counts.prospects} new corporate prospects${researchedPhase ? " for the house " + researchedPhase : ""} (verify each)` : "") + "." +
+    `${counts.pitches} corporate pitches` + (counts.prospects ? `; Cole added ${counts.prospects} new corporate prospects` +
+      [researchedNeeds && "for in-kind need " + researchedNeeds, researchedPhase && "for the house " + researchedPhase].filter(Boolean).map((x) => " " + x).join(" and") + " (verify each)" : "") + "." +
     (campaignGoal ? ` House campaign: $${campaignGoal.pledged.toLocaleString()} of $${campaignGoal.goal.toLocaleString()} pledged, ${campaignGoal.businesses} businesses in the pipeline.` : "") +
     (Date.now() >= deadline ? " Stopped at the time limit — the next run continues." : "");
   const cost = team.cost();

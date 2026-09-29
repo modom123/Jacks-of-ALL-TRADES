@@ -15,6 +15,7 @@
    Updated: 2026-09-30 00:00 UTC · Sidebar reorganized by importance (NAV_LAYOUT): Home → Raise money →
                                    Projects, then collapsible Raffle & Marketing / Finances / Admin.
    Updated: 2026-09-30 00:15 UTC · Gold section headings; AI Agents moved to Admin.
+   Updated: 2026-09-30 00:45 UTC · "In-Kind Needs" (inkind.plugin.js) added under Raise money.
 
    A nonprofit operations hub: projects, fundraising campaigns, donor CRM,
    outreach, board/team, inbound leads, and three AI agents. Role-based access
@@ -176,7 +177,7 @@
   // current screen always opens.
   const NAV_LAYOUT = [
     { group: "Home", items: ["dashboard", "fund_team", "inbox"] },
-    { group: "Raise money", items: ["grants", "donor_giving", "social", "raffle", "campaigns"] },
+    { group: "Raise money", items: ["grants", "donor_giving", "inkind", "social", "raffle", "campaigns"] },
     { group: "Projects", items: ["projects", "renovation", "project_updates"] },
     { group: "Raffle & Marketing", collapsed: true, items: ["marketing", "raffle_campaign", "raffle_picker", "raffle_entries", "raffle_winners", "live_stream"] },
     { group: "Finances", collapsed: true, items: ["finances", "project_budgets", "bills", "contractors", "budgets", "finance_reports"] },
