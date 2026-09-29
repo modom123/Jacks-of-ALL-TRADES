@@ -8,6 +8,7 @@
    Updated: 2026-09-14 13:41 UTC · Removed front-end demo/sample data (hub shows only real data)
    Updated: 2026-09-23 13:45 UTC · 50/50 Raffle view: "Sync from Zeffy now" button (runs the zeffy-sync
                                    Edge Function so new Zeffy ticket sales update the site + hub)
+   Updated: 2026-09-29 19:45 UTC · Plugin nav items merge into an existing group (one "Fundraising" heading)
 
    A nonprofit operations hub: projects, fundraising campaigns, donor CRM,
    outreach, board/team, inbound leads, and three AI agents. Role-based access
@@ -312,7 +313,12 @@
         if (p.views) Object.assign(pluginViews, p.views);
         if (p.titles) Object.assign(VIEW_TITLES, p.titles);
         if (p.roles) for (const r in p.roles) { if (Array.isArray(ROLE_VIEWS[r])) ROLE_VIEWS[r].push(...p.roles[r]); }
-        if (p.nav) { const i = NAV.findIndex((s) => s.group === "System"); NAV.splice(i < 0 ? NAV.length : i, 0, ...p.nav); }
+        // Merge into an existing group of the same name (one "Fundraising" heading), else add before System.
+        if (p.nav) p.nav.forEach((sec) => {
+          const same = NAV.find((s) => s.group === sec.group);
+          if (same) same.items.push(...sec.items);
+          else { const i = NAV.findIndex((s) => s.group === "System"); NAV.splice(i < 0 ? NAV.length : i, 0, sec); }
+        });
       } catch (e) { console.error("[plugin]", p && p.id, e); }
     });
   }

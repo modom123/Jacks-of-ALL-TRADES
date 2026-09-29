@@ -78,7 +78,8 @@
   const amountShort = (l) => esc(String(l.est_amount || "—").replace(/\s*\((Simpler\.Grants\.gov|Grants\.gov|SAM\.gov|verify)\)\s*$/i, "").replace(/ per award$/, "").slice(0, 32));
 
   const usd = (n) => "$" + Math.round(Number(n) || 0).toLocaleString();
-  const GRANTS_TARGET = (A.REVENUE_TARGETS && (Number(A.REVENUE_TARGETS.gov_grants) || 0) + (Number(A.REVENUE_TARGETS.foundations) || 0)) || 1200000;
+  const GRANTS_TARGET = (A.FUNDRAISING_TEAM && Number(A.FUNDRAISING_TEAM.grants)) ||
+    (A.REVENUE_TARGETS && (Number(A.REVENUE_TARGETS.gov_grants) || 0) + (Number(A.REVENUE_TARGETS.foundations) || 0)) || 1200000;
   const WIN_ODDS = { qualified: 0.05, contacted: 0.08, drafting: 0.12, submitted: 0.2, follow_up: 0.22 };
   function goalMath(leads) {
     const amt = (l) => Number(l.amount_requested) || 0;
@@ -259,7 +260,7 @@
           ${aiResult ? `<div style="margin-bottom:.5rem">${aiResult.ok ? "✅" : "❌"} ${esc(aiResult.text)}${(aiResult.errs || []).slice(0, 4).map((e) => `<div style="color:#b42318;font-size:.85rem">⚠ ${esc(e)}</div>`).join("")}</div>`
             : run ? `<div style="margin-bottom:.5rem;font-size:.9rem"><b>Last run</b> ${esc(new Date(run.created_at).toLocaleString())}: ${esc(run.summary || "")}</div>`
             : `<div style="margin-bottom:.5rem;font-size:.9rem" class="text-soft">No AI-team runs yet — click <b>Run AI team now</b>.</div>`}
-          <div style="font-weight:800;margin-top:.4rem">Road to ${usd(GRANTS_TARGET)} in grants <span class="text-soft" style="font-weight:500">(part of the $2M plan)</span></div>
+          <div style="font-weight:800;margin-top:.4rem">Road to ${usd(GRANTS_TARGET)} in grants <span class="text-soft" style="font-weight:500">(the grants team's share of the $2M team goal)</span></div>
           <div style="height:12px;border-radius:8px;background:#e6e8ec;overflow:hidden;margin:.35rem 0;display:flex">
             <div style="width:${Math.min(100, g.won / GRANTS_TARGET * 100)}%;background:#12805c"></div>
             <div style="width:${Math.min(100, g.weighted / GRANTS_TARGET * 100)}%;background:#93c5fd"></div></div>

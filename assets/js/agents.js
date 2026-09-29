@@ -79,6 +79,29 @@
         "Draft a follow-up email two weeks after our submission.",
       ],
     },
+    // Donor team (added 2026-09-29 19:45 UTC) — also run automatically by donors-agents
+    {
+      key: "donor_individual", name: "Paige", title: "Individual Giving",
+      focus: "Private donors · Thank-yous · Renewals · Monthly giving",
+      blurb: "Thanks donors fast, asks lapsing donors to renew, and cultivates new individual prospects — with a suggested ask for each.",
+      accent: "#be185d",
+      starters: [
+        "Draft a thank-you for a first-time $100 donor.",
+        "Write a renewal ask for a donor who gave $250 last year.",
+        "Plan a monthly-giving push for our donor list.",
+      ],
+    },
+    {
+      key: "donor_corporate", name: "Cole", title: "Corporate Partnerships",
+      focus: "Sponsorships · In-kind · Employee volunteering · Hiring pipeline",
+      blurb: "Finds Detroit-area companies that benefit from a skilled-trades workforce and pitches sponsorship, in-kind, and volunteer partnerships.",
+      accent: "#7c3aed",
+      starters: [
+        "List 5 Detroit construction or supply companies to approach.",
+        "Draft a sponsor-a-home-renovation pitch to a building-supply company.",
+        "Create three corporate sponsorship tiers for our programs.",
+      ],
+    },
   ];
   const byKey = Object.fromEntries(AGENTS.map((a) => [a.key, a]));
 

@@ -97,6 +97,20 @@ window.JOAT.REVENUE_TARGETS = {
   individual:   150000,   // individual donors & major gifts
   events_raffle: 50000,   // events + the 50/50 raffle net
 };
+/* ---- AI fundraising team (added 2026-09-29 19:45 UTC) --------------------
+   Five AI agents share ONE goal: raise $2,000,000.
+     Grants team (3):  Gwen (prospector) · Rex (outreach) · Wes (writer)
+     Donor team  (2):  Paige (individual giving) · Cole (corporate partnerships)
+   Split below is adjustable; it should add up to the goal. Shown on
+   Command Center → Fundraising Team. (Server copies: GRANTS_ANNUAL_TARGET,
+   DONOR_CORPORATE_TARGET, DONOR_INDIVIDUAL_TARGET secrets.) */
+window.JOAT.FUNDRAISING_TEAM = {
+  goal: 2000000,
+  grants: 1200000,       // Gwen · Rex · Wes — government + foundation grants
+  corporate: 550000,     // Cole — sponsorships, in-kind, partnerships
+  individual: 250000,    // Paige — private donors, renewals, monthly giving
+};
+
 // STRIPE CHECKOUT: create a Stripe Payment Link per product in your Stripe
 // dashboard (Products -> Payment Links; set price, quantity, shipping) and
 // paste each URL into `buyUrl` below. The button then becomes "Buy now" and

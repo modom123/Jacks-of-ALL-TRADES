@@ -2,6 +2,7 @@
 #  Jacks of All Trades — auto-deploy the grant Edge Functions to Supabase
 #  File: .github/workflows/deploy-grants-functions.yml
 #  Generated: 2026-09-29 17:30 UTC
+#  Updated:   2026-09-29 19:45 UTC · also deploys grants-agents, donors-agents, ai-agent
 #
 #  On every push to main that touches the grant functions (or when run by hand
 #  from GitHub → Actions → "Deploy grant functions" → Run workflow), this:
@@ -22,6 +23,8 @@ on:
       - "supabase/functions/grants-search/**"
       - "supabase/functions/grants-daily/**"
       - "supabase/functions/grants-agents/**"
+      - "supabase/functions/donors-agents/**"
+      - "supabase/functions/ai-agent/**"
       - "supabase/functions/_shared/**"
       - "supabase/config.toml"
       - ".github/workflows/deploy-grants-functions.yml"
@@ -59,6 +62,12 @@ jobs:
 
       - name: Deploy grants-agents (AI team)
         run: supabase functions deploy grants-agents --project-ref "$PROJECT_REF" --no-verify-jwt
+
+      - name: Deploy donors-agents (Paige + Cole)
+        run: supabase functions deploy donors-agents --project-ref "$PROJECT_REF" --no-verify-jwt
+
+      - name: Deploy ai-agent (agent chat)
+        run: supabase functions deploy ai-agent --project-ref "$PROJECT_REF"
 
       - name: Test grant connections
         run: |
