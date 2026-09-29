@@ -24,3 +24,8 @@ verify_jwt = true
 # by signed-in hub users; it checks auth itself. (added 2026-09-29 16:20 UTC)
 [functions.grants-daily]
 verify_jwt = false
+
+# Grants AI team (Gwen/Rex/Wes) — called by pg_cron and signed-in hub users;
+# checks auth itself. (added 2026-09-29 19:00 UTC)
+[functions.grants-agents]
+verify_jwt = false

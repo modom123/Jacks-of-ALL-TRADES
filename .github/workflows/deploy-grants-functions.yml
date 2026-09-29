@@ -21,6 +21,7 @@ on:
     paths:
       - "supabase/functions/grants-search/**"
       - "supabase/functions/grants-daily/**"
+      - "supabase/functions/grants-agents/**"
       - "supabase/functions/_shared/**"
       - "supabase/config.toml"
       - ".github/workflows/deploy-grants-functions.yml"
@@ -55,6 +56,9 @@ jobs:
 
       - name: Deploy grants-daily
         run: supabase functions deploy grants-daily --project-ref "$PROJECT_REF" --no-verify-jwt
+
+      - name: Deploy grants-agents (AI team)
+        run: supabase functions deploy grants-agents --project-ref "$PROJECT_REF" --no-verify-jwt
 
       - name: Test grant connections
         run: |

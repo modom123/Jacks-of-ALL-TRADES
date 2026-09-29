@@ -6,6 +6,9 @@
               leads server-side (grants-daily), a compact pipeline table with
               stage tabs is the CRM, and each lead opens in a detail window
               (fields + AI drafts + email/call). Errors are shown, not hidden.
+   Updated:   2026-09-29 19:00 UTC · AI team panel: Gwen scores/qualifies, Rex drafts
+              outreach, Wes drafts proposals + follow-ups (grants-agents, every
+              2 hours). Fit score + next step per lead; Road-to-goal numbers.
 
    Agents: Gwen (finds leads) · Rex (intro email / call script) · Wes (proposal /
    follow-up). Every draft is human-reviewed before it's sent.
@@ -73,6 +76,20 @@
     return `<b style="color:${color}">${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</b><div style="font-size:.78rem;color:${color}">${note}</div>`;
   }
   const amountShort = (l) => esc(String(l.est_amount || "—").replace(/\s*\((Simpler\.Grants\.gov|Grants\.gov|SAM\.gov|verify)\)\s*$/i, "").replace(/ per award$/, "").slice(0, 32));
+
+  const usd = (n) => "$" + Math.round(Number(n) || 0).toLocaleString();
+  const GRANTS_TARGET = (A.REVENUE_TARGETS && (Number(A.REVENUE_TARGETS.gov_grants) || 0) + (Number(A.REVENUE_TARGETS.foundations) || 0)) || 1200000;
+  const WIN_ODDS = { qualified: 0.05, contacted: 0.08, drafting: 0.12, submitted: 0.2, follow_up: 0.22 };
+  function goalMath(leads) {
+    const amt = (l) => Number(l.amount_requested) || 0;
+    const won = leads.filter((l) => l.status === "awarded").reduce((s, l) => s + amt(l), 0);
+    const weighted = leads.reduce((s, l) => s + amt(l) * (WIN_ODDS[l.status] || 0), 0);
+    const asks = leads.filter((l) => ["submitted", "follow_up", "awarded", "declined"].includes(l.status) && amt(l) > 0).map(amt);
+    const avg = asks.length ? asks.reduce((a, b) => a + b, 0) / asks.length : 150000;
+    const gap = Math.max(0, GRANTS_TARGET - won - weighted);
+    return { won, weighted, gap, avg, needed: Math.ceil(gap / Math.max(1, avg * 0.2)) };
+  }
+  const fitPill = (l) => l.fit_score == null ? "" : `<span class="pill" title="Gwen's fit score" style="background:${l.fit_score >= 65 ? "#12805c" : l.fit_score > 30 ? "#b45309" : "#6b7280"};color:#fff;font-size:.66rem;padding:.2em .6em">Fit ${l.fit_score}</span>`;
 
   /* ---- data --------------------------------------------------------------- */
   const localMem = [];
@@ -182,11 +199,19 @@
   };
 
   /* ---- view ----------------------------------------------------------------- */
-  let tab = "new", query = "", lastResult = null, connHtml = "";
+  let tab = "new", query = "", lastResult = null, connHtml = "", aiResult = null;
+
+  async function lastRun(hub) {
+    if (!hub.db()) return null;
+    const { data } = await hub.db().from("grant_agent_runs").select("*").order("created_at", { ascending: false }).limit(1);
+    return data && data[0];
+  }
 
   async function render(hub) {
     const view = hub.el();
     const { leads, error } = await fetchLeads(hub);
+    const run = await lastRun(hub).catch(() => null);
+    const g = goalMath(leads);
     const inTab = (l, t) => { const def = TABS.find((x) => x[0] === t); return !def[2] || def[2].includes(l.status); };
     const count = (t) => leads.filter((l) => inTab(l, t)).length;
     const q = query.toLowerCase();
@@ -226,6 +251,22 @@
         ${connHtml ? `<div style="margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border,#e6e8ec)">${connHtml}</div>` : ""}
       </div></div>
 
+      <div class="panel"><div class="panel-head"><h3>AI grants team</h3>
+        <button class="btn btn-primary btn-sm" id="g-ai">Run AI team now</button></div>
+        <div class="panel-body">
+          <div class="text-soft" style="font-size:.88rem;margin-bottom:.6rem"><b>Gwen</b> scores &amp; qualifies new leads · <b>Rex</b> drafts intro emails &amp; call scripts ·
+            <b>Wes</b> drafts proposals &amp; follow-ups. Runs automatically every 2 hours, 8:30am–6:30pm ET. Nothing is sent until you click Send.</div>
+          ${aiResult ? `<div style="margin-bottom:.5rem">${aiResult.ok ? "✅" : "❌"} ${esc(aiResult.text)}${(aiResult.errs || []).slice(0, 4).map((e) => `<div style="color:#b42318;font-size:.85rem">⚠ ${esc(e)}</div>`).join("")}</div>`
+            : run ? `<div style="margin-bottom:.5rem;font-size:.9rem"><b>Last run</b> ${esc(new Date(run.created_at).toLocaleString())}: ${esc(run.summary || "")}</div>`
+            : `<div style="margin-bottom:.5rem;font-size:.9rem" class="text-soft">No AI-team runs yet — click <b>Run AI team now</b>.</div>`}
+          <div style="font-weight:800;margin-top:.4rem">Road to ${usd(GRANTS_TARGET)} in grants <span class="text-soft" style="font-weight:500">(part of the $2M plan)</span></div>
+          <div style="height:12px;border-radius:8px;background:#e6e8ec;overflow:hidden;margin:.35rem 0;display:flex">
+            <div style="width:${Math.min(100, g.won / GRANTS_TARGET * 100)}%;background:#12805c"></div>
+            <div style="width:${Math.min(100, g.weighted / GRANTS_TARGET * 100)}%;background:#93c5fd"></div></div>
+          <div style="font-size:.88rem">🟩 Won <b>${usd(g.won)}</b> · 🟦 Likely from pipeline <b>${usd(g.weighted)}</b> · Gap <b>${usd(g.gap)}</b>
+            ${g.gap ? ` → about <b>${g.needed}</b> more proposals at ~${usd(g.avg)} each (20% win rate)` : " — on track 🎉"}</div>
+        </div></div>
+
       <div class="kpis">
         ${hub.kpi("New today", foundToday + " / " + GOALS.findPerDay, "target", "")}
         ${hub.kpi("To review", count("new"), "mega", "")}
@@ -259,6 +300,14 @@
       } catch (err) { console.error(err); lastResult = { ok: false, text: err.message || String(err) }; }
       render(hub);
     };
+    view.querySelector("#g-ai").onclick = async (e) => {
+      e.target.disabled = true; e.target.textContent = "Team is working… (up to 2 min)";
+      try {
+        const out = await callFn(hub, "grants-agents", { trigger: "hub" });
+        aiResult = { ok: true, text: out.summary || "Done.", errs: out.errors || [] };
+      } catch (err) { aiResult = { ok: false, text: err.message || String(err) }; }
+      render(hub);
+    };
     view.querySelector("#g-test").onclick = async (e) => {
       e.target.disabled = true; e.target.textContent = "Testing…";
       try { connHtml = await testConnections(hub); } catch (err) { connHtml = "❌ " + esc(err.message || err); }
@@ -290,8 +339,9 @@
       <td style="max-width:420px">
         <a href="javascript:void 0" class="g-title" style="font-weight:700;color:inherit;text-decoration:none">${esc(l.focus_area || l.funder)}</a>
         <div class="muted">${esc(l.funder)}</div>
+        ${l.ai_next_step && !["awarded", "declined", "archived"].includes(l.status) ? `<div style="font-size:.8rem;margin-top:.2rem">➜ ${esc(l.ai_next_step)}</div>` : ""}
         <div style="margin-top:.25rem;display:flex;gap:.3rem;flex-wrap:wrap">
-          <span class="pill" style="background:${srcColor};color:#fff;font-size:.66rem;padding:.2em .6em">${srcLabel}</span>
+          ${fitPill(l)}<span class="pill" style="background:${srcColor};color:#fff;font-size:.66rem;padding:.2em .6em">${srcLabel}</span>
           ${isToday(l.created_at) ? '<span class="pill" style="background:#12805c;color:#fff;font-size:.66rem;padding:.2em .6em">New today</span>' : ""}
         </div></td>
       <td style="white-space:nowrap">${amountShort(l)}</td>
@@ -316,6 +366,7 @@
         <div class="text-soft" style="font-size:.88rem">${esc(lead.funder)} · ${SOURCES[sourceOf(lead)][0]}${lead.url && /^https?:/.test(lead.url) ? ` · <a href="${esc(lead.url)}" target="_blank" rel="noopener">Open listing ↗</a>` : ""}</div></div>
         <button class="modal-x" data-x aria-label="Close">×</button></div>
       <div style="overflow-y:auto;padding:1.2rem 1.4rem">
+        ${lead.fit_score != null || lead.ai_next_step ? `<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.5rem">${fitPill(lead)}${lead.priority ? `<span class="text-soft" style="font-size:.85rem">Priority: ${esc(lead.priority)}</span>` : ""}${lead.ai_next_step ? `<b style="font-size:.9rem">➜ Next: ${esc(lead.ai_next_step)}</b>` : ""}</div>` : ""}
         ${lead.fit_reason ? `<p class="text-soft" style="margin-top:0">${esc(lead.fit_reason)}</p>` : ""}
         ${lead.notes ? `<p style="font-size:.88rem;margin-top:0">${esc(lead.notes)}</p>` : ""}
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 1rem">
