@@ -33,7 +33,8 @@ Cole's first priority is the **4 Bed / 2 Bath Community Renovation**. It has the
 | 5. Basement / Final | $15,000 | Waterproofing companies, insulation suppliers, lumber yards, lighting stores |
 
 **How Cole works it:**
-- **Research:** each run, he picks the phase with the fewest businesses so far. He then **searches the web** for about 6 real businesses in Detroit and Wayne, Oakland and Macomb counties.
+- **Research:** each run, he picks the **two** phases with the fewest businesses so far and researches them in parallel. For each, he **searches the web** for about 5 real businesses in Detroit and Wayne, Oakland and Macomb counties, so about 10 per run.
+- **Pace (5x, updated 2026-09-29 21:30 UTC):** 2 runs every weekday comes to about 90–100 new businesses a week. At 20 per phase, all 100 are found in about a week, with up to 10 pitches drafted per run.
 - **Records:** he saves each business with its public email, phone, website and address exactly as published, plus the source link.
 - **Asks:** he drafts a phase-specific ask: donate the materials, sponsor part or all of the phase in cash, or supply at cost. Every ask offers recognition and requests a 15-minute call or a site visit.
 
@@ -43,19 +44,20 @@ Cole's first priority is the **4 Bed / 2 Bath Community Renovation**. It has the
 
 **Setup:** in the Supabase SQL Editor, run `supabase/setup_house_campaign_2026-09-29_2100.sql` once. Then redeploy `donors-agents`.
 
-**Cost:** web research adds about $0.10–0.15 per run, including about 8 searches at $10 per 1,000.
+**Cost:** each run adds about $0.25 for web research (2 phases, up to 10 searches each, at $10 per 1,000 searches), plus about $0.30 for 10 pitches. That's roughly $25 a month on weekdays until all phases are full.
 
 **Tuning secrets:**
-- `DONOR_AI_CAMPAIGN_PER_PHASE`: businesses to recruit per phase (default 8).
-- `DONOR_AI_CAMPAIGN_NEW_PER_RUN`: businesses researched per run (default 6).
-- `DONOR_AI_CAMPAIGN_PITCHES_PER_RUN`: pitches drafted per run (default 6).
+- `DONOR_AI_CAMPAIGN_PER_PHASE`: businesses to recruit per phase (default 20).
+- `DONOR_AI_CAMPAIGN_PHASES_PER_RUN`: phases researched in parallel per run (default 2).
+- `DONOR_AI_CAMPAIGN_NEW_PER_RUN`: businesses researched per phase per run (default 5).
+- `DONOR_AI_CAMPAIGN_PITCHES_PER_RUN`: pitches drafted per run (default 10).
 
 **Pausing:** `update partner_campaigns set active = false where name = '4 Bed / 2 Bath Community Renovation';`
 
 ## When they work
 - **8:00am ET:** the grant finder adds about 10 new leads.
 - **8:30am, 12:30pm and 4:30pm ET:** the grants team (Gwen, then Rex, then Wes) works a batch.
-- **Monday, Wednesday and Friday at 9:15am ET:** the donor team (Paige and Cole) works a batch.
+- **Every weekday at 9:15am and 1:15pm ET:** the donor team (Paige and Cole) works a batch. This moved from Monday, Wednesday and Friday for the house campaign's 5x pace.
 
 **Quality over quantity** (2026-09-29 20:30 UTC): half the runs of the original schedule, Gwen qualifies only leads scoring 70 or more, and Wes thinks harder on each proposal.
 - **Any time:** the **Run grants team** and **Run donor team** buttons on the Fundraising Team screen start a run immediately.

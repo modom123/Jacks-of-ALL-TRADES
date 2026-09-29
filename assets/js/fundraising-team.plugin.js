@@ -93,7 +93,7 @@
         <button class="btn btn-primary btn-sm" id="ft-pledge">Record pledge</button></div>
       <div class="panel-body">
         <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem"><b>${usd(pledged)} pledged of ${usd(c.goal)}</b>
-          <span class="text-soft">Cole researches real Detroit-area businesses one phase at a time and drafts phase-specific asks (cash or materials).</span></div>
+          <span class="text-soft">Cole researches real Detroit-area businesses two phases at a time, twice every weekday, and drafts phase-specific asks (cash or materials).</span></div>
         ${bar(pledged, 0, c.goal, "#b45309")}
         <div class="table-wrap"><table class="data" style="margin-top:.4rem">
           <thead><tr><th>Phase</th><th>Needs</th><th>Pledged</th><th>Businesses</th></tr></thead>
@@ -221,7 +221,7 @@
         </div>
         <div style="font-size:.88rem;margin-top:.6rem">
           <div><b>Grants team</b> (8:30am, 12:30pm, 4:30pm ET): ${d.gRun ? esc(new Date(d.gRun.created_at).toLocaleString()) + " — " + esc(d.gRun.summary || "") : "no runs yet"}</div>
-          <div><b>Donor team</b> (Mon/Wed/Fri 9:15am ET): ${d.dRun ? esc(new Date(d.dRun.created_at).toLocaleString()) + " — " + esc(d.dRun.summary || "") : "no runs yet"}</div>
+          <div><b>Donor team</b> (weekdays 9:15am + 1:15pm ET): ${d.dRun ? esc(new Date(d.dRun.created_at).toLocaleString()) + " — " + esc(d.dRun.summary || "") : "no runs yet"}</div>
           ${d.grants.awaiting ? `<div style="margin-top:.3rem">📝 <b>${d.grants.awaiting}</b> grant proposal${d.grants.awaiting === 1 ? "" : "s"} from Wes waiting for you in <a href="#grants">Grants → Applying</a>.</div>` : ""}
         </div></div></div>
 
