@@ -231,7 +231,7 @@
           <tbody>${d.queue.length ? d.queue.map((o) => {
             const donor = d.donors.find((x) => x.id === o.donor_id) || {};
             return `<tr data-oid="${esc(o.id)}">
-              <td><b>${esc(o.donor_name || donor.full_name)}</b><div class="muted">${esc(donor.type || "individual")} · ${esc(donor.stage || "")}</div>
+              <td><a href="javascript:void 0" data-prof="${esc(o.donor_id)}" style="font-weight:700">${esc(o.donor_name || donor.full_name)}</a><div class="muted">${esc(donor.type || "individual")} · ${esc(donor.stage || "")}</div>
                 ${donor.ai_next_step ? `<div style="font-size:.8rem">➜ ${esc(donor.ai_next_step)}</div>` : ""}</td>
               <td style="max-width:320px">${esc(o.subject)}</td>
               <td>${donor.suggested_ask ? usd(donor.suggested_ask) : "—"}</td>
@@ -252,6 +252,7 @@
     gb.onclick = run(gb, "grants-agents", "Grants team");
     db.onclick = run(db, "donors-agents", "Donor team");
     view.querySelector("[data-goto-view]").onclick = () => { location.hash = "grants"; };
+    view.querySelectorAll("[data-prof]").forEach((a) => a.onclick = () => A.donorProfile && A.donorProfile.open(a.dataset.prof, "outreach"));
     view.querySelectorAll("tr[data-oid]").forEach((tr) => {
       const o = d.queue.find((x) => String(x.id) === tr.getAttribute("data-oid"));
       tr.querySelector("[data-review]").onclick = () => openDraft(hub, o, d.donors.find((x) => x.id === o.donor_id) || {});

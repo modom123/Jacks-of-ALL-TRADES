@@ -18,6 +18,7 @@
       focus: "Fundraising · Donor relations · Grants",
       blurb: "Drafts donor & grant outreach, researches prospects, and recommends asks based on giving history.",
       accent: "#1d4ed8",
+      actions: [{ label: "Open donor giving", goto: "donor_giving" }, { label: "Open Fundraising Team", goto: "fund_team" }],
       starters: [
         "Draft a grant follow-up email to The Riverside Foundation.",
         "Suggest an ask amount and approach for Marcus & Dana Reed.",
@@ -29,6 +30,7 @@
       focus: "Projects · Operations · Budgets",
       blurb: "Plans and tracks projects, breaks work into tasks, watches budgets and timelines, and drafts status updates.",
       accent: "#0e7490",
+      actions: [{ label: "Open projects", goto: "projects" }, { label: "Renovation tracker", goto: "renovation" }],
       starters: [
         "Break the 4BR renovation into this month's tasks with owners.",
         "Summarize project status for the board.",
@@ -40,6 +42,7 @@
       focus: "Marketing · Community · Content",
       blurb: "Writes newsletters, social posts, press releases, and recruitment content in the organization's voice.",
       accent: "#7c3aed",
+      actions: [{ label: "Draft this week's posts (house)", fn: "social-agent", body: { campaign: "house", days: 7 }, after: "review them in Social Fundraising → Nova's posts" }, { label: "Draft raffle posts", fn: "social-agent", body: { campaign: "raffle", days: 7 }, after: "review them in Social Fundraising" }, { label: "Open Social Fundraising", goto: "social" }],
       starters: [
         "Write a newsletter update on the raffle and renovation progress.",
         "Draft 3 social posts to recruit volunteers.",
@@ -51,6 +54,7 @@
       focus: "Grant research · Prospecting · Fit scoring",
       blurb: "Finds and qualifies foundation, corporate, and government grants that fit our mission — with fit notes and verify-flagged amounts.",
       accent: "#0f766e",
+      actions: [{ label: "Find & save new grant leads", fn: "grants-daily", body: {}, after: "Gwen scores them on the next grants-team run" }, { label: "Score & qualify new leads", fn: "grants-agents", after: "see Grants → Qualified" }, { label: "Open Grants", goto: "grants" }],
       starters: [
         "Find 5 grants that fit our trades-training and home-renovation work.",
         "Which government workforce programs should we pursue?",
@@ -62,6 +66,7 @@
       focus: "Funder intro emails · Call scripts · Cultivation",
       blurb: "Opens the door with funders — drafts and sends intro emails and call scripts to program officers (human-approved).",
       accent: "#0369a1",
+      actions: [{ label: "Draft intro emails for qualified leads", fn: "grants-agents", after: "open a lead in Grants to review and send" }, { label: "Open Grants", goto: "grants" }],
       starters: [
         "Draft an intro email to a foundation program officer about our apprenticeship program.",
         "Write a 30-second call script to request grant guidelines from a funder.",
@@ -73,6 +78,7 @@
       focus: "Proposals · LOIs · Budgets · Follow-up",
       blurb: "Drafts letters of inquiry, full proposals, and budgets tailored to a funder — then follows up after submission.",
       accent: "#b45309",
+      actions: [{ label: "Draft proposals & follow-ups", fn: "grants-agents", after: "see Grants → Applying" }, { label: "Open Grants", goto: "grants" }],
       starters: [
         "Draft a letter of inquiry for a workforce-development grant.",
         "Write a full proposal for a $50,000 tools-and-equipment grant.",
@@ -85,6 +91,7 @@
       focus: "Private donors · Thank-yous · Renewals · Monthly giving",
       blurb: "Thanks donors fast, asks lapsing donors to renew, and cultivates new individual prospects — with a suggested ask for each.",
       accent: "#be185d",
+      actions: [{ label: "Draft thank-yous, renewals & invitations", fn: "donors-agents", after: "review them in Fundraising Team → Review & send" }, { label: "Sync Zeffy donors", fn: "zeffy-sync" }, { label: "Open Donor Giving", goto: "donor_giving" }],
       starters: [
         "Draft a thank-you for a first-time $100 donor.",
         "Write a renewal ask for a donor who gave $250 last year.",
@@ -96,6 +103,7 @@
       focus: "Sponsorships · In-kind · Employee volunteering · Hiring pipeline",
       blurb: "Finds Detroit-area companies that benefit from a skilled-trades workforce and pitches sponsorship, in-kind, and volunteer partnerships.",
       accent: "#7c3aed",
+      actions: [{ label: "Research businesses & draft pitches", fn: "donors-agents", after: "review them in Fundraising Team → Review & send" }, { label: "Open Fundraising Team", goto: "fund_team" }],
       starters: [
         "List 5 Detroit construction or supply companies to approach.",
         "Draft a sponsor-a-home-renovation pitch to a building-supply company.",
@@ -398,5 +406,7 @@
     ].join("\n");
   }
 
+  // actions (added 2026-09-29 23:30 UTC): buttons on the AI Agents page that RUN
+  // the agent's job ({ fn: Edge Function, body }) or open its screen ({ goto }).
   A.agents = { list: AGENTS, get: (k) => byKey[k], send, simulate };
 })();

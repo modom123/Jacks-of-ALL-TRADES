@@ -9,6 +9,9 @@
    Updated: 2026-09-23 13:45 UTC · 50/50 Raffle view: "Sync from Zeffy now" button (runs the zeffy-sync
                                    Edge Function so new Zeffy ticket sales update the site + hub)
    Updated: 2026-09-29 19:45 UTC · Plugin nav items merge into an existing group (one "Fundraising" heading)
+   Updated: 2026-09-29 23:30 UTC · Donor names open a full profile (donor-profile.js); "Draft" opens the
+                                   profile's one-click agent actions instead of the chat; AI Agents page
+                                   has action buttons that run each agent's job (grants/donors/social).
 
    A nonprofit operations hub: projects, fundraising campaigns, donor CRM,
    outreach, board/team, inbound leads, and three AI agents. Role-based access
@@ -479,8 +482,10 @@
     const def = T[name];
     const span = def.cols.length + (def.status ? 1 : 0) + (def.ai ? 1 : 0) + 1;
     if (!rows.length) return emptyRow(span);
+    const profile = (name === "donors" || name === "outreach") && A.donorProfile;
     return rows.map((r) => `<tr>
-      ${def.cols.map((c) => `<td>${cell(r, c)}</td>`).join("")}
+      ${def.cols.map((c, i) => `<td>${i === 0 && profile && (name === "donors" || r.donor_id)
+        ? `<a href="javascript:void 0" class="open-profile" data-donor="${esc(name === "donors" ? r.id : r.donor_id)}" style="font-weight:700">${cell(r, c)}</a>` : cell(r, c)}</td>`).join("")}
       ${def.status ? `<td><select class="row-status" data-id="${r.id}" data-field="${def.status.field}">${def.status.opts.map((o) => `<option ${((r[def.status.field] || def.status.opts[0]) === o) ? "selected" : ""}>${o}</option>`).join("")}</select></td>` : ""}
       ${def.ai ? `<td><button class="btn btn-ghost btn-xs ai-draft" data-id="${r.id}">${ICO("spark")} Draft</button></td>` : ""}
       <td class="muted">${fmtDate(r.created_at)}</td></tr>`).join("");
@@ -494,8 +499,12 @@
   }
   function bindRowActions(name) {
     $$(".row-status").forEach((s) => s.onchange = () => updateField(name, castId(s.dataset.id), { [s.dataset.field]: s.value }));
+    $$(".open-profile").forEach((a) => a.onclick = () => A.donorProfile.open(a.dataset.donor, name === "outreach" ? "outreach" : "giving"));
     $$(".ai-draft").forEach((b) => b.onclick = async () => {
       const row = (cache[name] || []).find((r) => String(r.id) === String(b.dataset.id));
+      // Donors (and outreach linked to a donor): open the profile's one-click agent actions.
+      const donorId = name === "donors" ? row.id : row.donor_id;
+      if (A.donorProfile && donorId && !DEMO) return A.donorProfile.open(donorId, "act");
       const who = row.full_name || row.donor_name || "this donor";
       go("agents#" + (T[name].ai || "ada"));
       setTimeout(() => window.dispatchEvent(new CustomEvent("joat:agent-prompt", { detail: { agent: T[name].ai || "ada", text: `Draft outreach to ${who}${row.tags ? " (" + row.tags + ")" : ""}. Recommend an approach and an ask.` } })), 350);
@@ -598,11 +607,12 @@
     if (hashAgent && A.agents.get(hashAgent)) activeAgent = hashAgent;
     const list = A.agents ? A.agents.list : [];
     view.innerHTML = `
-      <div class="view-head"><div><h2 style="margin:0">AI Agents</h2><p>Three assistants that help run Jacks of All Trades. ${DEMO ? "Simulated until the <code>ai-agent</code> function is deployed." : "Live via Claude."}</p></div></div>
+      <div class="view-head"><div><h2 style="margin:0">AI Agents</h2><p>Your AI team. Click an agent, then a ▶ button to have them do the job — or chat below. ${DEMO ? "Simulated until the <code>ai-agent</code> function is deployed." : "Live via Claude."}</p></div></div>
       <div class="agents-grid">${list.map((a) => `<button class="agent-card ${a.key === activeAgent ? "on" : ""}" data-agent="${a.key}">
         <span class="agent-badge" style="background:${a.accent}">${a.name[0]}</span>
         <b>${a.name}</b><span class="agent-role">${a.title}</span><span class="agent-focus">${a.focus}</span><p>${a.blurb}</p></button>`).join("")}</div>
       <div class="panel chat-panel"><div class="panel-head"><h3 id="chat-title"></h3><button class="btn btn-ghost btn-xs" id="chat-clear">Clear</button></div>
+        <div id="agent-actions" style="display:flex;gap:.4rem;flex-wrap:wrap;padding:.6rem 1rem 0"></div>
         <div class="chat-log" id="chat-log"></div>
         <div class="chat-starters" id="chat-starters"></div>
         <form class="chat-input" id="chat-form"><textarea id="chat-text" rows="1" placeholder="Message the agent…"></textarea><button class="btn btn-primary" type="submit" id="chat-send">${ICO("send")}</button></form>
@@ -610,8 +620,41 @@
     $$(".agent-card").forEach((b) => b.onclick = () => { activeAgent = b.dataset.agent; renderAgents(); });
     mountChat();
   }
+  // Agent action buttons: run the agent's real job (Edge Function) or open its screen.
+  async function runAgentAction(act, btn) {
+    const a = A.agents.get(activeAgent);
+    if (act.goto) return go(act.goto);
+    const cfg = A.SUPABASE || {};
+    if (DEMO || !db || !cfg.url) return toast("Connect Supabase to run agent actions");
+    const msgs = (convos[activeAgent] = convos[activeAgent] || []);
+    msgs.push({ role: "user", content: "▶ " + act.label }); renderLog();
+    const orig = btn.textContent; btn.disabled = true; btn.textContent = "Working… (up to 2 min)";
+    let text;
+    try {
+      const { data } = await db.auth.getSession();
+      const tok = (data && data.session && data.session.access_token) || cfg.anonKey;
+      const res = await fetch(cfg.url.replace(/\/$/, "") + "/functions/v1/" + act.fn, {
+        method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok, apikey: cfg.anonKey },
+        body: JSON.stringify(Object.assign({ trigger: "hub" }, act.body || {})),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || out.error) text = `**Couldn't finish:** ${out.error || "HTTP " + res.status}. (Deploy \`${act.fn}\` with \`supabase functions deploy ${act.fn} --no-verify-jwt\`.)`;
+      else {
+        const extra = out.inserted != null ? `Saved **${out.inserted}** new lead${out.inserted === 1 ? "" : "s"}${out.filtered_out ? ` (${out.filtered_out} screened out)` : ""}.` : "";
+        const errs = (Array.isArray(out.errors) ? out.errors : Object.values(out.errors || {})).slice(0, 4);
+        text = `**Done.** ${out.summary || out.message || extra || "Finished."}${errs.length ? "\n\nIssues:\n" + errs.map((e) => "- " + e).join("\n") : ""}${act.after ? `\n\nNext: ${act.after}` : ""}`;
+      }
+    } catch (e) { text = "**Couldn't reach the server:** " + (e.message || e); }
+    btn.disabled = false; btn.textContent = orig;
+    msgs.push({ role: "assistant", content: text }); renderLog();
+  }
   function mountChat() {
     const a = A.agents.get(activeAgent);
+    const acts = $("#agent-actions");
+    if (acts) {
+      acts.innerHTML = (a.actions || []).map((x, i) => `<button class="btn btn-sm ${x.goto ? "btn-ghost" : "btn-primary"}" data-act="${i}">${x.goto ? "" : "▶ "}${esc(x.label)}</button>`).join("");
+      acts.querySelectorAll("[data-act]").forEach((b) => b.onclick = () => runAgentAction(a.actions[Number(b.dataset.act)], b));
+    }
     $("#chat-title").innerHTML = `<span class="agent-dot" style="background:${a.accent}"></span> ${a.name} — ${a.title}`;
     const starters = $("#chat-starters");
     starters.innerHTML = a.starters.map((s) => `<button class="starter" type="button">${esc(s)}</button>`).join("");
@@ -653,7 +696,7 @@
     const lines = ["ORGANIZATION: Jacks of All Trades Community Development (Detroit nonprofit — skilled-trades training, apprenticeship & mentorship, community development)."];
     lines.push("\nCAMPAIGNS:"); campaigns.forEach((c) => lines.push(`- ${c.name} (${c.type}, ${c.status}): ${money(c.raised)} of ${money(c.goal)}`));
     lines.push("\nPROJECTS:"); projects.forEach((p) => lines.push(`- ${p.name} (${p.type}, ${p.status}, ${p.progress}%): ${money(p.spent)} of ${money(p.budget)}`));
-    lines.push("\nDONORS:"); donors.slice(0, 12).forEach((d) => lines.push(`- ${d.full_name} (${d.type}, ${d.stage}): given ${money(d.total_given)}${d.tags ? ", tags: " + d.tags : ""}`));
+    lines.push("\nDONORS:"); [...donors].sort((x, y) => (Number(y.total_given) || 0) - (Number(x.total_given) || 0)).slice(0, 25).forEach((d) => lines.push(`- ${d.full_name} (${d.type}, ${d.stage}): given ${money(d.total_given)}${d.tags ? ", tags: " + d.tags : ""}`));
     return lines.join("\n");
   }
 

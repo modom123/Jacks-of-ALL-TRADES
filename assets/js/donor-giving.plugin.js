@@ -12,6 +12,7 @@
        name / email / amount / date columns, previews, de-duplicates re-imports.
      • Export CSV — the whole list with per-fundraiser columns.
    Totals are recalculated across all sources by refresh_donor_totals().
+   Updated 2026-09-29 23:30 UTC · click a donor → full profile + agent actions.
 
    Data: donors, donations, donor_giving (view)
    Setup: supabase/setup_donor_crm_sync_2026-09-29_2300.sql
@@ -83,11 +84,11 @@
           <tbody>${rows.slice(0, 500).map((d) => {
             const parts = (byDonor[d.id] || []).sort((a, b) => b.total - a.total);
             return `<tr data-id="${esc(d.id)}">
-              <td><b>${esc(d.full_name)}</b><div class="muted">${esc(d.email || "no email")}${d.type && d.type !== "individual" ? " · " + esc(d.type) : ""} · ${esc(d.stage || "")}</div></td>
+              <td><a href="javascript:void 0" data-prof style="font-weight:700">${esc(d.full_name)}</a><div class="muted">${esc(d.email || "no email")}${d.type && d.type !== "individual" ? " · " + esc(d.type) : ""} · ${esc(d.stage || "")}</div></td>
               <td><b>${usd(d.total_given)}</b></td>
               <td style="max-width:420px">${parts.map((p) => `<span class="pill" style="margin:.1rem;text-transform:none;letter-spacing:0">${esc(p.campaign)}: ${usd(p.total)}${p.gifts > 1 ? ` ×${p.gifts}` : ""}</span>`).join("")}</td>
               <td style="white-space:nowrap">${esc(d.last_gift_date || "—")}${d.last_gift_amount ? `<div class="muted">${usd(d.last_gift_amount)}</div>` : ""}</td>
-              <td><button class="btn btn-ghost btn-sm" data-hist>Gifts</button></td></tr>`;
+              <td style="white-space:nowrap"><button class="btn btn-primary btn-sm" data-prof>Profile</button></td></tr>`;
           }).join("") || `<tr><td colspan="5" class="text-soft" style="padding:1.2rem">No donors with gifts yet.</td></tr>`}</tbody>
         </table></div>${rows.length > 500 ? `<p class="text-soft" style="padding:0 1rem">Showing the first 500 — search to narrow.</p>` : ""}</div>`;
 
@@ -97,7 +98,11 @@
     view.querySelector("#dg-sync").onclick = (e) => syncZeffy(hub, e.target);
     view.querySelector("#dg-import").onclick = () => openImport(hub, donors);
     view.querySelector("#dg-export").onclick = () => exportCsv(rows, byDonor, campaigns.map(([n]) => n));
-    view.querySelectorAll("tr[data-id] [data-hist]").forEach((b) => b.onclick = () => openHistory(hub, donors.find((d) => String(d.id) === b.closest("tr").dataset.id)));
+    // Donor profile (donor-profile.js) with one-click agent actions; falls back to gift history.
+    view.querySelectorAll("tr[data-id] [data-prof]").forEach((b) => b.onclick = () => {
+      const id = b.closest("tr").dataset.id;
+      if (A.donorProfile) A.donorProfile.open(id); else openHistory(hub, donors.find((d) => String(d.id) === id));
+    });
   }
 
   async function syncZeffy(hub, btn) {
