@@ -13,6 +13,10 @@
    Data: public.grant_leads  (see schema_grants_*.sql)
    AI:   window.JOAT.agents.send(agentKey, messages, context)  (ai-agent fn)
 
+   Updated: 2026-09-29 16:20 UTC · SAM.gov + Simpler.Grants.gov sources, source
+                                   badges/filter, "Run daily finder now" button
+   Updated: 2026-09-29 17:00 UTC · "Test grant connections" diagnostic panel
+
    Remove the <script src=".../grants.plugin.js"> tag to disable.
    ========================================================================== */
 (function () {
@@ -51,6 +55,18 @@
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
   const localMem = [];
   let filterStatus = "all";
+  let filterSource = "all";
+
+  // Where a lead came from, for the badge + filter.
+  const SOURCES = [["simpler", "Simpler.Grants.gov", "#0f766e"], ["grantsgov", "Grants.gov", "#1d4ed8"], ["sam", "SAM.gov", "#7c3aed"], ["ai", "AI / manual", "#6b7280"]];
+  const SRC = Object.fromEntries(SOURCES.map(([k, l, c]) => [k, { label: l, color: c }]));
+  function sourceOf(l) {
+    const t = (l.drafted_by || "") + " " + (l.deadline_note || "");
+    if (/Simpler\.Grants\.gov/i.test(t)) return "simpler";
+    if (/SAM\.gov/i.test(t)) return "sam";
+    if (/Grants\.gov/i.test(t)) return "grantsgov";
+    return "ai";
+  }
 
   /* ---- data --------------------------------------------------------------- */
   async function fetchLeads(hub) {
@@ -108,28 +124,76 @@
   }
 
   /* ---- Grants.gov: live federal opportunities (real award sizes) ---------- */
-  async function searchGrantsGov(hub, keyword, rows) {
+  async function searchGrantsGov(hub, keyword, rows, source) {
+    const label = source === "sam" ? "SAM.gov" : "Grants.gov";
     const cfg = A.SUPABASE || {};
     const ok = A.configured && cfg.url && !cfg.url.includes("YOUR-PROJECT");
-    if (!ok) { hub.toast("Connect Supabase to use Grants.gov"); return 0; }
+    if (!ok) { hub.toast("Connect Supabase to use " + label); return 0; }
     let data;
     try {
       const res = await fetch(cfg.url.replace(/\/$/, "") + "/functions/v1/grants-search", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + cfg.anonKey, apikey: cfg.anonKey },
-        body: JSON.stringify({ keyword: keyword || "workforce apprenticeship housing", rows }),
+        body: JSON.stringify({ keyword: keyword || (source === "sam" ? "construction" : "workforce apprenticeship housing"), rows, source: source || "grantsgov" }),
       });
       data = await res.json();
-      if (!res.ok || data.error) { hub.toast(data && data.error ? "Grants.gov: " + data.error : "Deploy the grants-search function"); return 0; }
-    } catch (e) { hub.toast("Deploy the grants-search function to search Grants.gov"); return 0; }
+      if (!res.ok || data.error) { hub.toast(data && data.error ? label + ": " + data.error : "Deploy the grants-search function"); return 0; }
+    } catch (e) { hub.toast("Deploy the grants-search function to search " + label); return 0; }
     const leads = (data.leads || []).map((l) => ({
       funder: l.funder, funder_type: "government", focus_area: l.focus_area, fit_reason: l.fit_reason,
       est_amount: l.est_amount, deadline_note: l.deadline_note, url: l.url,
-      contact_email: l.contact_email || null, notes: l.notes || null, status: "identified", drafted_by: "Gwen (Grants.gov)",
+      contact_name: l.contact_name || null, contact_email: l.contact_email || null, notes: l.notes || null, status: "identified",
+      drafted_by: l.drafted_by || "Gwen (" + label + ")",
     }));
     if (!leads.length) { hub.toast("No federal matches — try a broader keyword"); return 0; }
     await insertMany(hub, leads);
     return leads.length;
+  }
+
+  /* ---- Test each grant source and show exactly what works / what fails --- */
+  async function testConnections(hub, box) {
+    const cfg = A.SUPABASE || {};
+    if (!hub.db() || !cfg.url) { box.innerHTML = '<p class="text-soft">Not connected to Supabase — sign in on the live hub.</p>'; return; }
+    box.innerHTML = '<p class="text-soft">Testing Simpler.Grants.gov, Grants.gov and SAM.gov…</p>';
+    let out;
+    try {
+      const res = await fetch(cfg.url.replace(/\/$/, "") + "/functions/v1/grants-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + cfg.anonKey, apikey: cfg.anonKey },
+        body: JSON.stringify({ diagnose: true }),
+      });
+      out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.diagnose) {
+        box.innerHTML = `<p><b>✗ grants-search function:</b> ${esc(out.error || out.message || "HTTP " + res.status)} — it isn't deployed, or it's the old version. Run <code>supabase functions deploy grants-search</code> from the updated branch.</p>`;
+        return;
+      }
+    } catch (e) {
+      box.innerHTML = '<p><b>✗ Could not reach the grants-search function.</b> Deploy it: <code>supabase functions deploy grants-search</code></p>'; return;
+    }
+    const row = (name, r) => `<li style="margin:.3rem 0">${r.ok ? "✅" : r.configured === false ? "⚪" : "❌"} <b>${name}</b> — ` +
+      (r.ok ? `working (${r.count} test result${r.count === 1 ? "" : "s"}${r.sample ? ": “" + esc(r.sample) + "”" : ""})` : esc(r.error || "failed")) + "</li>";
+    box.innerHTML = `<ul style="list-style:none;padding:0;margin:0">${row("Simpler.Grants.gov", out.simpler)}${row("Grants.gov (legacy)", out.grantsgov)}${row("SAM.gov", out.sam)}</ul>
+      <p class="text-soft" style="font-size:.85rem;margin:.5rem 0 0">⚪ = no key set (optional). Grants.gov (legacy) needs no key.</p>`;
+  }
+
+  /* ---- Run the daily auto-finder now (same job pg_cron runs each morning) -- */
+  async function runDaily(hub) {
+    const cfg = A.SUPABASE || {};
+    if (!hub.db() || !cfg.url) { hub.toast("Connect Supabase to run the daily finder"); return; }
+    let token = cfg.anonKey;
+    try { const { data } = await hub.db().auth.getSession(); if (data && data.session) token = data.session.access_token; } catch (e) {}
+    const res = await fetch(cfg.url.replace(/\/$/, "") + "/functions/v1/grants-daily", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token, apikey: cfg.anonKey },
+      body: "{}",
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok || out.error) { hub.toast("Daily finder: " + (out.error || "HTTP " + res.status + " — deploy grants-daily")); console.error("grants-daily", out); return; }
+    const c = out.counts || {};
+    const errs = Object.keys(out.errors || {});
+    hub.toast(`Daily finder added ${out.inserted || 0} lead${out.inserted === 1 ? "" : "s"}` +
+      ` (Simpler ${c.simpler || 0} · Grants.gov ${c.grantsgov || 0} · SAM ${c.sam || 0})` + (errs.length ? " — issue with " + errs.join(", ") : ""));
+    if (errs.length) console.warn("grants-daily source errors", out.errors);
   }
 
   /* ---- Rex / Wes: draft a single field for one lead ----------------------- */
@@ -171,14 +235,18 @@
     const awardedSum = leads.filter((x) => x.status === "awarded").reduce((s, x) => s + (Number(x.amount_requested) || 0), 0);
     const foundToday = leads.filter((x) => isToday(x.created_at)).length;
     const sentToday = leads.filter((x) => x.submitted_at === todayStr()).length;
-    const shown = leads.filter((x) => filterStatus === "all" || x.status === filterStatus);
+    const shown = leads.filter((x) => (filterStatus === "all" || x.status === filterStatus) && (filterSource === "all" || sourceOf(x) === filterSource));
 
     view.innerHTML = `
       <div class="view-head"><div><h2 style="margin:0">Grants</h2>
         <p>Gwen finds leads &middot; Rex opens the door &middot; Wes writes the proposal. You approve every send.</p></div></div>
 
       <div class="panel"><div class="panel-head"><h3>Today's goals</h3>
-        <button class="btn btn-primary btn-sm" id="find-today">Find today's ${GOALS.findPerDay}</button></div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" id="test-conn">Test grant connections</button>
+          <button class="btn btn-ghost btn-sm" id="run-daily" title="Runs the same job that auto-adds leads every morning">Run daily finder now</button>
+          <button class="btn btn-primary btn-sm" id="find-today">Find today's ${GOALS.findPerDay}</button></div></div>
+        <div class="panel-body" id="conn-box" style="display:none;border-bottom:1px solid var(--line,#e6e8ec)"></div>
         <div class="panel-body dash-2">
           <div><div style="font-weight:800">Grants found today</div>${bar(foundToday, GOALS.findPerDay, "#0f766e")}</div>
           <div><div style="font-weight:800">Proposals sent today</div>${bar(sentToday, GOALS.proposalsPerDay, "#b45309")}</div>
@@ -202,7 +270,8 @@
         <form id="find-form">
           <div class="field"><label>Source</label>
             <select name="source">
-              <option value="grantsgov">Grants.gov — live federal grants (real award sizes)</option>
+              <option value="grantsgov">Grants.gov — live federal grants (uses Simpler.Grants.gov when its key is set)</option>
+              <option value="sam">SAM.gov — live federal opportunities (contracts &amp; notices)</option>
               <option value="ai">AI shortlist — Gwen (foundations, corporate &amp; government ideas)</option>
             </select></div>
           <div class="field"><label>Keyword / focus</label><input name="focus" placeholder="e.g. apprenticeship, Detroit housing, workforce, youth"></div>
@@ -218,17 +287,21 @@
       </div></div>
 
       <div class="panel"><div class="panel-head"><h3>Pipeline</h3>
-        <select id="f-st"><option value="all">All statuses</option>${STATUS.map((s) => `<option value="${s}" ${filterStatus === s ? "selected" : ""}>${s}</option>`).join("")}</select>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <select id="f-src"><option value="all">All sources</option>${SOURCES.map(([k, l]) => `<option value="${k}" ${filterSource === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+        <select id="f-st"><option value="all">All statuses</option>${STATUS.map((s) => `<option value="${s}" ${filterStatus === s ? "selected" : ""}>${s}</option>`).join("")}</select></div>
       </div><div class="panel-body" id="grantlist">
         ${shown.length ? shown.map(card).join("") : `<p class="text-soft">No leads yet. Use <b>Find leads</b> above to have Gwen build a shortlist.</p>`}
       </div></div>`;
 
     const findForm = view.querySelector("#find-form");
     const syncSource = () => {
-      const gov = findForm.source.value === "grantsgov";
+      const src = findForm.source.value, gov = src === "grantsgov" || src === "sam";
       const aiOnly = findForm.querySelector("[data-ai-only]"); if (aiOnly) aiOnly.style.display = gov ? "none" : "";
       const note = view.querySelector("#find-note");
-      if (note) note.textContent = gov
+      if (note) note.textContent = src === "sam"
+        ? "SAM.gov returns live federal contract opportunities, response deadlines, and contracting-officer contacts."
+        : gov
         ? "Grants.gov returns real federal opportunities with award ceilings and deadlines."
         : "Gwen (AI) suggests foundation, corporate & government leads — amounts/deadlines flagged verify.";
     };
@@ -238,9 +311,9 @@
       const btn = f.querySelector("#find-btn"), orig = btn.textContent; btn.disabled = true;
       try {
         let n = 0;
-        if (f.source.value === "grantsgov") {
-          btn.textContent = "Searching Grants.gov…";
-          n = await searchGrantsGov(hub, f.focus.value.trim(), Number(f.count.value));
+        if (f.source.value === "grantsgov" || f.source.value === "sam") {
+          btn.textContent = f.source.value === "sam" ? "Searching SAM.gov…" : "Searching Grants.gov…";
+          n = await searchGrantsGov(hub, f.focus.value.trim(), Number(f.count.value), f.source.value);
           if (n) hub.toast(`Added ${n} federal opportunit${n === 1 ? "y" : "ies"}`);
         } else {
           const types = Array.from(f.querySelectorAll('input[name="ty"]:checked')).map((c) => c.value);
@@ -253,6 +326,20 @@
       btn.disabled = false; btn.textContent = orig; render(hub);
     };
     view.querySelector("#f-st").onchange = (e) => { filterStatus = e.target.value; render(hub); };
+    view.querySelector("#f-src").onchange = (e) => { filterSource = e.target.value; render(hub); };
+    const testBtn = view.querySelector("#test-conn");
+    if (testBtn) testBtn.onclick = async () => {
+      const box = view.querySelector("#conn-box"); box.style.display = "";
+      testBtn.disabled = true;
+      try { await testConnections(hub, box); } catch (e) { console.error(e); box.textContent = "Test failed — see console"; }
+      testBtn.disabled = false;
+    };
+    const runDailyBtn = view.querySelector("#run-daily");
+    if (runDailyBtn) runDailyBtn.onclick = async () => {
+      runDailyBtn.disabled = true; const o = runDailyBtn.textContent; runDailyBtn.textContent = "Finding leads…";
+      try { await runDaily(hub); } catch (e) { console.error(e); hub.toast("Daily finder failed — network error"); }
+      runDailyBtn.disabled = false; runDailyBtn.textContent = o; render(hub);
+    };
     const findToday = view.querySelector("#find-today");
     if (findToday) findToday.onclick = async () => {
       const remaining = Math.max(1, GOALS.findPerDay - foundToday);
@@ -285,8 +372,10 @@
     const req = l.amount_requested != null ? l.amount_requested : "";
     return `<div class="ncard" data-lead data-id="${esc(l.id)}" style="border:1px solid var(--line,#e6e8ec);border-radius:12px;padding:1rem;margin-bottom:.9rem">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap">
-        <div style="display:flex;gap:.5rem;align-items:center">
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
           <span class="pill" style="background:var(--navy-900,#062a40);color:#fff">${esc(TY_LABEL[l.funder_type] || l.funder_type)}</span>
+          <span class="pill" style="background:${SRC[sourceOf(l)].color};color:#fff">${SRC[sourceOf(l)].label}</span>
+          ${isToday(l.created_at) ? '<span class="pill" style="background:#12805c;color:#fff">New today</span>' : ""}
           <b>${esc(l.funder)}</b>
         </div>
         <select data-field="status">${STATUS.map((s) => `<option value="${s}" ${l.status === s ? "selected" : ""}>${s}</option>`).join("")}</select>

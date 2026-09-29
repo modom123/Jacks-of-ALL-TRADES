@@ -13,20 +13,30 @@
 //   supabase functions deploy grants-daily --no-verify-jwt
 //   (optional) supabase secrets set CRON_SECRET=some-long-random-string
 //   (optional) supabase secrets set GRANTS_DAILY_TARGET=10
+//   (optional) supabase secrets set SAM_API_KEY=...        # also pull SAM.gov
+//   (optional) supabase secrets set SAM_DAILY_TARGET=3     # SAM.gov share of the daily target
+//   (optional) supabase secrets set SIMPLER_GRANTS_API_KEY=...  # use Simpler.Grants.gov
 //
-// SCHEDULE (Supabase SQL editor — 8:00am ET daily; cron is UTC):
-//   create extension if not exists pg_cron;  create extension if not exists pg_net;
-//   select cron.schedule('joat-grants-daily','0 12 * * *', $$
-//     select net.http_post(
-//       url:='https://gecnvzjuppmqcfcpmugq.supabase.co/functions/v1/grants-daily',
-//       headers:='{"Content-Type":"application/json","x-cron-secret":"some-long-random-string"}'::jsonb
-//     ); $$);
-//   -- (or use the Supabase Dashboard → Integrations → Cron to invoke it daily)
+// SOURCES (updated 2026-09-29 16:20 UTC)
+//   Federal grants: Simpler.Grants.gov when SIMPLER_GRANTS_API_KEY is set,
+//   otherwise (or if it errors) the legacy Grants.gov API (no key).
+//   Contracts: SAM.gov fills SAM_DAILY_TARGET slots when SAM_API_KEY is set.
+//   One source failing never blocks the others.
+//
+// WHO MAY RUN IT: the pg_cron job (x-cron-secret, if CRON_SECRET is set) or a
+// signed-in Command Center user (the hub's "Run daily finder now" button).
+//
+// SCHEDULE: run supabase/schedule_grants_daily_2026-09-29_1620.sql once in the
+// Supabase SQL editor (8:00am ET daily).
 // ============================================================================
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { samConfigured, samSearch } from "../_shared/sam.ts";
+import { simplerConfigured, simplerSearch } from "../_shared/simpler.ts";
 
-const GG_BASES = ["https://grants.gov/api/common", "https://api.grants.gov/v1/api"];
+// Official endpoint first (api.grants.gov/v1/api/search2 — no key; per Grants.gov
+// API docs), then the grants.gov/api/common mirror. (reordered 2026-09-29 17:20 UTC)
+const GG_BASES = ["https://api.grants.gov/v1/api", "https://grants.gov/api/common"];
 const DETAIL = "https://www.grants.gov/search-results-detail/";
 
 // Rotating keyword pool so different opportunities surface across days.
@@ -57,7 +67,12 @@ async function ggPost(path: string, body: unknown): Promise<any> {
     try {
       const res = await fetch(`${base}/${path}`, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(body) });
       if (!res.ok) { lastErr = new Error(`${base}/${path} HTTP ${res.status}`); continue; }
-      return await res.json();
+      const out = await res.json();
+      // search2 reports failures in-body: { errorcode: <non-zero>, msg, data: { errorMsgs } }
+      if (out && out.errorcode && Number(out.errorcode) !== 0) {
+        lastErr = new Error(`Grants.gov ${path}: ${out.msg || "errorcode " + out.errorcode}`); continue;
+      }
+      return out;
     } catch (e) { lastErr = e; }
   }
   throw lastErr instanceof Error ? lastErr : new Error(`Grants.gov ${path} unreachable`);
@@ -74,12 +89,17 @@ function todaysKeywords(n = 3): string[] {
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
-  const secret = Deno.env.get("CRON_SECRET");
-  if (secret && req.headers.get("x-cron-secret") !== secret) return json({ error: "Unauthorized" }, 401);
-
   const url = Deno.env.get("SUPABASE_URL"), svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !svc) return json({ error: "Service role not configured" }, 500);
   const db = createClient(url, svc);
+
+  // Allow the cron job (secret header) or a signed-in hub user (their session JWT).
+  const secret = Deno.env.get("CRON_SECRET");
+  if (secret && req.headers.get("x-cron-secret") !== secret) {
+    const token = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+    const { data: u } = token ? await db.auth.getUser(token) : { data: { user: null } };
+    if (!u || !u.user) return json({ error: "Unauthorized" }, 401);
+  }
 
   let target = Number(Deno.env.get("GRANTS_DAILY_TARGET")) || 10;
   try { const b = await req.json(); if (b && b.target) target = Math.max(1, Math.min(Number(b.target), 25)); } catch (_e) { /* GET/no body ok */ }
@@ -91,14 +111,42 @@ Deno.serve(async (req: Request) => {
     (data || []).forEach((r: { url?: string }) => r.url && seen.add(r.url));
   } catch (_e) { /* first run: table may be empty */ }
 
+  // Reserve a few slots for SAM.gov when its key is configured (updated 2026-09-29).
+  const samQuota = samConfigured() ? Math.min(target, Number(Deno.env.get("SAM_DAILY_TARGET")) || 3) : 0;
+  const ggTarget = target - samQuota;
+
   const picked: Record<string, unknown>[] = [];
+  const counts: Record<string, number> = { simpler: 0, grantsgov: 0, sam: 0 };
+  const errors: Record<string, string> = {};
+  const take = (lead: Record<string, unknown>, limit: number, src: string) => {
+    const u = String(lead.url || "");
+    if (picked.length >= limit || !u || seen.has(u)) return;
+    seen.add(u); picked.push(lead); counts[src]++;
+  };
+
+  if (simplerConfigured()) {
+    try {
+      for (const keyword of todaysKeywords(3)) {
+        if (picked.length >= ggTarget) break;
+        for (const lead of await simplerSearch(keyword, 10, "Gwen (auto Simpler.Grants.gov)")) {
+          lead.fit_reason = "Auto-found. " + lead.fit_reason;
+          take(lead, ggTarget, "simpler");
+        }
+      }
+    } catch (err) {
+      errors.simpler = err instanceof Error ? err.message : "Simpler.Grants.gov failed";
+      console.error("[grants-daily] Simpler.Grants.gov error:", err);
+    }
+  }
+
+  // Legacy Grants.gov: primary when no Simpler key, fallback when it came up short.
   try {
     for (const keyword of todaysKeywords(3)) {
-      if (picked.length >= target) break;
+      if (picked.length >= ggTarget) break;
       const search = await ggPost("search2", { keyword, rows: 10, oppStatuses: "posted|forecasted" });
       const hits: any[] = (search && search.data && search.data.oppHits) || [];
       for (const h of hits) {
-        if (picked.length >= target) break;
+        if (picked.length >= ggTarget) break;
         const id = h.id || h.opportunityId;
         const url2 = id ? DETAIL + id : "";
         if (!url2 || seen.has(url2)) continue;
@@ -112,6 +160,7 @@ Deno.serve(async (req: Request) => {
           contact_email = String(syn.agencyContactEmail || "").slice(0, 160);
           notes = [money(syn.estimatedFunding) ? "Est. total " + money(syn.estimatedFunding) : "", h.number ? "Opp # " + h.number : ""].filter(Boolean).join(" · ");
         } catch (_e) { /* detail best-effort */ }
+        counts.grantsgov++;
         picked.push({
           funder: String(h.agencyName || h.agency || h.agencyCode || "Federal agency").slice(0, 200),
           funder_type: "government",
@@ -125,11 +174,28 @@ Deno.serve(async (req: Request) => {
       }
     }
   } catch (err) {
-    return json({ error: err instanceof Error ? err.message : "Grants.gov failed", inserted: 0 }, 502);
+    // Don't abort — SAM.gov can still fill the day.
+    errors.grantsgov = err instanceof Error ? err.message : "Grants.gov failed";
+    console.error("[grants-daily] Grants.gov error:", err);
   }
 
-  if (!picked.length) return json({ inserted: 0, message: "No new opportunities today" });
+  if (samQuota) {
+    try {
+      for (const keyword of todaysKeywords(3)) {
+        if (picked.length >= target) break;
+        for (const lead of await samSearch(keyword, 10, "Gwen (auto SAM.gov)")) {
+          lead.fit_reason = "Auto-found. " + lead.fit_reason;
+          take(lead, target, "sam");
+        }
+      }
+    } catch (err) {
+      errors.sam = err instanceof Error ? err.message : "SAM.gov failed";
+      console.error("[grants-daily] SAM.gov error:", err);
+    }
+  }
+
+  if (!picked.length) return json({ inserted: 0, message: "No new opportunities today", counts, errors });
   const { error } = await db.from("grant_leads").insert(picked);
   if (error) return json({ error: error.message, inserted: 0 }, 500);
-  return json({ inserted: picked.length, target, funders: picked.map((p) => p.funder) });
+  return json({ inserted: picked.length, target, counts, errors, funders: picked.map((p) => p.funder) });
 });
