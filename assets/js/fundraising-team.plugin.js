@@ -2,6 +2,9 @@
    Jacks of All Trades — Fundraising Team (Command Center plugin)
    File: assets/js/fundraising-team.plugin.js
    Generated: 2026-09-29 19:45 UTC
+   Updated:   2026-09-29 21:00 UTC · House project panel (partner_campaigns): progress
+              to the $100K renovation by phase (cash + in-kind pledges), businesses
+              Cole recruited per phase, and "Record pledge" when a business says yes.
 
    One view for the 5-agent AI fundraising team and its single goal ($2M):
      Grants team:  Gwen (prospector) · Rex (outreach) · Wes (writer)
@@ -64,6 +67,93 @@
     };
   }
 
+  /* ---- House project (active partner campaign) ---------------------------- */
+  async function loadCampaign(hub) {
+    const camps = await sel(hub, "partner_campaigns", (q) => q.select("*").eq("active", true).order("created_at", { ascending: true }).limit(1));
+    const c = camps[0]; if (!c) return null;
+    const [biz, gifts, pitched] = await Promise.all([
+      sel(hub, "donors", (q) => q.select("id,full_name,stage,campaign_phase").eq("partner_campaign", c.name).limit(2000)),
+      sel(hub, "donations", (q) => q.select("amount,method,campaign_phase,donor_name,note").eq("campaign", c.name).limit(5000)),
+      sel(hub, "outreach", (q) => q.select("donor_id,status").limit(5000)),
+    ]);
+    const sentTo = new Set(pitched.filter((o) => o.status !== "planned").map((o) => o.donor_id));
+    const phases = (c.phases || []).map((p) => {
+      const g = gifts.filter((x) => Number(x.campaign_phase) === Number(p.n));
+      const b = biz.filter((x) => Number(x.campaign_phase) === Number(p.n));
+      return { ...p, pledged: g.reduce((s, x) => s + (Number(x.amount) || 0), 0), inKind: g.filter((x) => x.method === "in_kind").reduce((s, x) => s + (Number(x.amount) || 0), 0),
+        recruited: b.length, contacted: b.filter((x) => sentTo.has(x.id)).length, yes: b.filter((x) => x.stage === "active").length };
+    });
+    return { c, biz, phases, pledged: gifts.reduce((s, x) => s + (Number(x.amount) || 0), 0) };
+  }
+
+  function campaignPanel(k) {
+    if (!k) return "";
+    const { c, phases, pledged } = k;
+    return `<div class="panel"><div class="panel-head"><h3>🏠 ${esc(c.name)} — businesses &amp; materials</h3>
+        <button class="btn btn-primary btn-sm" id="ft-pledge">Record pledge</button></div>
+      <div class="panel-body">
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem"><b>${usd(pledged)} pledged of ${usd(c.goal)}</b>
+          <span class="text-soft">Cole researches real Detroit-area businesses one phase at a time and drafts phase-specific asks (cash or materials).</span></div>
+        ${bar(pledged, 0, c.goal, "#b45309")}
+        <div class="table-wrap"><table class="data" style="margin-top:.4rem">
+          <thead><tr><th>Phase</th><th>Needs</th><th>Pledged</th><th>Businesses</th></tr></thead>
+          <tbody>${phases.map((p) => `<tr>
+            <td><b>${p.n}. ${esc(p.name)}</b><div class="muted">${usd(p.cost)}</div></td>
+            <td style="max-width:360px;font-size:.85rem">${esc(p.scope)}<div class="muted">${esc((p.materials || []).join(" · "))}</div></td>
+            <td style="white-space:nowrap">${usd(p.pledged)}${p.inKind ? `<div class="muted">${usd(p.inKind)} in materials</div>` : ""}${bar(p.pledged, 0, p.cost, p.pledged >= p.cost ? "#12805c" : "#b45309")}</td>
+            <td style="white-space:nowrap;font-size:.85rem">${p.recruited} found · ${p.contacted} contacted · <b>${p.yes} yes</b></td></tr>`).join("")}</tbody>
+        </table></div>
+      </div></div>`;
+  }
+
+  function openPledge(hub, k) {
+    document.querySelectorAll(".ft-modal").forEach((n) => n.remove());
+    const wrap = document.createElement("div");
+    wrap.className = "modal-backdrop ft-modal";
+    const biz = [...k.biz].sort((a, b) => String(a.full_name).localeCompare(String(b.full_name)));
+    wrap.innerHTML = `<div class="modal-card" style="max-width:560px">
+      <div class="modal-head"><h3>Record a pledge — ${esc(k.c.name)}</h3><button class="modal-x" data-x aria-label="Close">×</button></div>
+      <form style="overflow-y:auto;padding:1.2rem 1.4rem">
+        <div class="field"><label>Business</label><select name="donor" required>
+          ${biz.map((b) => `<option value="${esc(b.id)}" data-phase="${esc(b.campaign_phase || "")}">${esc(b.full_name)}</option>`).join("")}
+          <option value="">— Other (type name below) —</option></select></div>
+        <div class="field"><label>Other business name</label><input name="other" placeholder="Only if not in the list"></div>
+        <div class="field-row">
+          <div class="field"><label>Phase</label><select name="phase">${k.phases.map((p) => `<option value="${p.n}">${p.n}. ${esc(p.name)}</option>`).join("")}</select></div>
+          <div class="field"><label>Type</label><select name="method"><option value="in_kind">Materials / services (in-kind)</option><option value="check">Cash / check</option><option value="card">Card</option></select></div>
+        </div>
+        <div class="field"><label>Amount or value of materials ($)</label><input name="amount" type="number" min="1" required></div>
+        <div class="field"><label>What they're giving</label><input name="note" placeholder="e.g. 30 squares of shingles + underlayment"></div>
+        <div class="modal-actions"><button type="button" class="btn btn-ghost" data-x>Cancel</button><button class="btn btn-primary" type="submit">Save pledge</button></div>
+      </form></div>`;
+    document.body.appendChild(wrap);
+    const f = wrap.querySelector("form");
+    const syncPhase = () => { const o = f.donor.selectedOptions[0]; if (o && o.dataset.phase) f.phase.value = o.dataset.phase; };
+    f.donor.onchange = syncPhase; syncPhase();
+    const close = () => { wrap.remove(); render(hub); };
+    wrap.querySelectorAll("[data-x]").forEach((b) => b.onclick = close);
+    wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
+    f.onsubmit = async (e) => {
+      e.preventDefault();
+      const amount = Number(f.amount.value), today = new Date().toISOString().slice(0, 10);
+      let donorId = f.donor.value, name = donorId ? f.donor.selectedOptions[0].textContent : f.other.value.trim();
+      if (!name) return hub.toast("Pick a business or type its name");
+      try {
+        if (!donorId) {
+          const { data, error } = await hub.db().from("donors").insert({ full_name: name, type: "corporate", stage: "active", partner_campaign: k.c.name, campaign_phase: Number(f.phase.value), source: "House campaign pledge" }).select().single();
+          if (error) throw error; donorId = data.id;
+        }
+        const { error } = await hub.db().from("donations").insert({ donor_id: donorId, donor_name: name, amount, method: f.method.value, gift_date: today,
+          campaign: k.c.name, campaign_phase: Number(f.phase.value), note: f.note.value.trim() || null });
+        if (error) throw error;
+        const { data: d } = await hub.db().from("donors").select("total_given").eq("id", donorId).single();
+        await hub.db().from("donors").update({ stage: "active", last_gift_date: today, last_gift_amount: amount, total_given: (Number(d && d.total_given) || 0) + amount }).eq("id", donorId);
+        hub.toast("Pledge saved — Cole will draft the thank-you on the next run");
+        close();
+      } catch (err) { hub.toast("Save failed: " + (err.message || err)); }
+    };
+  }
+
   async function callFn(hub, name, body) {
     const cfg = A.SUPABASE || {};
     if (!hub.db() || !cfg.url) throw new Error("Not connected to Supabase — sign in on the live hub");
@@ -88,7 +178,7 @@
 
   async function render(hub) {
     const view = hub.el();
-    const d = await load(hub);
+    const [d, house] = await Promise.all([load(hub), loadCampaign(hub).catch(() => null)]);
     if (!d) { view.innerHTML = `<div class="panel"><div class="panel-body">Sign in to the live hub (Supabase) to see the fundraising team.</div></div>`; return; }
     const raised = d.grants.raised + d.corporate.raised + d.individual.raised;
     const likely = d.grants.likely + d.corporate.likely + d.individual.likely;
@@ -120,6 +210,8 @@
           <div style="font-weight:850;font-size:1.05rem">${a.name}</div><div class="text-soft" style="font-size:.85rem">${a.role}</div>
           <div style="font-size:.85rem;margin-top:.4rem">${a.job}</div></div></div>`).join("")}
       </div>
+
+      ${campaignPanel(house)}
 
       <div class="panel"><div class="panel-head"><h3>Run the team</h3></div><div class="panel-body">
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
@@ -154,6 +246,8 @@
       catch (e) { flash = { ok: false, text: label + ": " + (e.message || e) }; }
       render(hub);
     };
+    const pb = view.querySelector("#ft-pledge");
+    if (pb) pb.onclick = () => openPledge(hub, house);
     const gb = view.querySelector("#ft-grants"), db = view.querySelector("#ft-donors");
     gb.onclick = run(gb, "grants-agents", "Grants team");
     db.onclick = run(db, "donors-agents", "Donor team");

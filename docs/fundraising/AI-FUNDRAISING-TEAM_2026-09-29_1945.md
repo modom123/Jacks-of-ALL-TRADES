@@ -21,6 +21,37 @@ To change the split, edit `window.JOAT.FUNDRAISING_TEAM` in `assets/js/config.js
 
 Donors tagged `do not contact` or `dnc` are always skipped. A donor contacted in the last 45 days isn't drafted again.
 
+## House campaign: $100K renovation, businesses and materials (added 2026-09-29 21:00 UTC)
+Cole's first priority is the **4 Bed / 2 Bath Community Renovation**. It has the same five phases and $100,000 budget as the 50/50 raffle flyer:
+
+| Phase | Budget | Businesses Cole looks for |
+|---|---|---|
+| 1. Mechanicals | $25,000 | Electrical and plumbing supply houses, HVAC contractors and distributors |
+| 2. Full Exterior | $25,000 | Paint stores, roofing contractors and suppliers, window companies, lumber yards, masons |
+| 3. Kitchen & Living | $20,000 | Cabinet shops, quartz fabricators, flooring stores, drywall suppliers, appliance stores |
+| 4. 4 Bed / 2 Bath | $15,000 | Tile shops, plumbing fixture showrooms, millwork and door suppliers, paint stores |
+| 5. Basement / Final | $15,000 | Waterproofing companies, insulation suppliers, lumber yards, lighting stores |
+
+**How Cole works it:**
+- **Research:** each run, he picks the phase with the fewest businesses so far. He then **searches the web** for about 6 real businesses in Detroit and Wayne, Oakland and Macomb counties.
+- **Records:** he saves each business with its public email, phone, website and address exactly as published, plus the source link.
+- **Asks:** he drafts a phase-specific ask: donate the materials, sponsor part or all of the phase in cash, or supply at cost. Every ask offers recognition and requests a 15-minute call or a site visit.
+
+**Your part:**
+- **Review and send:** in **Fundraising Team → Review & send**, verify each contact, fill any `[Contact name]`, and send.
+- **Record pledges:** when a business says yes, click **Record pledge** in the House project panel and enter cash or material value for its phase. The panel shows each phase's progress, and Cole drafts the thank-you on his next run.
+
+**Setup:** in the Supabase SQL Editor, run `supabase/setup_house_campaign_2026-09-29_2100.sql` once. Then redeploy `donors-agents`.
+
+**Cost:** web research adds about $0.10–0.15 per run, including about 8 searches at $10 per 1,000.
+
+**Tuning secrets:**
+- `DONOR_AI_CAMPAIGN_PER_PHASE`: businesses to recruit per phase (default 8).
+- `DONOR_AI_CAMPAIGN_NEW_PER_RUN`: businesses researched per run (default 6).
+- `DONOR_AI_CAMPAIGN_PITCHES_PER_RUN`: pitches drafted per run (default 6).
+
+**Pausing:** `update partner_campaigns set active = false where name = '4 Bed / 2 Bath Community Renovation';`
+
 ## When they work
 - **8:00am ET:** the grant finder adds about 10 new leads.
 - **8:30am, 12:30pm and 4:30pm ET:** the grants team (Gwen, then Rex, then Wes) works a batch.

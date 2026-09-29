@@ -14,6 +14,13 @@
 //                              drafts partnership pitches with sponsorship
 //                              options, thanks and renews corporate givers.
 //
+// HOUSE CAMPAIGN (updated 2026-09-29 21:00 UTC): when a partner_campaigns row is
+// active (e.g. the $100K 4 Bed / 2 Bath renovation), Cole works it first — each
+// run he researches REAL Detroit-area businesses for the least-covered phase
+// using web search (public contact info, source links), adds them tagged with
+// the phase, and pitches a phase-specific ask: sponsor the phase in cash or
+// donate its materials (in-kind). Setup: supabase/setup_house_campaign_2026-09-29_2100.sql
+//
 // Every email lands in public.outreach as status "planned" (drafted_by Paige/Cole).
 // Nothing is sent automatically: a person reviews it in Command Center → Donor
 // Team and clicks Send. Donors tagged "do not contact"/"dnc" are always skipped.
@@ -39,6 +46,9 @@ const LIMITS = {
   newProspects: num("DONOR_AI_NEW_PROSPECTS", 5),
 };
 const CORP_PIPELINE_MIN = num("DONOR_AI_CORP_PIPELINE_MIN", 15); // keep at least this many corporate prospects
+const CAMPAIGN_PER_PHASE = num("DONOR_AI_CAMPAIGN_PER_PHASE", 8);  // businesses to recruit per house phase
+const CAMPAIGN_NEW_PER_RUN = num("DONOR_AI_CAMPAIGN_NEW_PER_RUN", 6); // businesses researched per run (one phase)
+const CAMPAIGN_PITCHES = num("DONOR_AI_CAMPAIGN_PITCHES_PER_RUN", 6);
 const TARGETS = { individual: num("DONOR_INDIVIDUAL_TARGET", 250000), corporate: num("DONOR_CORPORATE_TARGET", 550000) };
 const TIME_BUDGET_MS = num("DONOR_AI_TIME_BUDGET_MS", 120000);
 const QUIET_DAYS = 45; // don't draft another touch for a donor contacted/drafted within this window
@@ -119,6 +129,38 @@ const PROSPECTS = {
   additionalProperties: false,
 } as const;
 
+// Businesses found by web research, turned into structured records by the fast model.
+const BUSINESSES = {
+  type: "object",
+  properties: {
+    businesses: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          company: { type: "string" },
+          category: { type: "string", description: "e.g. roofing supply, tile shop, HVAC contractor" },
+          city: { type: "string" },
+          why_fit: { type: "string", description: "Why they could supply/sponsor this phase" },
+          ask_type: { type: "string", enum: ["in_kind", "cash", "both"] },
+          in_kind_items: { type: "string", description: "Specific materials/services to ask them for; empty if cash only" },
+          suggested_cash_usd: { type: "integer", description: "Realistic cash ask; 0 if in-kind only" },
+          in_kind_value_usd: { type: "integer", description: "Rough retail value of the in-kind ask; 0 if cash only" },
+          email: { type: "string", description: "Public email exactly as found in the sources, else empty" },
+          phone: { type: "string", description: "Public phone exactly as found, else empty" },
+          website: { type: "string" },
+          address: { type: "string" },
+          source_url: { type: "string", description: "Where the business/contact info was found" },
+        },
+        required: ["company", "category", "city", "why_fit", "ask_type", "in_kind_items", "suggested_cash_usd", "in_kind_value_usd", "email", "phone", "website", "address", "source_url"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["businesses"],
+  additionalProperties: false,
+} as const;
+
 async function pool<T>(items: T[], size: number, deadline: number, fn: (x: T) => Promise<void>) {
   let i = 0;
   const worker = async () => { while (i < items.length && Date.now() < deadline) await fn(items[i++]); };
@@ -157,12 +199,17 @@ Deno.serve(async (req: Request) => {
   }
   if (rRes.error) return json({ error: "Run supabase/setup_donor_team_2026-09-29_1930.sql in the Supabase SQL Editor first (" + rRes.error.message + ")" }, 500);
   const donors: Row[] = dRes.data || [], gifts: Row[] = gRes.data || [], touches: Row[] = oRes.data || [];
+  // Active house/project campaign (table is optional — only after setup_house_campaign SQL).
+  const cRes = await db.from("partner_campaigns").select("*").eq("active", true).order("created_at", { ascending: true }).limit(1);
+  const campaign: Row | null = !cRes.error && cRes.data && cRes.data[0] ? cRes.data[0] : null;
+  const phaseOf = (n: number) => (campaign?.phases || []).find((p: Row) => Number(p.n) === Number(n));
 
   const giftsOf = (id: string) => gifts.filter((g) => g.donor_id === id);
   const lastTouch = (id: string) => touches.find((t) => t.donor_id === id);
   const quiet = (d: Row) => daysAgo(lastTouch(d.id)?.created_at) > QUIET_DAYS && daysAgo(d.ai_worked_at) > 7;
 
   const counts = { thank_yous: 0, renewals: 0, cultivation: 0, prospects: 0, pitches: 0 };
+  let researchedPhase = "";
   const errors: string[] = [];
   const fail = (who: string, d: Row, e: unknown) => { errors.push(`${who} · ${d.full_name || d.company}: ${msg(e)}`); console.error("[donors-agents]", who, e); };
   const today = new Date().toISOString().slice(0, 10);
@@ -225,10 +272,55 @@ Deno.serve(async (req: Request) => {
     } catch (e) { fail("Paige", d, e); }
   });
 
+  // 4a) COLE — house campaign: research real local businesses for the least-covered phase
+  if (campaign && Date.now() < deadline) {
+    const recruited = (n: number) => donors.filter((d) => d.partner_campaign === campaign.name && Number(d.campaign_phase) === Number(n)).length;
+    const phase = [...(campaign.phases || [])].sort((a: Row, b: Row) => recruited(a.n) - recruited(b.n))[0];
+    if (phase && recruited(phase.n) < CAMPAIGN_PER_PHASE) {
+      try {
+        const known = donors.filter(isCorp).map((d) => d.full_name).slice(0, 300).join("; ") || "(none yet)";
+        const notes = await team.research(AGENTS.cole,
+          `Use web search to find ${CAMPAIGN_NEW_PER_RUN} REAL, currently operating businesses in Detroit and nearby communities (Wayne, Oakland and Macomb counties) ` +
+          `that could donate materials/services for, or sponsor, this phase of our house renovation:\n\n` +
+          `Project: ${campaign.name} — ${campaign.location || "Detroit"}. ${campaign.brief || ""}\n` +
+          `Phase ${phase.n}: ${phase.name} ($${Number(phase.cost).toLocaleString()}) — ${phase.scope}\n` +
+          `Materials needed: ${(phase.materials || []).join("; ")}\nBusiness types to look for: ${(phase.businesses || []).join("; ")}\n\n` +
+          `Prefer locally owned or Detroit-rooted suppliers and contractors, plus local branches of larger suppliers with community-giving programs. ` +
+          `For each, report: name, category, city, why they fit, what to ask for (materials or cash), and their PUBLIC contact email, phone, website and address ` +
+          `exactly as published, with the source URL. Leave a field blank rather than guess. Skip these (already contacted): ${known}.`,
+          10);
+        const r = await team.ask<any>("fast", "You convert research notes into structured records. Copy contact details exactly as written in the notes; leave a field empty if it isn't there. Never invent a business, email or phone.",
+          "Research notes:\n\n" + notes, BUSINESSES, "low", 8000);
+        const seen = new Set(donors.map((d) => String(d.full_name).toLowerCase().trim()));
+        const clean = (v: unknown, n: number) => { const t = String(v || "").trim(); return t && !/^(n\/a|none|unknown|not found)$/i.test(t) ? t.slice(0, n) : null; };
+        const rows = (r.businesses || []).filter((b: Row) => b.company && !seen.has(String(b.company).toLowerCase().trim())).slice(0, CAMPAIGN_NEW_PER_RUN).map((b: Row) => ({
+          full_name: String(b.company).slice(0, 200), type: "corporate", stage: "prospect", source: "Cole (AI web research) — verify",
+          email: clean(b.email, 160) && /@/.test(b.email) ? clean(b.email, 160) : null,
+          phone: clean(b.phone, 40), address: clean(b.address, 300),
+          partner_campaign: campaign.name, campaign_phase: Number(phase.n),
+          tags: ["corporate", "house campaign", `phase ${phase.n}`, String(b.category || "").slice(0, 40), b.ask_type === "cash" ? "cash" : "in-kind"].filter(Boolean).join(", "),
+          notes: [`Phase ${phase.n} (${phase.name}) — ${b.category}, ${b.city}`, `Why: ${b.why_fit}`,
+            b.in_kind_items ? `Ask for (in-kind): ${b.in_kind_items}${b.in_kind_value_usd > 0 ? ` (~$${Number(b.in_kind_value_usd).toLocaleString()} value)` : ""}` : "",
+            b.suggested_cash_usd > 0 ? `Cash ask: $${Number(b.suggested_cash_usd).toLocaleString()}` : "",
+            b.website ? `Website: ${b.website}` : "", b.source_url ? `Source: ${b.source_url}` : "", "[verify contact before sending]"].filter(Boolean).join("\n"),
+          suggested_ask: (Number(b.suggested_cash_usd) || 0) + (Number(b.in_kind_value_usd) || 0) || null,
+          ai_next_step: b.email ? "Verify the contact, then review Cole's phase pitch" : "Find a contact email (see website), then review Cole's phase pitch",
+        }));
+        if (rows.length) {
+          const ins = await db.from("donors").insert(rows).select();
+          if (ins.error) throw new Error(ins.error.message);
+          donors.push(...(ins.data || []));
+          counts.prospects += rows.length;
+        }
+        researchedPhase = `Phase ${phase.n} (${phase.name})`;
+      } catch (e) { fail("Cole house-campaign research", { full_name: `phase ${phase.n}` }, e); }
+    }
+  }
+
   // 4) COLE — keep the corporate prospect pipeline stocked (at most weekly)
   const corpProspects = donors.filter((d) => isCorp(d) && ["prospect", "cultivating"].includes(d.stage));
   const lastProspecting = rRes.data && rRes.data[0];
-  if (corpProspects.length < CORP_PIPELINE_MIN && daysAgo(lastProspecting?.created_at) > 6 && Date.now() < deadline) {
+  if (!campaign && corpProspects.length < CORP_PIPELINE_MIN && daysAgo(lastProspecting?.created_at) > 6 && Date.now() < deadline) {
     try {
       const known = donors.filter(isCorp).map((d) => d.full_name).join("; ") || "(none yet)";
       const r = await team.ask<any>("smart", AGENTS.cole,
@@ -255,10 +347,23 @@ Deno.serve(async (req: Request) => {
   // 5) COLE — pitches to corporate prospects + renewals for corporate givers
   const toPitch = donors.filter((d) => isCorp(d) && !dnc(d) && quiet(d) && !thankIds.has(d.id) &&
     (["prospect", "cultivating"].includes(d.stage) || (d.stage === "active" && daysAgo(d.last_gift_date) > 300) || d.stage === "lapsed"))
-    .sort((a, b) => Number(b.suggested_ask || 0) - Number(a.suggested_ask || 0)).slice(0, LIMITS.pitches);
+    .sort((a, b) => (Number(!!b.partner_campaign) - Number(!!a.partner_campaign)) || (Number(b.suggested_ask || 0) - Number(a.suggested_ask || 0)))
+    .slice(0, campaign ? Math.max(LIMITS.pitches, CAMPAIGN_PITCHES) : LIMITS.pitches);
   await pool(toPitch, 4, deadline, async (d) => {
     try {
       const renewal = d.stage === "active" || d.stage === "lapsed";
+      const ph = campaign && d.partner_campaign === campaign.name ? phaseOf(d.campaign_phase) : null;
+      if (ph && !renewal) {
+        await draft("cole", d, "pitches",
+          `Write a short, specific first-touch email asking this local business to help with ONE phase of our house renovation.\n` +
+          `Project: ${campaign!.name} (${campaign!.location || "Detroit"}), total budget $${Number(campaign!.goal).toLocaleString()}. ${campaign!.brief || ""}\n` +
+          `Their phase: Phase ${ph.n} — ${ph.name} ($${Number(ph.cost).toLocaleString()}): ${ph.scope}. Materials needed: ${(ph.materials || []).join("; ")}.\n` +
+          `Make ONE clear ask based on their notes (donate specific materials/services, sponsor part or all of the phase in cash, or a discount at cost), ` +
+          `offer recognition (site signage, website, social media, raffle materials, a ribbon-cutting), and ask for a 15-minute call or a site visit. ` +
+          `Mention that residents in our trades program help build it. Set suggested_ask_usd to the dollar value of the ask. ` +
+          (d.email ? "" : "We don't have a named contact — address it to [Contact name] and note in next_step that a contact is needed."), "medium");
+        return;
+      }
       await draft("cole", d, "pitches", renewal
         ? "Write a short partnership RENEWAL email: thank them for their past support and propose renewing (or growing) the partnership for the coming year with 2–3 concrete options."
         : "Write a short first-touch PARTNERSHIP PITCH email to this company's community-relations / giving team: why this partnership fits them, 2–3 concrete options " +
@@ -278,8 +383,18 @@ Deno.serve(async (req: Request) => {
     individual: { target: TARGETS.individual, ytd: Math.round(ytd("individual")), asks_in_review: Math.round(pendingAsks("individual")) },
     corporate: { target: TARGETS.corporate, ytd: Math.round(ytd("corporate")), asks_in_review: Math.round(pendingAsks("corporate")) },
   };
+  let campaignGoal: Row | null = null;
+  if (campaign) {
+    const cg = gifts.filter((g) => g.campaign === campaign.name);
+    campaignGoal = {
+      name: campaign.name, goal: Number(campaign.goal), pledged: Math.round(cg.reduce((s, g) => s + (Number(g.amount) || 0), 0)),
+      businesses: donors.filter((d) => d.partner_campaign === campaign.name).length,
+    };
+    (goal as Row).campaign = campaignGoal;
+  }
   const summary = `Paige & Cole drafted ${counts.thank_yous} thank-yous, ${counts.renewals} renewals, ${counts.cultivation} cultivation emails and ` +
-    `${counts.pitches} corporate pitches` + (counts.prospects ? `; Cole added ${counts.prospects} new corporate prospects (verify each)` : "") + "." +
+    `${counts.pitches} corporate pitches` + (counts.prospects ? `; Cole added ${counts.prospects} new corporate prospects${researchedPhase ? " for the house " + researchedPhase : ""} (verify each)` : "") + "." +
+    (campaignGoal ? ` House campaign: $${campaignGoal.pledged.toLocaleString()} of $${campaignGoal.goal.toLocaleString()} pledged, ${campaignGoal.businesses} businesses in the pipeline.` : "") +
     (Date.now() >= deadline ? " Stopped at the time limit — the next run continues." : "");
   const cost = team.cost();
   const summaryWithCost = summary + " AI cost " + cost.line + ".";
