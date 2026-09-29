@@ -25,6 +25,7 @@ on:
       - "supabase/functions/grants-agents/**"
       - "supabase/functions/donors-agents/**"
       - "supabase/functions/social-agent/**"
+      - "supabase/functions/zeffy-sync/**"
       - "supabase/functions/ai-agent/**"
       - "supabase/functions/_shared/**"
       - "supabase/config.toml"
@@ -69,6 +70,9 @@ jobs:
 
       - name: Deploy social-agent (Nova social posts)
         run: supabase functions deploy social-agent --project-ref "$PROJECT_REF" --no-verify-jwt
+
+      - name: Deploy zeffy-sync (raffle stats + donor CRM)
+        run: supabase functions deploy zeffy-sync --project-ref "$PROJECT_REF" --no-verify-jwt
 
       - name: Deploy ai-agent (agent chat)
         run: supabase functions deploy ai-agent --project-ref "$PROJECT_REF"
