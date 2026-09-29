@@ -20,16 +20,16 @@
 //
 // REQUEST  POST {SUPABASE_URL}/functions/v1/donors-agents   { "trigger": "cron" | "hub" }
 // AUTH     pg_cron (x-cron-secret if CRON_SECRET is set) or a signed-in hub user
-// SECRETS  ANTHROPIC_API_KEY (required) · DONOR_AI_MODEL (default claude-opus-5-5)
+// SECRETS  ANTHROPIC_API_KEY (required) · AI_FAST_MODEL / AI_SMART_MODEL (see _shared/claude.ts)
+// MODELS   (updated 2026-09-29 20:15 UTC · mixed, to cut cost) fast tier: all of Paige's emails, thank-yous
+//          · smart tier: Cole's company research + pitches (real-company accuracy matters)
 // SETUP    supabase/setup_donor_team_2026-09-29_1930.sql (columns, log, schedule)
 // DEPLOY   supabase functions deploy donors-agents --no-verify-jwt
 // ============================================================================
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import Anthropic from "npm:@anthropic-ai/sdk@0.129.0";
-import { betaJSONSchemaOutputFormat } from "npm:@anthropic-ai/sdk@0.129.0/helpers/beta/json-schema";
+import { MODELS, Team, type Tier } from "../_shared/claude.ts";
 
-const MODEL = Deno.env.get("DONOR_AI_MODEL") ?? "claude-opus-5-5";
 const num = (k: string, d: number) => Number(Deno.env.get(k)) || d;
 const LIMITS = {
   thanks: num("DONOR_AI_THANKS_PER_RUN", 6),
@@ -119,22 +119,6 @@ const PROSPECTS = {
   additionalProperties: false,
 } as const;
 
-async function ask<T>(client: Anthropic, system: string, prompt: string, schema: any, effort: "low" | "medium", maxTokens = 6000): Promise<T> {
-  const res = await client.beta.messages.parse({
-    model: MODEL,
-    max_tokens: maxTokens,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    output_config: { effort, format: betaJSONSchemaOutputFormat(schema) },
-    system: system + "\n\nOrganization facts: " + ORG + "\nToday's date: " + new Date().toISOString().slice(0, 10) + ".",
-    messages: [{ role: "user", content: prompt }],
-  });
-  if (res.stop_reason === "refusal") throw new Error("model declined");
-  if (res.stop_reason === "max_tokens") throw new Error("response cut off (max_tokens)");
-  if (!res.parsed_output) throw new Error("no structured output");
-  return res.parsed_output as T;
-}
-
 async function pool<T>(items: T[], size: number, deadline: number, fn: (x: T) => Promise<void>) {
   let i = 0;
   const worker = async () => { while (i < items.length && Date.now() < deadline) await fn(items[i++]); };
@@ -157,7 +141,7 @@ Deno.serve(async (req: Request) => {
   }
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) return json({ error: "ANTHROPIC_API_KEY secret not set" }, 500);
-  const client = new Anthropic({ apiKey });
+  const team = new Team(apiKey, ORG);
 
   let trigger = "hub";
   try { const b = await req.json(); if (b && b.trigger) trigger = String(b.trigger).slice(0, 20); } catch (_e) { /* no body */ }
@@ -185,7 +169,9 @@ Deno.serve(async (req: Request) => {
 
   // Draft one email for a donor → outreach (planned) + donor next step.
   const draft = async (who: "paige" | "cole", d: Row, kind: keyof typeof counts, instruction: string, effort: "low" | "medium") => {
-    const r = await ask<any>(client, AGENTS[who], instruction + "\n\n" + donorBrief(d, giftsOf(d.id)), EMAIL, effort);
+    // Thank-yous and all of Paige's emails are routine (fast); Cole's pitches are first impressions with companies (smart).
+    const tier: Tier = who === "cole" && kind !== "thank_yous" ? "smart" : "fast";
+    const r = await team.ask<any>(tier, AGENTS[who], instruction + "\n\n" + donorBrief(d, giftsOf(d.id)), EMAIL, effort, 6000);
     const name = who === "paige" ? "Paige (AI)" : "Cole (AI)";
     const ins = await db.from("outreach").insert({
       donor_id: d.id, donor_name: d.full_name, channel: "email", status: "planned",
@@ -245,7 +231,7 @@ Deno.serve(async (req: Request) => {
   if (corpProspects.length < CORP_PIPELINE_MIN && daysAgo(lastProspecting?.created_at) > 6 && Date.now() < deadline) {
     try {
       const known = donors.filter(isCorp).map((d) => d.full_name).join("; ") || "(none yet)";
-      const r = await ask<any>(client, AGENTS.cole,
+      const r = await team.ask<any>("smart", AGENTS.cole,
         `Suggest ${LIMITS.newProspects} NEW corporate partnership prospects in Detroit / Southeast Michigan that are real, currently operating companies ` +
         `with a plausible reason to support a skilled-trades workforce and neighborhood-housing nonprofit. Mix sizes (not only Fortune 500). ` +
         `Exclude companies already in our CRM: ${known}. Never invent a contact person.`, PROSPECTS, "medium", 8000);
@@ -295,8 +281,10 @@ Deno.serve(async (req: Request) => {
   const summary = `Paige & Cole drafted ${counts.thank_yous} thank-yous, ${counts.renewals} renewals, ${counts.cultivation} cultivation emails and ` +
     `${counts.pitches} corporate pitches` + (counts.prospects ? `; Cole added ${counts.prospects} new corporate prospects (verify each)` : "") + "." +
     (Date.now() >= deadline ? " Stopped at the time limit — the next run continues." : "");
-  const { error: logErr } = await db.from("donor_agent_runs").insert({ trigger, ...counts, errors, summary, goal });
+  const cost = team.cost();
+  const summaryWithCost = summary + " AI cost " + cost.line + ".";
+  const { error: logErr } = await db.from("donor_agent_runs").insert({ trigger, ...counts, errors, summary: summaryWithCost, goal: { ...goal, ai_cost_usd: cost.usd } });
   if (logErr) errors.push("log: " + logErr.message);
 
-  return json({ ok: true, ...counts, errors, summary, goal, seconds: Math.round((Date.now() - started) / 1000), model: MODEL });
+  return json({ ok: true, ...counts, errors, summary: summaryWithCost, goal, cost_usd: cost.usd, seconds: Math.round((Date.now() - started) / 1000), models: MODELS });
 });

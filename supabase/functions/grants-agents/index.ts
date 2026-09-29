@@ -17,16 +17,16 @@
 //
 // REQUEST  POST {SUPABASE_URL}/functions/v1/grants-agents   { "trigger": "cron" | "hub" }
 // AUTH     pg_cron (x-cron-secret if CRON_SECRET is set) or a signed-in hub user
-// SECRETS  ANTHROPIC_API_KEY (required) · GRANTS_AI_MODEL (default claude-opus-5-5)
+// SECRETS  ANTHROPIC_API_KEY (required) · AI_FAST_MODEL / AI_SMART_MODEL (see _shared/claude.ts)
+// MODELS   (updated 2026-09-29 20:15 UTC · mixed, to cut cost) fast tier: Gwen scoring, Rex outreach,
+//          Wes follow-ups · smart tier: Wes proposals
 // SETUP    supabase/setup_grants_ai_team_2026-09-29_1900.sql (columns, log, schedule)
 // DEPLOY   supabase functions deploy grants-agents --no-verify-jwt
 // ============================================================================
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import Anthropic from "npm:@anthropic-ai/sdk@0.129.0";
-import { betaJSONSchemaOutputFormat } from "npm:@anthropic-ai/sdk@0.129.0/helpers/beta/json-schema";
+import { MODELS, Team } from "../_shared/claude.ts";
 
-const MODEL = Deno.env.get("GRANTS_AI_MODEL") ?? "claude-opus-5-5";
 const num = (k: string, d: number) => Number(Deno.env.get(k)) || d;
 const LIMITS = {
   score: num("GRANTS_AI_SCORE_PER_RUN", 12),
@@ -125,23 +125,6 @@ const FOLLOWUP = {
   additionalProperties: false,
 } as const;
 
-// ---- one structured call ----------------------------------------------------
-async function ask<T>(client: Anthropic, system: string, prompt: string, schema: any, effort: "low" | "medium" | "high", maxTokens: number): Promise<T> {
-  const res = await client.beta.messages.parse({
-    model: MODEL,
-    max_tokens: maxTokens,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default", // re-run on Anthropic's recommended model if a safety classifier declines
-    output_config: { effort, format: betaJSONSchemaOutputFormat(schema) },
-    system: system + "\n\nOrganization facts: " + ORG + "\nToday's date: " + new Date().toISOString().slice(0, 10) + ".",
-    messages: [{ role: "user", content: prompt }],
-  });
-  if (res.stop_reason === "refusal") throw new Error("model declined");
-  if (res.stop_reason === "max_tokens") throw new Error("response cut off (max_tokens)");
-  if (!res.parsed_output) throw new Error("no structured output");
-  return res.parsed_output as T;
-}
-
 // Run fn over items with limited concurrency, skipping work once the time budget is spent.
 async function pool<T>(items: T[], size: number, deadline: number, fn: (x: T) => Promise<void>) {
   let i = 0;
@@ -192,7 +175,7 @@ Deno.serve(async (req: Request) => {
   }
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) return json({ error: "ANTHROPIC_API_KEY secret not set" }, 500);
-  const client = new Anthropic({ apiKey });
+  const team = new Team(apiKey, ORG);
 
   let trigger = "hub";
   try { const b = await req.json(); if (b && b.trigger) trigger = String(b.trigger).slice(0, 20); } catch (_e) { /* no body */ }
@@ -223,7 +206,7 @@ Deno.serve(async (req: Request) => {
         await save(l, { fit_score: 0, priority: "low", status: "archived", ai_next_step: "Deadline passed", fit_reason: "Dismissed by Gwen: the deadline has passed. " + (l.fit_reason || "") });
         counts.scored++; counts.dismissed++; return;
       }
-      const r = await ask<any>(client, AGENTS.gwen, "Score this opportunity for our organization.\n\n" + leadBrief(l), SCORE, "low", 4000);
+      const r = await team.ask<any>("fast", AGENTS.gwen, "Score this opportunity for our organization.\n\n" + leadBrief(l), SCORE, "low", 4000);
       const score = Math.max(0, Math.min(100, Math.round(r.fit_score)));
       const status = score >= QUALIFY_AT && r.decision !== "dismiss" ? "qualified" : score <= DISMISS_AT || r.decision === "dismiss" ? "archived" : "identified";
       const patch: Lead = {
@@ -246,7 +229,7 @@ Deno.serve(async (req: Request) => {
   const toOutreach = leads.filter((l) => l.status === "qualified" && !l.intro_email_draft && open(l)).sort(byValue).slice(0, LIMITS.outreach);
   await pool(toOutreach, 4, deadline, async (l) => {
     try {
-      const r = await ask<any>(client, AGENTS.rex, "Draft the first-touch intro email and a ~30-second call script for this funder.\n\n" + leadBrief(l), OUTREACH, "medium", 6000);
+      const r = await team.ask<any>("fast", AGENTS.rex, "Draft the first-touch intro email and a ~30-second call script for this funder.\n\n" + leadBrief(l), OUTREACH, "medium", 6000);
       await save(l, {
         intro_email_draft: `Subject: ${r.email_subject}\n\n${r.email_body}`,
         call_script_draft: r.call_script,
@@ -262,7 +245,7 @@ Deno.serve(async (req: Request) => {
     .sort(soonest).slice(0, LIMITS.proposals);
   await pool(toPropose, 2, deadline, async (l) => {
     try {
-      const r = await ask<any>(client, AGENTS.wes,
+      const r = await team.ask<any>("smart", AGENTS.wes,
         "Draft the letter of inquiry / proposal for this opportunity. Size the request realistically within the award range for an early-stage organization.\n\n" + leadBrief(l),
         PROPOSAL, "medium", 16000);
       const patch: Lead = { proposal_draft: r.proposal, status: "drafting", ai_next_step: String(r.next_step || "Fill the [placeholders] in Wes's proposal, then submit").slice(0, 300) };
@@ -277,7 +260,7 @@ Deno.serve(async (req: Request) => {
   const toFollow = leads.filter((l) => l.status === "submitted" && l.submitted_at && l.submitted_at <= twoWeeksAgo && !l.followup_draft).slice(0, LIMITS.followups);
   await pool(toFollow, 3, deadline, async (l) => {
     try {
-      const r = await ask<any>(client, AGENTS.wes, "Draft a short, warm follow-up email about our submitted proposal.\n\n" + leadBrief(l), FOLLOWUP, "low", 4000);
+      const r = await team.ask<any>("fast", AGENTS.wes, "Draft a short, warm follow-up email about our submitted proposal.\n\n" + leadBrief(l), FOLLOWUP, "low", 4000);
       await save(l, { followup_draft: `Subject: ${r.email_subject}\n\n${r.email_body}`, status: "follow_up", ai_next_step: String(r.next_step || "Review and send Wes's follow-up").slice(0, 300) });
       counts.followups++;
     } catch (e) { fail("Wes", l, e); }
@@ -294,8 +277,10 @@ Deno.serve(async (req: Request) => {
     `Rex drafted ${counts.outreach} intro emails · Wes drafted ${counts.proposals} proposals and ${counts.followups} follow-ups.` +
     (backlog.to_score ? ` ${backlog.to_score} leads still waiting for Gwen.` : "") +
     (Date.now() >= deadline ? " Stopped at the time limit — the next run continues." : "");
-  const { error: logErr } = await db.from("grant_agent_runs").insert({ trigger, ...counts, errors, summary, goal });
+  const cost = team.cost();
+  const summaryWithCost = summary + " AI cost " + cost.line + ".";
+  const { error: logErr } = await db.from("grant_agent_runs").insert({ trigger, ...counts, errors, summary: summaryWithCost, goal: { ...goal, ai_cost_usd: cost.usd } });
   if (logErr) errors.push("log: " + logErr.message);
 
-  return json({ ok: true, ...counts, errors, summary, goal, backlog, seconds: Math.round((Date.now() - started) / 1000), model: MODEL });
+  return json({ ok: true, ...counts, errors, summary: summaryWithCost, goal, backlog, cost_usd: cost.usd, seconds: Math.round((Date.now() - started) / 1000), models: MODELS });
 });

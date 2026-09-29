@@ -43,8 +43,24 @@ Donors tagged `do not contact` or `dnc` are always skipped. A donor contacted in
    If the `SUPABASE_ACCESS_TOKEN` GitHub secret is set, the **Deploy grant functions** GitHub Action does this automatically on every push.
 4. In the hub, open **Fundraising Team** and click **Run grants team**, then **Run donor team**.
 
-## Cost and tuning (optional Supabase secrets)
-- **Model:** `GRANTS_AI_MODEL` and `DONOR_AI_MODEL` (default `claude-opus-5-5`).
+## Cost: mixed models (updated 2026-09-29 20:15 UTC)
+The team uses two Claude models to keep costs low:
+
+| Tier | Default model | Price per 1M tokens | Used for |
+|---|---|---|---|
+| **Fast** | `claude-haiku-4-5` | $1 in / $5 out | Gwen's scoring, Rex's intro emails and call scripts, Wes's follow-ups, all of Paige's emails, thank-yous |
+| **Smart** | `claude-sonnet-5-5` | $2 in / $10 out | Wes's proposals, Cole's company research and partnership pitches |
+
+Every run reports its estimated AI cost in the run summary, for example *"AI cost ~$0.25 (claude-haiku-4-5 ×14, claude-sonnet-5-5 ×4)"*. You'll see it on the Fundraising Team screen and in `grant_agent_runs` / `donor_agent_runs`.
+
+To change a tier, set a Supabase secret:
+```powershell
+supabase secrets set AI_SMART_MODEL=claude-opus-5-5 --project-ref gecnvzjuppmqcfcpmugq   # best proposals, higher cost
+supabase secrets set AI_FAST_MODEL=claude-sonnet-5-5 --project-ref gecnvzjuppmqcfcpmugq   # better routine emails
+```
+The older `GRANTS_AI_MODEL` / `DONOR_AI_MODEL` secrets, if set, override the smart tier. To go back to the defaults, run `supabase secrets unset` on them.
+
+## Tuning (optional Supabase secrets)
 - **Grants batch size per run:** `GRANTS_AI_SCORE_PER_RUN` (12), `GRANTS_AI_OUTREACH_PER_RUN` (4), `GRANTS_AI_PROPOSALS_PER_RUN` (2), `GRANTS_AI_FOLLOWUPS_PER_RUN` (3).
 - **Gwen's score thresholds:** `GRANTS_AI_QUALIFY_SCORE` (65) and `GRANTS_AI_DISMISS_SCORE` (30).
 - **Donor batch size per run:** `DONOR_AI_THANKS_PER_RUN` (6), `DONOR_AI_RENEWALS_PER_RUN` (4), `DONOR_AI_CULTIVATION_PER_RUN` (4), `DONOR_AI_PITCHES_PER_RUN` (4), `DONOR_AI_NEW_PROSPECTS` (5).
