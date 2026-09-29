@@ -10,7 +10,7 @@
 --  WHAT IT ADDS
 --   1. AI columns on donors: suggested ask, next step, last AI touch
 --   2. donor_agent_runs: a log of every run (what Paige and Cole did)
---   3. Schedules the donor team Mon/Wed/Fri at 9:15am ET. Each run drafts
+--   3. Schedules the donor team every weekday at 9:15am and 1:15pm ET. Each run drafts
 --      emails into Outreach as "planned" — nothing is sent until a person
 --      reviews it in Command Center → Donor Team and clicks Send.
 -- ============================================================================
@@ -41,12 +41,12 @@ create policy "staff read" on public.donor_agent_runs for select to authenticate
 
 notify pgrst, 'reload schema';
 
--- 3) Schedule: Mon/Wed/Fri 13:15 UTC (9:15am EDT) -----------------------------
+-- 3) Schedule: weekdays 13:15 + 17:15 UTC (9:15am + 1:15pm EDT) ---------------
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
 select cron.schedule(
   'joat-donor-team',
-  '15 13 * * 1,3,5',   -- Mon/Wed/Fri (quality over quantity, updated 2026-09-29 20:30 UTC)
+  '15 13,17 * * 1-5',  -- weekdays 9:15am + 1:15pm ET (5x house-campaign pace, updated 2026-09-29 21:30 UTC)
   $$ select net.http_post(
        url := 'https://gecnvzjuppmqcfcpmugq.supabase.co/functions/v1/donors-agents',
        headers := '{"Content-Type":"application/json"}'::jsonb,
