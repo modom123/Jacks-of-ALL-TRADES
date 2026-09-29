@@ -15,6 +15,7 @@
 
    Updated: 2026-09-29 16:20 UTC · SAM.gov + Simpler.Grants.gov sources, source
                                    badges/filter, "Run daily finder now" button
+   Updated: 2026-09-29 17:00 UTC · "Test grant connections" diagnostic panel
 
    Remove the <script src=".../grants.plugin.js"> tag to disable.
    ========================================================================== */
@@ -149,6 +150,32 @@
     return leads.length;
   }
 
+  /* ---- Test each grant source and show exactly what works / what fails --- */
+  async function testConnections(hub, box) {
+    const cfg = A.SUPABASE || {};
+    if (!hub.db() || !cfg.url) { box.innerHTML = '<p class="text-soft">Not connected to Supabase — sign in on the live hub.</p>'; return; }
+    box.innerHTML = '<p class="text-soft">Testing Simpler.Grants.gov, Grants.gov and SAM.gov…</p>';
+    let out;
+    try {
+      const res = await fetch(cfg.url.replace(/\/$/, "") + "/functions/v1/grants-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + cfg.anonKey, apikey: cfg.anonKey },
+        body: JSON.stringify({ diagnose: true }),
+      });
+      out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.diagnose) {
+        box.innerHTML = `<p><b>✗ grants-search function:</b> ${esc(out.error || out.message || "HTTP " + res.status)} — it isn't deployed, or it's the old version. Run <code>supabase functions deploy grants-search</code> from the updated branch.</p>`;
+        return;
+      }
+    } catch (e) {
+      box.innerHTML = '<p><b>✗ Could not reach the grants-search function.</b> Deploy it: <code>supabase functions deploy grants-search</code></p>'; return;
+    }
+    const row = (name, r) => `<li style="margin:.3rem 0">${r.ok ? "✅" : r.configured === false ? "⚪" : "❌"} <b>${name}</b> — ` +
+      (r.ok ? `working (${r.count} test result${r.count === 1 ? "" : "s"}${r.sample ? ": “" + esc(r.sample) + "”" : ""})` : esc(r.error || "failed")) + "</li>";
+    box.innerHTML = `<ul style="list-style:none;padding:0;margin:0">${row("Simpler.Grants.gov", out.simpler)}${row("Grants.gov (legacy)", out.grantsgov)}${row("SAM.gov", out.sam)}</ul>
+      <p class="text-soft" style="font-size:.85rem;margin:.5rem 0 0">⚪ = no key set (optional). Grants.gov (legacy) needs no key.</p>`;
+  }
+
   /* ---- Run the daily auto-finder now (same job pg_cron runs each morning) -- */
   async function runDaily(hub) {
     const cfg = A.SUPABASE || {};
@@ -216,8 +243,10 @@
 
       <div class="panel"><div class="panel-head"><h3>Today's goals</h3>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" id="test-conn">Test grant connections</button>
           <button class="btn btn-ghost btn-sm" id="run-daily" title="Runs the same job that auto-adds leads every morning">Run daily finder now</button>
           <button class="btn btn-primary btn-sm" id="find-today">Find today's ${GOALS.findPerDay}</button></div></div>
+        <div class="panel-body" id="conn-box" style="display:none;border-bottom:1px solid var(--line,#e6e8ec)"></div>
         <div class="panel-body dash-2">
           <div><div style="font-weight:800">Grants found today</div>${bar(foundToday, GOALS.findPerDay, "#0f766e")}</div>
           <div><div style="font-weight:800">Proposals sent today</div>${bar(sentToday, GOALS.proposalsPerDay, "#b45309")}</div>
@@ -298,6 +327,13 @@
     };
     view.querySelector("#f-st").onchange = (e) => { filterStatus = e.target.value; render(hub); };
     view.querySelector("#f-src").onchange = (e) => { filterSource = e.target.value; render(hub); };
+    const testBtn = view.querySelector("#test-conn");
+    if (testBtn) testBtn.onclick = async () => {
+      const box = view.querySelector("#conn-box"); box.style.display = "";
+      testBtn.disabled = true;
+      try { await testConnections(hub, box); } catch (e) { console.error(e); box.textContent = "Test failed — see console"; }
+      testBtn.disabled = false;
+    };
     const runDailyBtn = view.querySelector("#run-daily");
     if (runDailyBtn) runDailyBtn.onclick = async () => {
       runDailyBtn.disabled = true; const o = runDailyBtn.textContent; runDailyBtn.textContent = "Finding leads…";

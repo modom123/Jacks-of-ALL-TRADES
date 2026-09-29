@@ -2,6 +2,7 @@
 // Jacks of All Trades — Simpler.Grants.gov helper (shared by Edge Functions)
 // File: supabase/functions/_shared/simpler.ts
 // Generated: 2026-09-29 16:20 UTC
+// Updated:   2026-09-29 17:00 UTC · OR keyword matching + widening fallback
 //
 // Searches the Simpler.Grants.gov API (the new Grants.gov — HHS/simpler-grants-gov,
 // forked at modom123/simpler-grants-gov) and normalizes results to grant_leads.
@@ -45,30 +46,40 @@ export async function simplerSearch(keyword: string, rows: number, draftedBy = "
   const key = Deno.env.get("SIMPLER_GRANTS_API_KEY");
   if (!key) throw new Error("SIMPLER_GRANTS_API_KEY not set — run: supabase secrets set SIMPLER_GRANTS_API_KEY=...");
 
-  const body: Record<string, unknown> = {
-    filters: {
-      opportunity_status: { one_of: ["posted", "forecasted"] },
-      applicant_type: { one_of: APPLICANT_TYPES },
-    },
-    pagination: {
-      page_offset: 1,
-      page_size: Math.max(1, Math.min(rows, 50)),
-      sort_order: [{ order_by: keyword ? "relevancy" : "post_date", sort_direction: "descending" }],
-    },
+  const size = Math.max(1, Math.min(rows, 50));
+  const query = async (q: string, nonprofitOnly: boolean): Promise<any[]> => {
+    const filters: Record<string, unknown> = { opportunity_status: { one_of: ["posted", "forecasted"] } };
+    if (nonprofitOnly) filters.applicant_type = { one_of: APPLICANT_TYPES };
+    const body: Record<string, unknown> = {
+      filters,
+      pagination: {
+        page_offset: 1,
+        page_size: size,
+        sort_order: [{ order_by: q ? "relevancy" : "post_date", sort_direction: "descending" }],
+      },
+    };
+    // OR, not the API's default AND — "workforce apprenticeship housing" should
+    // match any of the words, not require all three.
+    if (q) { body.query = q.slice(0, 100); body.query_operator = "OR"; }
+    const res = await fetch(SIMPLER_SEARCH, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json", "X-API-Key": key },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const hint = res.status === 401 || res.status === 403 ? " (check SIMPLER_GRANTS_API_KEY)" : res.status === 429 ? " (rate limit — try later)" : "";
+      let detail = "";
+      try { const e = await res.json(); detail = e && e.message ? " — " + String(e.message).slice(0, 160) : ""; } catch (_e) { /* no body */ }
+      throw new Error(`Simpler.Grants.gov HTTP ${res.status}${hint}${detail}`);
+    }
+    const data = await res.json();
+    return (data && data.data) || [];
   };
-  if (keyword) body.query = keyword.slice(0, 100);
 
-  const res = await fetch(SIMPLER_SEARCH, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json", "X-API-Key": key },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const hint = res.status === 401 || res.status === 403 ? " (check SIMPLER_GRANTS_API_KEY)" : res.status === 429 ? " (rate limit — try later)" : "";
-    throw new Error(`Simpler.Grants.gov HTTP ${res.status}${hint}`);
-  }
-  const data = await res.json();
-  const opps: any[] = (data && data.data) || [];
+  // Widen step by step until something comes back (updated 2026-09-29 17:00 UTC).
+  let opps = await query(keyword, true);
+  if (!opps.length) opps = await query(keyword, false);
+  if (!opps.length && keyword) opps = await query("", true);
 
   return opps.map((o) => {
     const s = o.summary || {};
