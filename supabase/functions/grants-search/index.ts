@@ -22,9 +22,15 @@
 // SAM.gov (updated 2026-09-29 15:51 UTC): pass "source": "sam" to search live
 // SAM.gov federal opportunities instead. Requires the server-side secret:
 //   supabase secrets set SAM_API_KEY=...
+//
+// Simpler.Grants.gov (updated 2026-09-29 16:20 UTC): when the secret
+// SIMPLER_GRANTS_API_KEY is set, Grants.gov searches go through the new
+// Simpler.Grants.gov API first (falls back to legacy Grants.gov on error).
+// "source": "simpler" forces it.
 // ============================================================================
 
 import { samSearch } from "../_shared/sam.ts";
+import { simplerConfigured, simplerSearch } from "../_shared/simpler.ts";
 
 // Try the current grants.gov base first, then the documented api.grants.gov
 // mirror. Both expose the same search2 / fetchOpportunity service.
@@ -87,6 +93,17 @@ Deno.serve(async (req: Request) => {
     } catch (err) {
       console.error("[grants-search] SAM.gov error:", err);
       return json({ error: err instanceof Error ? err.message : "SAM.gov request failed" }, 502);
+    }
+  }
+
+  if (p.source === "simpler" || simplerConfigured()) {
+    try {
+      const leads = await simplerSearch(keyword, rows);
+      return json({ leads, count: leads.length, source: "simpler.grants.gov" });
+    } catch (err) {
+      console.error("[grants-search] Simpler.Grants.gov error:", err);
+      if (p.source === "simpler") return json({ error: err instanceof Error ? err.message : "Simpler.Grants.gov request failed" }, 502);
+      // otherwise fall through to legacy Grants.gov
     }
   }
 

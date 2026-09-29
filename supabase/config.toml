@@ -19,3 +19,8 @@ verify_jwt = false
 
 [functions.ai-agent]
 verify_jwt = true
+
+# Daily grant auto-finder — called by pg_cron (schedule_grants_daily_*.sql) and
+# by signed-in hub users; it checks auth itself. (added 2026-09-29 16:20 UTC)
+[functions.grants-daily]
+verify_jwt = false
