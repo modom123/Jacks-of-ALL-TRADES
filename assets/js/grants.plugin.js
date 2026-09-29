@@ -108,24 +108,25 @@
   }
 
   /* ---- Grants.gov: live federal opportunities (real award sizes) ---------- */
-  async function searchGrantsGov(hub, keyword, rows) {
+  async function searchGrantsGov(hub, keyword, rows, source) {
+    const label = source === "sam" ? "SAM.gov" : "Grants.gov";
     const cfg = A.SUPABASE || {};
     const ok = A.configured && cfg.url && !cfg.url.includes("YOUR-PROJECT");
-    if (!ok) { hub.toast("Connect Supabase to use Grants.gov"); return 0; }
+    if (!ok) { hub.toast("Connect Supabase to use " + label); return 0; }
     let data;
     try {
       const res = await fetch(cfg.url.replace(/\/$/, "") + "/functions/v1/grants-search", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + cfg.anonKey, apikey: cfg.anonKey },
-        body: JSON.stringify({ keyword: keyword || "workforce apprenticeship housing", rows }),
+        body: JSON.stringify({ keyword: keyword || (source === "sam" ? "construction" : "workforce apprenticeship housing"), rows, source: source || "grantsgov" }),
       });
       data = await res.json();
-      if (!res.ok || data.error) { hub.toast(data && data.error ? "Grants.gov: " + data.error : "Deploy the grants-search function"); return 0; }
-    } catch (e) { hub.toast("Deploy the grants-search function to search Grants.gov"); return 0; }
+      if (!res.ok || data.error) { hub.toast(data && data.error ? label + ": " + data.error : "Deploy the grants-search function"); return 0; }
+    } catch (e) { hub.toast("Deploy the grants-search function to search " + label); return 0; }
     const leads = (data.leads || []).map((l) => ({
       funder: l.funder, funder_type: "government", focus_area: l.focus_area, fit_reason: l.fit_reason,
       est_amount: l.est_amount, deadline_note: l.deadline_note, url: l.url,
-      contact_email: l.contact_email || null, notes: l.notes || null, status: "identified", drafted_by: "Gwen (Grants.gov)",
+      contact_name: l.contact_name || null, contact_email: l.contact_email || null, notes: l.notes || null, status: "identified", drafted_by: "Gwen (" + label + ")",
     }));
     if (!leads.length) { hub.toast("No federal matches — try a broader keyword"); return 0; }
     await insertMany(hub, leads);
@@ -203,6 +204,7 @@
           <div class="field"><label>Source</label>
             <select name="source">
               <option value="grantsgov">Grants.gov — live federal grants (real award sizes)</option>
+              <option value="sam">SAM.gov — live federal opportunities (contracts &amp; notices)</option>
               <option value="ai">AI shortlist — Gwen (foundations, corporate &amp; government ideas)</option>
             </select></div>
           <div class="field"><label>Keyword / focus</label><input name="focus" placeholder="e.g. apprenticeship, Detroit housing, workforce, youth"></div>
@@ -225,10 +227,12 @@
 
     const findForm = view.querySelector("#find-form");
     const syncSource = () => {
-      const gov = findForm.source.value === "grantsgov";
+      const src = findForm.source.value, gov = src === "grantsgov" || src === "sam";
       const aiOnly = findForm.querySelector("[data-ai-only]"); if (aiOnly) aiOnly.style.display = gov ? "none" : "";
       const note = view.querySelector("#find-note");
-      if (note) note.textContent = gov
+      if (note) note.textContent = src === "sam"
+        ? "SAM.gov returns live federal contract opportunities, response deadlines, and contracting-officer contacts."
+        : gov
         ? "Grants.gov returns real federal opportunities with award ceilings and deadlines."
         : "Gwen (AI) suggests foundation, corporate & government leads — amounts/deadlines flagged verify.";
     };
@@ -238,9 +242,9 @@
       const btn = f.querySelector("#find-btn"), orig = btn.textContent; btn.disabled = true;
       try {
         let n = 0;
-        if (f.source.value === "grantsgov") {
-          btn.textContent = "Searching Grants.gov…";
-          n = await searchGrantsGov(hub, f.focus.value.trim(), Number(f.count.value));
+        if (f.source.value === "grantsgov" || f.source.value === "sam") {
+          btn.textContent = f.source.value === "sam" ? "Searching SAM.gov…" : "Searching Grants.gov…";
+          n = await searchGrantsGov(hub, f.focus.value.trim(), Number(f.count.value), f.source.value);
           if (n) hub.toast(`Added ${n} federal opportunit${n === 1 ? "y" : "ies"}`);
         } else {
           const types = Array.from(f.querySelectorAll('input[name="ty"]:checked')).map((c) => c.value);

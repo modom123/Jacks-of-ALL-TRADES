@@ -13,6 +13,8 @@
 //   supabase functions deploy grants-daily --no-verify-jwt
 //   (optional) supabase secrets set CRON_SECRET=some-long-random-string
 //   (optional) supabase secrets set GRANTS_DAILY_TARGET=10
+//   (optional) supabase secrets set SAM_API_KEY=...        # also pull SAM.gov
+//   (optional) supabase secrets set SAM_DAILY_TARGET=3     # SAM.gov share of the daily target
 //
 // SCHEDULE (Supabase SQL editor — 8:00am ET daily; cron is UTC):
 //   create extension if not exists pg_cron;  create extension if not exists pg_net;
@@ -25,6 +27,7 @@
 // ============================================================================
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { samConfigured, samSearch } from "../_shared/sam.ts";
 
 const GG_BASES = ["https://grants.gov/api/common", "https://api.grants.gov/v1/api"];
 const DETAIL = "https://www.grants.gov/search-results-detail/";
@@ -91,14 +94,18 @@ Deno.serve(async (req: Request) => {
     (data || []).forEach((r: { url?: string }) => r.url && seen.add(r.url));
   } catch (_e) { /* first run: table may be empty */ }
 
+  // Reserve a few slots for SAM.gov when its key is configured (updated 2026-09-29).
+  const samQuota = samConfigured() ? Math.min(target, Number(Deno.env.get("SAM_DAILY_TARGET")) || 3) : 0;
+  const ggTarget = target - samQuota;
+
   const picked: Record<string, unknown>[] = [];
   try {
     for (const keyword of todaysKeywords(3)) {
-      if (picked.length >= target) break;
+      if (picked.length >= ggTarget) break;
       const search = await ggPost("search2", { keyword, rows: 10, oppStatuses: "posted|forecasted" });
       const hits: any[] = (search && search.data && search.data.oppHits) || [];
       for (const h of hits) {
-        if (picked.length >= target) break;
+        if (picked.length >= ggTarget) break;
         const id = h.id || h.opportunityId;
         const url2 = id ? DETAIL + id : "";
         if (!url2 || seen.has(url2)) continue;
@@ -125,11 +132,32 @@ Deno.serve(async (req: Request) => {
       }
     }
   } catch (err) {
-    return json({ error: err instanceof Error ? err.message : "Grants.gov failed", inserted: 0 }, 502);
+    // Don't abort — SAM.gov can still fill the day.
+    console.error("[grants-daily] Grants.gov error:", err);
   }
 
-  if (!picked.length) return json({ inserted: 0, message: "No new opportunities today" });
+  let samError: string | null = null;
+  if (samQuota) {
+    try {
+      for (const keyword of todaysKeywords(3)) {
+        if (picked.length >= target) break;
+        for (const lead of await samSearch(keyword, 10, "Gwen (auto SAM.gov)")) {
+          if (picked.length >= target) break;
+          const u = String(lead.url || "");
+          if (!u || seen.has(u)) continue;
+          seen.add(u);
+          lead.fit_reason = "Auto-found. " + lead.fit_reason;
+          picked.push(lead);
+        }
+      }
+    } catch (err) {
+      samError = err instanceof Error ? err.message : "SAM.gov failed";
+      console.error("[grants-daily] SAM.gov error:", err);
+    }
+  }
+
+  if (!picked.length) return json({ inserted: 0, message: "No new opportunities today", samError });
   const { error } = await db.from("grant_leads").insert(picked);
   if (error) return json({ error: error.message, inserted: 0 }, 500);
-  return json({ inserted: picked.length, target, funders: picked.map((p) => p.funder) });
+  return json({ inserted: picked.length, target, funders: picked.map((p) => p.funder), samError });
 });

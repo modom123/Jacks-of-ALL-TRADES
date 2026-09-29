@@ -18,7 +18,13 @@
 //   POST {SUPABASE_URL}/functions/v1/grants-search
 //   body: { "keyword": "apprenticeship", "rows": 12, "statuses": "posted|forecasted" }
 //   -> { "leads": [ ... normalized grant_leads shape ... ], "count": N, "source": "grants.gov" }
+//
+// SAM.gov (updated 2026-09-29 15:51 UTC): pass "source": "sam" to search live
+// SAM.gov federal opportunities instead. Requires the server-side secret:
+//   supabase secrets set SAM_API_KEY=...
 // ============================================================================
+
+import { samSearch } from "../_shared/sam.ts";
 
 // Try the current grants.gov base first, then the documented api.grants.gov
 // mirror. Both expose the same search2 / fetchOpportunity service.
@@ -67,12 +73,22 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  let p: { keyword?: string; rows?: number; statuses?: string };
+  let p: { keyword?: string; rows?: number; statuses?: string; source?: string };
   try { p = await req.json(); } catch { return json({ error: "Invalid JSON body" }, 400); }
 
   const keyword = (p.keyword || "").toString().slice(0, 200);
   const rows = Math.max(1, Math.min(Number(p.rows) || 12, 25));
   const oppStatuses = (p.statuses || "posted|forecasted").toString();
+
+  if (p.source === "sam") {
+    try {
+      const leads = await samSearch(keyword, rows);
+      return json({ leads, count: leads.length, source: "sam.gov" });
+    } catch (err) {
+      console.error("[grants-search] SAM.gov error:", err);
+      return json({ error: err instanceof Error ? err.message : "SAM.gov request failed" }, 502);
+    }
+  }
 
   try {
     const search = await ggPost("search2", { keyword, rows, oppStatuses });
