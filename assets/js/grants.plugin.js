@@ -142,6 +142,7 @@
       ? `Saved ${out.inserted} new lead${out.inserted === 1 ? "" : "s"}${parts.length ? " (" + parts.join(", ") + ")" : ""}.`
       : (out.message || "No new leads.");
     if (out.skipped_duplicates) text += ` ${out.skipped_duplicates} already in your pipeline.`;
+    if (out.filtered_out) text += ` ${out.filtered_out} screened out as not a fit (research, medical, rural or expired).`;
     return { ok: true, inserted: out.inserted || 0, text, errs };
   }
 

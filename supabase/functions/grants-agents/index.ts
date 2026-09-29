@@ -26,6 +26,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { MODELS, Team } from "../_shared/claude.ts";
+import { junkReason } from "../_shared/grant-filter.ts";
 
 const num = (k: string, d: number) => Number(Deno.env.get(k)) || d;
 const LIMITS = {
@@ -198,7 +199,16 @@ Deno.serve(async (req: Request) => {
   };
   const fail = (who: string, l: Lead, e: unknown) => { errors.push(`${who} · ${String(l.focus_area || l.funder).slice(0, 60)}: ${msg(e)}`); console.error("[grants-agents]", who, e); };
 
-  // 1) GWEN — score New leads (unscored first; closed deadlines dismissed without an AI call)
+  // 1) GWEN — score New leads. Garbage (research/medical/rural/expired — see
+  //    _shared/grant-filter.ts) is dismissed first WITHOUT an AI call (updated 2026-09-29 22:00 UTC).
+  for (const l of leads.filter((x) => x.status === "identified" && x.fit_score == null)) {
+    const why = junkReason(l);
+    if (!why) continue;
+    try {
+      await save(l, { fit_score: 0, priority: "low", status: "archived", ai_next_step: "Not a fit — " + why, fit_reason: `Dismissed by Gwen (screen): ${why}. ` + (l.fit_reason || "") });
+      counts.scored++; counts.dismissed++;
+    } catch (e) { fail("Gwen screen", l, e); }
+  }
   const toScore = leads.filter((l) => l.status === "identified" && l.fit_score == null).slice(0, LIMITS.score);
   await pool(toScore, 6, deadline, async (l) => {
     try {

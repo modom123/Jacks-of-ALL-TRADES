@@ -7,6 +7,7 @@
 // eligibility, contact) from the free public Grants.gov API — no key.
 //   POST https://api.grants.gov/v1/api/search2   { keyword, rows, oppStatuses }
 // Moved here from grants-search / grants-daily so both use one implementation.
+// Updated 2026-09-29 22:00 UTC · category + nonprofit-eligibility filters on search2.
 // ============================================================================
 
 // Official endpoint first, then the grants.gov/api/common mirror.
@@ -54,7 +55,9 @@ export async function grantsGovSearch(
   const tries = [keyword, keyword.split(/\s+/)[0], ""].filter((k, i, a) => a.indexOf(k) === i);
   let hits: any[] = [];
   for (const kw of tries) {
-    const search = await ggPost("search2", { keyword: kw, rows, oppStatuses });
+    // Same screen as Simpler (updated 2026-09-29 22:00 UTC): employment/training (ELT),
+    // housing (HO), community development (CD); nonprofits with 501(c)(3) (12) or unrestricted (99).
+    const search = await ggPost("search2", { keyword: kw, rows, oppStatuses, fundingCategories: "ELT|HO|CD", eligibilities: "12|99" });
     hits = (search && search.data && search.data.oppHits) || [];
     if (hits.length) break;
   }

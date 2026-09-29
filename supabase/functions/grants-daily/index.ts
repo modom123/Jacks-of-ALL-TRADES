@@ -11,7 +11,8 @@
 //   {}                                   -> daily run: rotating keywords, all sources
 //   { "keyword": "youth", "target": 8,   -> hub search
 //     "sources": ["federal","sam"] }
-// RESPONSE { inserted, found, skipped_duplicates, counts:{simpler,grantsgov,sam}, errors:{...} }
+// RESPONSE { inserted, found, skipped_duplicates, filtered_out, counts:{simpler,grantsgov,sam}, errors:{...} }
+// FILTER   _shared/grant-filter.ts drops research/medical/rural/expired listings before saving.
 //
 // SOURCES  federal: Simpler.Grants.gov when SIMPLER_GRANTS_API_KEY is set, else /
 //                   also legacy Grants.gov (no key)
@@ -26,12 +27,17 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { samConfigured, samSearch } from "../_shared/sam.ts";
 import { simplerConfigured, simplerSearch } from "../_shared/simpler.ts";
 import { grantsGovSearch } from "../_shared/grantsgov.ts";
+import { junkReason } from "../_shared/grant-filter.ts";
 
 // Rotating keyword pool for the daily run so different opportunities surface.
+// Targeted to programs a Detroit trades / housing-rehab / youth nonprofit can win
+// (updated 2026-09-29 22:00 UTC — the old generic terms like "job training" pulled
+// NIH research-training grants).
 const KEYWORDS = [
-  "apprenticeship", "workforce development", "skilled trades training",
-  "affordable housing rehabilitation", "youth mentoring", "neighborhood revitalization",
-  "job training", "construction training", "community development",
+  "YouthBuild", "pre-apprenticeship", "registered apprenticeship", "construction trades",
+  "lead hazard", "healthy homes", "housing rehabilitation", "brownfields job training",
+  "weatherization workforce", "youth employment", "reentry employment", "neighborhood revitalization",
+  "workforce development", "affordable housing",
 ];
 
 // Browsers do NOT treat "Allow-Headers: *" as covering Authorization, so list them.
@@ -68,7 +74,7 @@ Deno.serve(async (req: Request) => {
   const keyword = String(b.keyword || "").trim().slice(0, 100);
   const target = Math.max(1, Math.min(Number(b.target) || Number(Deno.env.get("GRANTS_DAILY_TARGET")) || 10, 25));
   const want = new Set(Array.isArray(b.sources) && b.sources.length ? b.sources : ["federal", "sam"]);
-  const keywords = keyword ? [keyword] : todaysKeywords(3);
+  const keywords = keyword ? [keyword] : todaysKeywords(4);
 
   // Existing URLs, to skip duplicates. A failure here usually means the table is missing.
   const seen = new Set<string>();
@@ -87,12 +93,13 @@ Deno.serve(async (req: Request) => {
   const picked: Record<string, unknown>[] = [];
   const counts: Record<string, number> = { simpler: 0, grantsgov: 0, sam: 0 };
   const errors: Record<string, string> = {};
-  let found = 0, dupes = 0;
+  let found = 0, dupes = 0, filtered = 0;
   const take = (lead: Record<string, unknown>, limit: number, src: string) => {
     if (picked.length >= limit) return;
     found++;
     const u = String(lead.url || "");
     if (!u || seen.has(u)) { dupes++; return; }
+    if (src !== "sam" && junkReason(lead)) { filtered++; seen.add(u); return; } // garbage filter (grant-filter.ts)
     seen.add(u);
     if (!keyword) lead.fit_reason = "Auto-found (daily). " + lead.fit_reason;
     picked.push(lead); counts[src]++;
@@ -127,7 +134,7 @@ Deno.serve(async (req: Request) => {
     errors.sam = "SAM_API_KEY secret not set";
   }
 
-  const base = { found, skipped_duplicates: dupes, counts, errors, target };
+  const base = { found, skipped_duplicates: dupes, filtered_out: filtered, counts, errors, target };
   if (!picked.length) {
     return json({ ...base, inserted: 0, message: found ? "Everything found is already in your pipeline" : "No matching opportunities — try a broader keyword" });
   }

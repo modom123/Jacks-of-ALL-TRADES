@@ -3,6 +3,10 @@
 // File: supabase/functions/_shared/simpler.ts
 // Generated: 2026-09-29 16:20 UTC
 // Updated:   2026-09-29 17:00 UTC · OR keyword matching + widening fallback
+// Updated:   2026-09-29 22:00 UTC · garbage fix: only employment/training, housing and
+//            community-development categories; nonprofit filter always on;
+//            AND matching first (OR only as fallback). A review found 17/17
+//            leads were NIH/HRSA research & medical grants — these filters stop that.
 //
 // Searches the Simpler.Grants.gov API (the new Grants.gov — HHS/simpler-grants-gov,
 // forked at modom123/simpler-grants-gov) and normalizes results to grant_leads.
@@ -23,6 +27,8 @@ const GG_DETAIL = "https://www.grants.gov/search-results-detail/";
 
 // Opportunities a 501(c)(3) can apply to.
 const APPLICANT_TYPES = ["nonprofits_non_higher_education_with_501c3", "unrestricted"];
+// Subject areas that fit trades training, housing rehab and youth workforce work.
+const CATEGORIES = ["employment_labor_and_training", "housing", "community_development"];
 
 export function simplerConfigured(): boolean {
   return !!Deno.env.get("SIMPLER_GRANTS_API_KEY");
@@ -47,9 +53,12 @@ export async function simplerSearch(keyword: string, rows: number, draftedBy = "
   if (!key) throw new Error("SIMPLER_GRANTS_API_KEY not set — run: supabase secrets set SIMPLER_GRANTS_API_KEY=...");
 
   const size = Math.max(1, Math.min(rows, 50));
-  const query = async (q: string, nonprofitOnly: boolean): Promise<any[]> => {
-    const filters: Record<string, unknown> = { opportunity_status: { one_of: ["posted", "forecasted"] } };
-    if (nonprofitOnly) filters.applicant_type = { one_of: APPLICANT_TYPES };
+  const query = async (q: string, operator: "AND" | "OR"): Promise<any[]> => {
+    const filters: Record<string, unknown> = {
+      opportunity_status: { one_of: ["posted", "forecasted"] },
+      applicant_type: { one_of: APPLICANT_TYPES },
+      funding_category: { one_of: CATEGORIES },
+    };
     const body: Record<string, unknown> = {
       filters,
       pagination: {
@@ -58,9 +67,7 @@ export async function simplerSearch(keyword: string, rows: number, draftedBy = "
         sort_order: [{ order_by: q ? "relevancy" : "post_date", sort_direction: "descending" }],
       },
     };
-    // OR, not the API's default AND — "workforce apprenticeship housing" should
-    // match any of the words, not require all three.
-    if (q) { body.query = q.slice(0, 100); body.query_operator = "OR"; }
+    if (q) { body.query = q.slice(0, 100); body.query_operator = operator; }
     const res = await fetch(SIMPLER_SEARCH, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json", "X-API-Key": key },
@@ -76,10 +83,11 @@ export async function simplerSearch(keyword: string, rows: number, draftedBy = "
     return (data && data.data) || [];
   };
 
-  // Widen step by step until something comes back (updated 2026-09-29 17:00 UTC).
-  let opps = await query(keyword, true);
-  if (!opps.length) opps = await query(keyword, false);
-  if (!opps.length && keyword) opps = await query("", true);
+  // Precise first (all words), then any word, then the newest in our categories.
+  // The nonprofit + category filters stay on at every step (updated 2026-09-29 22:00 UTC).
+  let opps = await query(keyword, "AND");
+  if (!opps.length && /\s/.test(keyword)) opps = await query(keyword, "OR");
+  if (!opps.length && keyword) opps = await query("", "AND");
 
   return opps.map((o) => {
     const s = o.summary || {};
